@@ -1,0 +1,36 @@
+{
+    "name": "Apprvd",
+    "version": "1.0.0",
+    "description": "Assistant for legal and compliance",
+    "manifest_version": 3,
+    "permissions": ["contextMenus"],
+    "action":{
+        "default_popup": "index.html",
+        "default_title": "Apprvd"
+    },
+    "background": {
+        "service_worker": "script.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://docs.google.com/document/*"
+            ],
+            "run_at": "document_start",
+            "js": [
+                "gdocs-enable-annotated-canvas.js"
+            ],
+            "world": "MAIN"
+        },
+        {
+            "matches": [
+                "*://docs.google.com/document/*"
+            ],
+            "js": [
+                "content-editor.js"
+            ],
+            "all_Frames": false,
+            "run_at": "document_end"
+        }
+    ]
+}
