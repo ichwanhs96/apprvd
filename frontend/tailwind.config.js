@@ -17,6 +17,7 @@ export default {
         marquee_right: 'marquee_right 20s linear infinite',
         marquee2_right: 'marquee2_right 20s linear infinite',
         marquee_slow: 'marquee_slow 30s linear infinite',
+        typing: 'typing 2s steps(20) alternate, blink .7s infinite'
       },
       keyframes: {
         marquee_left: {
@@ -38,6 +39,15 @@ export default {
         marquee2_right: {
           '0%': { transform: 'translateX(0%)' },
           '100%': { transform: 'translateX(100%)' },
+        },
+        typing: {
+          "0%": {
+            width: "0%",
+            visibility: "hidden"
+          },
+          "100%": {
+            width: "100%"
+          }  
         },
       },
     },
