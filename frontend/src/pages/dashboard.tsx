@@ -10,6 +10,11 @@ const Dashboard: React.FC = () => {
         <>
             <DashboardNavbar navItems={navItems}></DashboardNavbar>
             <Sidebar></Sidebar>
+            <iframe 
+                src="https://3ldhk0.csb.app/" 
+                style={{ width: '100%', height: '500px', border: 'none' }} 
+                title="Embedded Content"
+            ></iframe>
         </>
     )
 };

@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/css": "^11.13.0",
+    "@emotion/react": "^11.13.3",
     "@syncfusion/ej2-base": "^26.2.5",
     "@syncfusion/ej2-buttons": "^26.2.7",
     "@syncfusion/ej2-dropdowns": "^26.2.7",
@@ -19,9 +21,17 @@
     "@syncfusion/ej2-popups": "^26.2.5",
     "@syncfusion/ej2-react-documenteditor": "^26.2.7",
     "@syncfusion/ej2-splitbuttons": "^26.2.5",
+    "@zhangyu836/docxjs": "^0.2.0",
+    "file-saver": "^2.0.5",
+    "image-extensions": "^1.1.0",
+    "is-hotkey": "^0.2.0",
+    "is-url": "^1.2.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.0"
+    "react-router-dom": "^6.26.0",
+    "slate": "^0.103.0",
+    "slate-history": "^0.109.0",
+    "slate-react": "^0.109.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
