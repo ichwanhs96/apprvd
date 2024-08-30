@@ -10,6 +10,8 @@ import React from 'react';
 //     sidebarItems: SidebarItem[];
 // }
 
+// TODO: make the sidebar responsive
+
 const Sidebar: React.FC = () => {
     return (
         <>
