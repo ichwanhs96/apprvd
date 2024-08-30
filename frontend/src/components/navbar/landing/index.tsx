@@ -19,8 +19,10 @@ const HomeNavbar: React.FC<HomeNavbarProps> = ({ navItems }) => {
     return (
         <nav className="top-0 left-0 right-0 w-full flex items-center justify-between flex-wrap bg-secondary p-8">
             <div className="flex items-center flex-shrink-0 text-white mr-6">
-                <img width={54} height={54} src='https://framerusercontent.com/images/kwlTL4WuegjLeIlxVMlWaU5MsJo.png'/>
-                <span className="font-semibold text-2xl ml-2 tracking-tight">Apprvd</span>
+                <a href='/' className='flex items-center mx-12 mb-4 sm:mb-0 space-x-3 rtl:space-x-reverse'>
+                    <img width={54} height={54} src='https://framerusercontent.com/images/kwlTL4WuegjLeIlxVMlWaU5MsJo.png'/>
+                    <span className="font-semibold text-2xl ml-2 tracking-tight">Apprvd</span>
+                </a>
             </div>
             <div className="block lg:hidden">
                 <button className="group flex items-center px-6 py-4 border rounded text-teal-200 border-teal-400 hover:text-white hover:border-white">

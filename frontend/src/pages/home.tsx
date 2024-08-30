@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { useNavigate } from 'react-router-dom';
+
 import HomeNavbar from '../components/navbar/landing';
 import { NavItem } from '../components/navbar/landing';
 import Footer from '../components/footer';
@@ -24,9 +26,15 @@ const Home: React.FC = () => {
         },
         {
             label: 'Templates',
-            href: '#'
+            href: '/template'
         }
     ];
+    const navigate = useNavigate();
+
+    function navigateToTemplate(e: React.MouseEvent<HTMLButtonElement>) {
+        e.preventDefault();
+        navigate('/template');
+    }
 
     return (
         <>
@@ -160,9 +168,9 @@ const Home: React.FC = () => {
                 <div className='flex flex-row justify-center items-center py-16'>
                     <p className='flex-1 text-6xl font-bold px-20'>"Tailored for freelancers and small B2B SaaS companies to enhances efficiency."</p>
                     <div className='flex-1 flex flex-col'>
-                        <p className='text-6xl font-bold px-20'>Start drafting now</p>
-                        <p className='text-lg px-20 py-4'>Jumpstart your work with our free template. Customize it to standardize your legal processes and boost efficiency today.</p>
-                        <button className='bg-primary text-secondary rounded-lg shadow-xl max-w-xs mx-20 m-4 font-bold hover:bg-primary-gray transition-colors duration-500 border-none'>Get Template</button>
+                        <p className='text-6xl font-bold'>Start drafting now</p>
+                        <p className='text-lg py-4'>Jumpstart your work with our free template. Customize it to standardize your legal processes and boost efficiency today.</p>
+                        <button className='bg-primary text-secondary rounded-lg shadow-xl max-w-40 py-3 font-bold hover:bg-primary-gray transition-colors duration-500 border-none' onClick={navigateToTemplate}>Get Template</button>
                     </div>
                 </div>
                 {/* Waitlist form */}

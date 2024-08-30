@@ -14,7 +14,7 @@ const Footer: React.FC<FooterProps> = ({ footerItems }) => {
         <footer className='bottom-0 left-0 right-0 w-full bg-secondary'>
             <div className='p-6'>
                 <div className='sm:flex sm:items-center sm:justify-between'>
-                    <a href='https://apprvd.co' className='flex items-center mx-12 mb-4 sm:mb-0 space-x-3 rtl:space-x-reverse'>
+                    <a href='/' className='flex items-center mx-12 mb-4 sm:mb-0 space-x-3 rtl:space-x-reverse'>
                         <img width={54} height={54} src='https://framerusercontent.com/images/kwlTL4WuegjLeIlxVMlWaU5MsJo.png'/>
                         <span className="font-semibold text-2xl ml-2 tracking-tight text-white">Apprvd</span>
                     </a>
