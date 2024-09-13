@@ -2,16 +2,32 @@ import React, { useState } from 'react';
 
 const AISidebar: React.FC = () => {
     const [isTyping, setIsTyping] = useState(false);
+    const [docSummary, setDocSummary] = useState<string>("");
 
-    const handleGenerateSummary = () => {
-        const contentSummary = document.getElementById("ContentSummary");
-        const keyItems = document.getElementById("KeyItems");
-        
-        if (contentSummary) {
-            contentSummary.classList.remove('hidden');
+    const handleGenerateSummary = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/prompt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    prompt: "summarize apprvd privacy policy document"
+                 }),
+            });
+            const data = await response.json();
+            setDocSummary(data.response); // Assuming the response has a 'summary' field
+            
+            const contentSummary = document.getElementById("ContentSummary");
+            if (contentSummary) contentSummary.classList.remove('hidden');
+            
+            const keyItems = document.getElementById("KeyItems");
+            if (keyItems) keyItems.classList.remove('hidden');
+
             setIsTyping(true);
+        } catch (error) {
+            console.error('Error fetching document summary:', error);
         }
-        if (keyItems) keyItems.classList.remove('hidden');
     }
 
     return (
@@ -29,8 +45,7 @@ const AISidebar: React.FC = () => {
                     <h3 className='font-medium text-lg'>Content summary</h3>
                     <div className='border rounded-lg'>
                         <p className={`mt-2 overflow-hidden text-gray-700 p-4 ${isTyping ? 'animate-typing' : ''}`}>
-                            The main purpose of an NDA is to protect sensitive information. It allows parties to share confidential
-                            information without fear of it being disclosed to others or used inappropriately. NDAs are crucial for
+                        {docSummary}
                         </p>
                     </div>
                     
