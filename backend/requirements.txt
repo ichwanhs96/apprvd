@@ -6,3 +6,4 @@ llama-index==0.11.3
 pinecone-client==5.0.1
 urllib3==1.26.6
 llama-index-llms-openai==0.2.2
+gunicorn==23.0.0
