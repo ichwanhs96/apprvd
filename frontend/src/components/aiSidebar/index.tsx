@@ -31,7 +31,7 @@ const AISidebar: React.FC = () => {
     }
 
     return (
-        <div className='bg-gray-100 text-sm'>
+        <div className='text-sm pt-4'>
             <div className='bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto'>
                 <div className='mb-4'>
                     <h2 className='font-semibold text-xl'>Smart Review</h2>

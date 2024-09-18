@@ -21,7 +21,7 @@ const Dashboard: React.FC = () => {
 const Content: React.FC = () => {
     return (
         <>
-            <div className='w-3/4 bg-green-50'>
+            <div className='w-3/4'>
                 <SlateEditor />
             </div>
             <div className='w-1/4'>
