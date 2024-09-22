@@ -11,7 +11,9 @@ services:
           name: apprvd-app-db
           property: connectionString
       - key: OPENAI_API_KEY
+        sync: false
       - key: PINECONE_API_KEY
+        sync: false
 
 databases:
   - name: apprvd-app-db
