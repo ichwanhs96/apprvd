@@ -24,6 +24,10 @@ import os
 import hashlib
 import json
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 app = Flask(__name__)
 CORS(app)
 
@@ -112,13 +116,11 @@ def prompt():
 
 ### LLM functions
 
-os.environ["PINECONE_API_KEY"] = "PINECONE_API_KEY"
-os.environ["OPENAI_API_KEY"] = "OPENAI_API_KEY"
-
 if "OPENAI_API_KEY" not in os.environ:
     raise EnvironmentError(f"Environment variable OPENAI_API_KEY is not set")
 
-api_key = os.environ["PINECONE_API_KEY"]
+if "PINECONE_API_KEY" not in os.environ:
+    raise EnvironmentError(f"Environment variable PINECONE_API_KEY is not set")
 
 pc = Pinecone(os.environ["PINECONE_API_KEY"])
 pinecone_index = pc.Index("apprvd")
