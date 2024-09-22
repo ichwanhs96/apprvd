@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the application code
 COPY ./backend .
 
-RUN --mount=type=secret,id=env,dst=./.env cat ./.env
+RUN --mount=type=secret,id=_env,dst=/app/.env cat /app/.env
 
 # Expose the port the app runs on
 EXPOSE 5000
