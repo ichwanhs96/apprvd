@@ -17,7 +17,7 @@ const HomeNavbar: React.FC<HomeNavbarProps> = ({ navItems }) => {
   }
 
   return (
-    <nav className="top-0 left-0 right-0 w-full flex items-center justify-between flex-wrap bg-secondary p-8">
+    <nav className="top-0 left-0 right-0 w-full flex items-center justify-between flex-wrap bg-apprvd-secondary p-8">
       <div className="flex items-center flex-shrink-0 text-white mr-6">
         <a
           href="/"
@@ -82,7 +82,7 @@ const HomeNavbar: React.FC<HomeNavbarProps> = ({ navItems }) => {
         <div>
           <a
             href="#"
-            className="inline-block text-sm px-16 py-4 leading-none border rounded text-white border-white mt-4 lg:mt-0 hover:border-transparent hover:text-white hover:bg-primary transition-colors duration-500"
+            className="inline-block text-sm px-16 py-4 leading-none border rounded text-white border-white mt-4 lg:mt-0 hover:border-transparent hover:text-white hover:bg-apprvd-primary transition-colors duration-500"
           >
             Try Now
           </a>

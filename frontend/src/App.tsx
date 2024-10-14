@@ -1,11 +1,13 @@
-import './App.css'
+import React from "react";
+import "./App.css";
+import "./styles/globals.css";
 
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Home from './pages/home';
-import Template from './pages/template';
-import Login from './pages/login';
-import Signup from './pages/signup';
-import Dashboard from './pages/dashboard';
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Home from "./pages/home";
+import Template from "./pages/template";
+import Login from "./pages/login";
+import Signup from "./pages/signup";
+import Dashboard from "./pages/dashboard";
 
 // WORKING Example of Syncfusion
 // import '@syncfusion/ej2-base/styles/material.css';
@@ -27,17 +29,17 @@ import Dashboard from './pages/dashboard';
 function App() {
   return (
     <>
-    <Router>
-      <Routes>
+      <Router>
+        <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/template" element={<Template />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
-    </Router>
+      </Router>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
