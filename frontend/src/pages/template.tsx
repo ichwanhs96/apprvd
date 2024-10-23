@@ -40,7 +40,7 @@ const Template: React.FC = () => {
           day-to-day easier. Explore our business legal documents, forms, and
           contracts below.
         </p>
-        <button className="flex flex-row bg-transparent text-secondary rounded-lg max-w-lg px-16 my-16 font-light hover:shadow-lg transition-all duration-500 border-black">
+        <button className="flex flex-row bg-transparent text-apprvd-secondary rounded-lg max-w-lg px-16 my-16 font-light hover:shadow-lg transition-all duration-500 border-black">
           <span>
             <svg
               width={20}
