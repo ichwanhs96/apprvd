@@ -8,7 +8,6 @@ import { DropdownMenuItem } from "./dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "./tooltip";
 

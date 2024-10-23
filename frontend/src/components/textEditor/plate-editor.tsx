@@ -1,3 +1,5 @@
+// disable next line type checking to ensure React to be inscope and surpress warning from TS type check
+// @ts-ignore
 import React, { useRef } from "react";
 import { cn, withProps } from "@udecode/cn";
 import { AlignPlugin } from "@udecode/plate-alignment/react";

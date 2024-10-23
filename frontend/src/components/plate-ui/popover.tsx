@@ -1,5 +1,5 @@
-import React from "react";
-
+// disable next line type checking to ensure React to be inscope and surpress warning from TS type check
+// @ts-ignore
 import * as React from "react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { cn, withRef } from "@udecode/cn";

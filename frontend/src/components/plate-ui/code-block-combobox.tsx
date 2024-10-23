@@ -1,3 +1,5 @@
+// disable next line type checking to ensure React to be inscope and surpress warning from TS type check
+// @ts-ignore
 import React, { useState } from "react";
 import { cn } from "@udecode/cn";
 import {

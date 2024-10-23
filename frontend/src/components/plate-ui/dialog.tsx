@@ -1,3 +1,5 @@
+// disable next line type checking to ensure React to be inscope and surpress warning from TS type check
+// @ts-ignore
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cn, createPrimitiveElement, withCn, withRef } from "@udecode/cn";

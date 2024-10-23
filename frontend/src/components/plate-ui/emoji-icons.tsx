@@ -1,3 +1,5 @@
+// disable next line type checking to ensure React to be inscope and surpress warning from TS type check
+// @ts-ignore
 import React from "react";
 import {
   AppleIcon,
@@ -13,7 +15,6 @@ import {
   StarIcon,
 } from "lucide-react";
 
-import type React from "react";
 import type { EmojiCategoryList } from "@udecode/plate-emoji";
 
 export const emojiCategoryIcons: Record<
