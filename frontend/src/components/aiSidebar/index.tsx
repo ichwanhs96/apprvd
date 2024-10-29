@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import Markdown from 'markdown-to-jsx';
 
 const AISidebar: React.FC = () => {
     const [isTyping, setIsTyping] = useState(false);
     const [docSummary, setDocSummary] = useState<string>("");
+    const [suggestionSummary, setSuggestionSummary] = useState<string>("");
+    const [reviewInput, setReviewInput] = useState<string>("My company does highly confidential data & innovation, this NDA has to be very strong and also compliant with EU law."); // Added state for textarea
 
     const handleGenerateSummary = async () => {
         try {
@@ -30,6 +33,29 @@ const AISidebar: React.FC = () => {
         }
     }
 
+    const handleReviewRequest = async () => {
+        try {
+            const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/prompt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    prompt: reviewInput
+                 }),
+            });
+            const data = await response.json();
+            setSuggestionSummary(data.response); // Assuming the response has a 'summary' field
+            
+            const suggestionSummary = document.getElementById("SuggestionSummary");
+            if (suggestionSummary) suggestionSummary.classList.remove('hidden');
+
+            setIsTyping(true);
+        } catch (error) {
+            console.error('Error fetching review request:', error);
+        }
+    }
+
     return (
         <div className='text-sm pt-4'>
             <div className='bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto'>
@@ -45,7 +71,7 @@ const AISidebar: React.FC = () => {
                     <h3 className='font-medium text-lg'>Content summary</h3>
                     <div className='border rounded-lg'>
                         <p className={`mt-2 overflow-hidden text-gray-700 p-4 ${isTyping ? 'animate-typing' : ''}`}>
-                        {docSummary}
+                        <Markdown>{docSummary}</Markdown>
                         </p>
                     </div>
                     
@@ -68,20 +94,25 @@ const AISidebar: React.FC = () => {
                 <div className='mb-6'>
                     <h3 className='font-medium text-lg'>Review request</h3>
                     <textarea
+                            id="reviewInput"
                             className='w-full mt-2 p-4 border rounded-lg focus:outline-none focus:ring focus:border-blue-300 resize-none bg-white'
-                            rows={4}>My company does highly confidential data & innovation, this NDA has to be very strong and also compliant with EU law.</textarea>
+                            rows={4}
+                            value={reviewInput} // Bind the value to state
+                            onChange={(e) => setReviewInput(e.target.value)} // Update state on change
+                            />
                 </div>
                 <div className='mb-6'>
-                    <button className='w-full bg-gray-200 py-2 px-4 rounded-lg text-gray-800 font-medium hover:bg-gray-300'>
+                    <button className='w-full bg-gray-200 py-2 px-4 rounded-lg text-gray-800 font-medium hover:bg-gray-300' onClick={handleReviewRequest}>
                         Change query
                     </button>
                 </div>
-                <div className='mb-6'>
+                <div id="SuggestionSummary" className='mb-6 hidden'>
                     <h3 className='font-medium text-lg'>Suggestions</h3>
-                    <ul className='list-disc mt-2 ml-5 text-gray-700'>
-                        <li>Update wording on the recitals to make it clearer</li>
-                        <li>Clarify definition of Article 1.1 especially on the type of information that’s considered confidential</li>
-                    </ul>
+                    <div className='border rounded-lg'>
+                        <p className={`mt-2 overflow-hidden text-gray-700 p-4 ${isTyping ? 'animate-typing' : ''}`}>
+                        <Markdown>{suggestionSummary}</Markdown>
+                        </p>
+                    </div>
                     <a href='#' className='text-blue-500 underline'>Read more</a>
                 </div>
                 <div className='text-center'>
