@@ -6,7 +6,7 @@ const AISidebar: React.FC = () => {
 
     const handleGenerateSummary = async () => {
         try {
-            const response = await fetch('http://localhost:5000/prompt', {
+            const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/prompt', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
