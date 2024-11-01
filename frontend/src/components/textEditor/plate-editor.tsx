@@ -159,7 +159,7 @@ export default function PlateEditor({ editor }: { editor: any }) {
   );
 }
 
-export const InitiatePlateEditor = () => {
+export const InitiatePlateEditor = (): any => {
   const editor = createPlateEditor({
     plugins: [
       // Nodes
