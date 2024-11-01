@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useAuth } from "../../../context/AuthContext"; // Add this import
 
 interface NavItem {
   label: string;
@@ -11,10 +12,21 @@ interface DashboardNavbarProps {
 
 const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
   const [navBarOpen, setNavBarOpen] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { user, logout } = useAuth();
 
   function onClick() {
     setNavBarOpen(!navBarOpen);
   }
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // Redirect will be handled by AuthContext
+    } catch (error) {
+      console.error("Failed to logout:", error);
+    }
+  };
 
   return (
     <>
@@ -80,13 +92,31 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
               </a>
             ))}
           </div>
-          <div>
-            <a
-              href="#"
-              className="inline-block text-sm px-16 py-4 leading-none border rounded text-black border-black mt-4 lg:mt-0 hover:border-transparent hover:text-white hover:bg-apprvd-primary transition-colors duration-500"
-            >
-              Try Now
-            </a>
+          <div className="flex items-center">
+            <div className="relative">
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="flex items-center bg-transparent"
+              >
+                <img 
+                  src={user?.photoURL || '/default-avatar.png'} 
+                  alt={`${user?.email || 'User'}'s profile`}
+                  className="w-8 h-8 rounded-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </button>
+              
+              {showProfileMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full bg-white text-left px-4 py-2 text-sm hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </nav>

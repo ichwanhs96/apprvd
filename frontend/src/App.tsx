@@ -5,6 +5,8 @@ import "./App.css";
 import "./styles/globals.css";
 
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { ProtectedRoute } from "./context/ProtectedRoute";
+import { AuthProvider } from './context/AuthContext';
 import Home from "./pages/home";
 import Template from "./pages/template";
 import Login from "./pages/login";
@@ -32,13 +34,23 @@ function App() {
   return (
     <>
       <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/template" element={<Template />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/template" element={<Template />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            {/* Protected Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </AuthProvider>
       </Router>
     </>
   );

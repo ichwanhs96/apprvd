@@ -1,6 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 const SignupForm: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const { signUp } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      await signUp(email, password);
+    } catch (err) {
+      alert('Failed to create an account');
+      console.error(err);
+    }
+  };
+
   return (
     <div className="flex flex-col px-36 py-16 max-w-full w-full">
       <div className="flex flex-row items-center">
@@ -14,8 +30,8 @@ const SignupForm: React.FC = () => {
         </span>
       </div>
       <p className="text-3xl font-semibold py-4 my-8">Get Started Now</p>
-      <form className="max-w-full w-full">
-        <div className="mb-5">
+      <form className="max-w-full w-full" onSubmit={handleSubmit}>
+        {/* <div className="mb-5">
           <label
             htmlFor="name"
             className="block mb-2 text-sm font-medium text-gray-500"
@@ -29,7 +45,7 @@ const SignupForm: React.FC = () => {
             placeholder="apprvd co"
             required
           />
-        </div>
+        </div> */}
         <div className="mb-5">
           <label
             htmlFor="email"
@@ -42,6 +58,7 @@ const SignupForm: React.FC = () => {
             id="email"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 outline-none"
             placeholder="hello@apprvd.co"
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
@@ -57,6 +74,7 @@ const SignupForm: React.FC = () => {
             id="password"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 outline-none"
             placeholder="your password"
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>

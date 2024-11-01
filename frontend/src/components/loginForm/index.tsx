@@ -1,6 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from "react-router-dom";
 
 const LoginForm: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const { signIn, signInWithGoogle } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      await signIn(email, password);
+      navigate("/dashboard");
+    } catch (err) {
+      alert('Failed to sign in');
+      console.error(err);
+    }
+  };
+
   return (
     <div className="flex flex-col px-36 py-16 max-w-full w-full">
       <div className="flex flex-row items-center">
@@ -17,7 +36,7 @@ const LoginForm: React.FC = () => {
       <p className="mt-4 mb-12">
         Enter your credentials to access your account
       </p>
-      <form className="max-w-full w-full">
+      <form className="max-w-full w-full" onSubmit={handleSubmit}>
         <div className="mb-5">
           <label
             htmlFor="email"
@@ -30,6 +49,7 @@ const LoginForm: React.FC = () => {
             id="email"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 outline-none"
             placeholder="hello@apprvd.co"
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
@@ -45,6 +65,7 @@ const LoginForm: React.FC = () => {
             id="password"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 outline-none"
             placeholder="your password"
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
@@ -64,6 +85,7 @@ const LoginForm: React.FC = () => {
           Login
         </button>
       </form>
+      <button className="bg-white mt-4" onClick={signInWithGoogle}>Sign in with Google</button>
       <div className="flex flex-row mt-4">
         <p>Don't have an account?</p>
         <a
