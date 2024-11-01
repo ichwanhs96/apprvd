@@ -1,3 +1,5 @@
+// disable next line type checking to ensure React to be inscope and surpress warning from TS type check
+// @ts-ignore
 import React from "react";
 import { withRef } from "@udecode/cn";
 import { ListStyleType } from "@udecode/plate-indent-list";
