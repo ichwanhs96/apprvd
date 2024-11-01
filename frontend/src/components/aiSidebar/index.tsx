@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import Markdown from 'markdown-to-jsx';
+import { TPlateEditor } from '@udecode/plate-common/react';
 
-const AISidebar: React.FC = () => {
+interface AISidebarProps {
+    editor: TPlateEditor;
+}
+
+const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
     const [isTyping, setIsTyping] = useState(false);
     const [docSummary, setDocSummary] = useState<string>("");
     const [suggestionSummary, setSuggestionSummary] = useState<string>("");
@@ -9,13 +14,15 @@ const AISidebar: React.FC = () => {
 
     const handleGenerateSummary = async () => {
         try {
+            const markdownContent = (editor.api as any).markdown.serialize();
+
             const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/prompt', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
-                    prompt: "summarize apprvd privacy policy document"
+                    prompt: `with this document written in markdown format "${ markdownContent }", please summarize the document.`
                  }),
             });
             const data = await response.json();
@@ -35,13 +42,15 @@ const AISidebar: React.FC = () => {
 
     const handleReviewRequest = async () => {
         try {
+            const markdownContent = (editor.api as any).markdown.serialize();
+
             const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/prompt', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
-                    prompt: reviewInput
+                    prompt: `with this document written in markdown format as context "${ markdownContent }", generate contextual response based on user prompt as follows "${ reviewInput }".`
                  }),
             });
             const data = await response.json();
@@ -103,7 +112,7 @@ const AISidebar: React.FC = () => {
                 </div>
                 <div className='mb-6'>
                     <button className='w-full bg-gray-200 py-2 px-4 rounded-lg text-gray-800 font-medium hover:bg-gray-300' onClick={handleReviewRequest}>
-                        Change query
+                        Review query
                     </button>
                 </div>
                 <div id="SuggestionSummary" className='mb-6 hidden'>
@@ -115,12 +124,12 @@ const AISidebar: React.FC = () => {
                     </div>
                     <a href='#' className='text-blue-500 underline'>Read more</a>
                 </div>
-                <div className='text-center'>
+                {/* <div className='text-center'>
                     <button
                         className='bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring focus:bg-blue-500'>
                         Accept suggestions
                     </button>
-                </div>
+                </div> */}
             </div>
         </div>
     )

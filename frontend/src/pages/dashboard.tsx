@@ -4,7 +4,7 @@ import Sidebar from "../components/sidebar";
 import MainContainer from "../components/mainContainer";
 import { NavItem } from "../components/navbar/dashboard";
 import AISidebar from "../components/aiSidebar";
-import PlateEditor from "../components/textEditor/plate-editor";
+import PlateEditor, { InitiatePlateEditor } from "../components/textEditor/plate-editor";
 
 const Dashboard: React.FC = () => {
   const navItems: NavItem[] = [];
@@ -19,14 +19,16 @@ const Dashboard: React.FC = () => {
 };
 
 const Content: React.FC = () => {
+  const editor = InitiatePlateEditor();
+
   return (
     <>
       <div className="w-3/4">
         {/* <SlateEditor /> */}
-        <PlateEditor />
+        <PlateEditor editor={editor}/>
       </div>
       <div className="w-1/4">
-        <AISidebar />
+        <AISidebar editor={editor} />
       </div>
     </>
   );

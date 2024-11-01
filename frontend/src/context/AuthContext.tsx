@@ -32,12 +32,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log("users detail ", user);
       setUser(user);
       setLoading(false);
 
       if (user) {
-        console.log("should be navigated!");
         navigate("/dashboard");
       }
     });

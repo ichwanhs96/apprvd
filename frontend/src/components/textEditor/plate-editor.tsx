@@ -118,10 +118,10 @@ import { TableRowElement } from "../plate-ui/table-row-element";
 import { TodoListElement } from "../plate-ui/todo-list-element";
 import { withDraggables } from "../plate-ui/with-draggables";
 
-export default function PlateEditor() {
+export default function PlateEditor({ editor }: { editor: any }) {
   const containerRef = useRef(null);
 
-  const editor = useMyEditor();
+  console.log(editor);
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -159,7 +159,7 @@ export default function PlateEditor() {
   );
 }
 
-export const useMyEditor = () => {
+export const InitiatePlateEditor = () => {
   const editor = createPlateEditor({
     plugins: [
       // Nodes
@@ -374,6 +374,7 @@ export const useMyEditor = () => {
       DocxPlugin,
       MarkdownPlugin,
       JuicePlugin,
+      MarkdownPlugin,
     ],
     override: {
       components: withDraggables(
