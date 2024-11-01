@@ -5,6 +5,7 @@ import MainContainer from "../components/mainContainer";
 import { NavItem } from "../components/navbar/dashboard";
 import AISidebar from "../components/aiSidebar";
 import PlateEditor from "../components/textEditor/plate-editor";
+import { useMyEditor } from "../hooks/useMyEditor";
 
 const Dashboard: React.FC = () => {
   const navItems: NavItem[] = [];
@@ -19,14 +20,15 @@ const Dashboard: React.FC = () => {
 };
 
 const Content: React.FC = () => {
+  const editor = useMyEditor();
   return (
     <>
       <div className="w-3/4">
         {/* <SlateEditor /> */}
-        <PlateEditor />
+        <PlateEditor editor={editor} />
       </div>
       <div className="w-1/4">
-        <AISidebar />
+        <AISidebar textEditorValue={editor.children} />
       </div>
     </>
   );
