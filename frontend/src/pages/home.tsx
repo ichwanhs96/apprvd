@@ -13,7 +13,7 @@ const Home: React.FC = () => {
   const footerItems: FooterItem[] = [
     {
       label: "Try now",
-      href: "#",
+      href: "/login",
     },
     {
       label: "Features",
@@ -27,6 +27,10 @@ const Home: React.FC = () => {
       label: "Templates",
       href: "/template",
     },
+    {
+      label: "Security & Privacy",
+      href: "/security-privacy"
+    }
   ];
   const navigate = useNavigate();
 
@@ -538,18 +542,18 @@ const Home: React.FC = () => {
               </div>
             </div>
             <div className="flex flex-row">
-              <div className="rounded-3xl overflow-hidden shadow-lg bg-primary text-apprvd-secondary py-8 mt-4 mr-4">
+              <div className="rounded-3xl overflow-hidden shadow-lg bg-primary text-apprvd-primary py-8 mt-4 mr-4">
                 <div className="flex flex-col px-6 pb-4">
                   <h1>Contextualized</h1>
-                  <p className="text-appvrd-secondary text-base">
+                  <p className="text-appvrd-primary text-base">
                     Adapts and updates its knowledge base continually
                   </p>
                 </div>
               </div>
-              <div className="rounded-3xl overflow-hidden shadow-lg bg-primary text-apprvd-secondary py-8 mt-4">
+              <div className="rounded-3xl overflow-hidden shadow-lg bg-primary text-apprvd-primary py-8 mt-4">
                 <div className="flex flex-col px-6 pb-4">
                   <h1>Collaborative</h1>
-                  <p className="text-apprvd-secondary text-base">
+                  <p className="text-apprvd-primary text-base">
                     Share and review contracts easily within Google Docs
                   </p>
                 </div>

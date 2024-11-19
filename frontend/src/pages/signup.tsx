@@ -1,10 +1,14 @@
 import React from 'react';
+import { useNavigate } from "react-router-dom";
 
 import SignupForm from '../components/signupForm';
 
+
 const Signup: React.FC = () => {
+    const navigate = useNavigate();
+
     return (
-        <div className='flex flex-row items-center justify-center w-full h-screen'>
+        <div className='flex flex-row items-center justify-center w-full h-screen hover:cursor-pointer' onClick={() => { navigate("/") }}>
             {/* Signup form */}
             <div className='flex-1 flex flex-col items-center justify-center'>
                 <SignupForm />

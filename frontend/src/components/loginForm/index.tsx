@@ -22,7 +22,7 @@ const LoginForm: React.FC = () => {
 
   return (
     <div className="flex flex-col px-36 py-16 max-w-full w-full">
-      <div className="flex flex-row items-center">
+      <div className="flex flex-row items-center hover:cursor-pointer" onClick={() => { navigate("/") }}>
         <img
           width={54}
           height={54}

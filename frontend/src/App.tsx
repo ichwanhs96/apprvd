@@ -12,6 +12,7 @@ import Template from "./pages/template";
 import Login from "./pages/login";
 import Signup from "./pages/signup";
 import Dashboard from "./pages/dashboard";
+import SecurityPrivacy from "./pages/securityprivacy";
 
 // WORKING Example of Syncfusion
 // import '@syncfusion/ej2-base/styles/material.css';
@@ -40,6 +41,7 @@ function App() {
             <Route path="/template" element={<Template />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/security-privacy" element={<SecurityPrivacy />} />
             {/* Protected Routes */}
             <Route
               path="/dashboard"

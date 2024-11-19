@@ -12,7 +12,15 @@ import React from "react";
 
 // TODO: make the sidebar responsive
 
-const Sidebar: React.FC = () => {
+interface SideBarProps {
+  setContentToShow: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const Sidebar: React.FC<SideBarProps> = (prop: SideBarProps) => {
+  const handleSideBarMenuOnClick = (menu: string) => {
+    return prop.setContentToShow(menu);
+  }
+
   return (
     <>
       <aside
@@ -26,6 +34,7 @@ const Sidebar: React.FC = () => {
               <a
                 href="#"
                 className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group"
+                onClick={() => handleSideBarMenuOnClick('editor')}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -42,6 +51,7 @@ const Sidebar: React.FC = () => {
               <a
                 href="#"
                 className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group"
+                onClick={() => handleSideBarMenuOnClick('contracts')}
               >
                 <svg
                   width="24"
