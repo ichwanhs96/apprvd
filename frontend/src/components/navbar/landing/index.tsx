@@ -81,7 +81,7 @@ const HomeNavbar: React.FC<HomeNavbarProps> = ({ navItems }) => {
         </div>
         <div>
           <a
-            href="#"
+            href="/login"
             className="inline-block text-sm px-16 py-4 leading-none border rounded text-white border-white mt-4 lg:mt-0 hover:border-transparent hover:text-white hover:bg-apprvd-primary transition-colors duration-500"
           >
             Try Now
