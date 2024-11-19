@@ -3,8 +3,8 @@ import DashboardNavbar from "../components/navbar/dashboard";
 import Sidebar from "../components/sidebar";
 import MainContainer from "../components/mainContainer";
 import { NavItem } from "../components/navbar/dashboard";
-import EditorPage from "./editorPage";
-import ContractPage from "./contractPage";
+import EditorPage from "./editor";
+import ContractPage from "./contract";
 
 const Dashboard: React.FC = () => {
   const [contentToShow, setContentToShow] = useState<string>('editor');
