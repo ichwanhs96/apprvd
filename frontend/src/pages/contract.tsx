@@ -1,5 +1,3 @@
-import React from "react";
-
 interface Contract {
     name: string;
     language: string;
