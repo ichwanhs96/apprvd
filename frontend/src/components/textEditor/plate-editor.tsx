@@ -121,7 +121,7 @@ import { withDraggables } from "../plate-ui/with-draggables";
 export default function PlateEditor({ editor }: { editor: any }) {
   const containerRef = useRef(null);
 
-  console.log(editor);
+  editor.tf.insert.comment("test");
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -419,7 +419,7 @@ export const InitiatePlateEditor = (): any => {
       {
         id: "1",
         type: ParagraphPlugin.key,
-        children: [{ text: "Hello, World!" }],
+        children: [{ text: "Start typing here..." }],
       },
     ],
   });
