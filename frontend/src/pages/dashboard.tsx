@@ -16,7 +16,7 @@ const Dashboard: React.FC = () => {
       case 'editor':
         return EditorPage;
       case 'contracts':
-        return ContractPage;
+        return () => <ContractPage setContentToShow={setContentToShow} />;
       default:
         return EditorPage;
     }
