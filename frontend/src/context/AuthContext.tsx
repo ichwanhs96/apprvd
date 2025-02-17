@@ -8,7 +8,8 @@ import {
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  UserInfo
 } from 'firebase/auth';
 import { auth } from '../firebase/config';
 
@@ -19,6 +20,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  userInfo: UserInfo | null;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -27,6 +29,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -36,6 +39,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
 
       if (user) {
+        setUserInfo(user.providerData[0]); // Store UserInfo from the first provider
         navigate("/dashboard");
       }
     });
@@ -80,7 +84,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signUp,
     signIn,
     signInWithGoogle,
-    logout
+    logout,
+    userInfo
   };
 
   return (
