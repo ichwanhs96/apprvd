@@ -1,6 +1,6 @@
 // disable next line type checking to ensure React to be inscope and surpress warning from TS type check
 // @ts-ignore
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { cn, withProps } from "@udecode/cn";
 import { AlignPlugin } from "@udecode/plate-alignment/react";
 import { AutoformatPlugin } from "@udecode/plate-autoformat/react";
@@ -27,6 +27,7 @@ import {
   CodeSyntaxPlugin,
 } from "@udecode/plate-code-block/react";
 import { CommentsPlugin } from "@udecode/plate-comments/react";
+import { TComment } from "@udecode/plate-comments"
 import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
@@ -117,15 +118,43 @@ import { TableElement } from "../plate-ui/table-element";
 import { TableRowElement } from "../plate-ui/table-row-element";
 import { TodoListElement } from "../plate-ui/todo-list-element";
 import { withDraggables } from "../plate-ui/with-draggables";
+import { useAuth } from "../../context/AuthContext"; // Add this import
 
 export default function PlateEditor({ editor }: { editor: any }) {
   const containerRef = useRef(null);
 
-  editor.tf.insert.comment("test");
+  const STORAGE_KEY = 'editor-content';
+
+  const loadInitialValue = () => {
+    const savedValue = localStorage.getItem(STORAGE_KEY);
+    if (savedValue) {
+        return JSON.parse(savedValue);
+    }
+
+    // Default content if nothing is saved
+    return [
+      {
+          id: "1",
+          type: "p",
+          children: [{ text: "Start typing here..." }],
+      },
+    ];
+  };
+
+  const [value, setValue] = useState(loadInitialValue);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+  }, [value]);
+
+  const persistChange = (newValue: any) => {
+    setValue(newValue.value);
+  }
+
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Plate editor={editor}>
+      <Plate editor={editor} onChange={persistChange}>
         <div
           ref={containerRef}
           className={cn(
@@ -159,7 +188,8 @@ export default function PlateEditor({ editor }: { editor: any }) {
   );
 }
 
-export const InitiatePlateEditor = (): any => {
+export const InitiatePlateEditor = (initialValue: any): any => {
+  const { userInfo } = useAuth();
   const editor = createPlateEditor({
     plugins: [
       // Nodes
@@ -358,15 +388,36 @@ export const InitiatePlateEditor = (): any => {
       // Collaboration
       CommentsPlugin.configure({
         options: {
+          // TODO: store the comments into a proper storage i.e. database
+          comments: (() => { // This is the part where comment are loaded every page reload
+            const comments = localStorage.getItem("editor-comments");
+            const parsedComments: Record<string, TComment> = comments 
+                ? JSON.parse(comments).reduce((acc: Record<string, TComment>, comment: TComment) => {
+                    acc[comment.id] = comment;
+                    return acc;
+                }, {})
+                : {};
+          return parsedComments;
+          })() as Record<string, TComment>, // Immediately invoke the function and assert the type
+          // TODO: update based on users profile
           users: {
             1: {
-              id: "1",
-              name: "zbeyens",
+              id: userInfo?.providerId || 'default-id',
+              name: userInfo?.displayName || 'apprvd user',
               avatarUrl:
-                "https://avatars.githubusercontent.com/u/19695832?s=96&v=4",
+                userInfo?.photoURL || 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
             },
           },
           myUserId: "1",
+          onCommentAdd: ((val: any) => {
+            let comments = localStorage.getItem("editor-comments");
+            const parsedComments: Record<string, TComment>[] = comments ? JSON.parse(comments) : [];
+            parsedComments.push(val); // Append the new comment object
+            localStorage.setItem(
+              "editor-comments",
+              JSON.stringify(parsedComments) // Store the updated array
+            );
+          }),
         },
       }),
 
@@ -415,13 +466,7 @@ export const InitiatePlateEditor = (): any => {
         })
       ),
     },
-    value: [
-      {
-        id: "1",
-        type: ParagraphPlugin.key,
-        children: [{ text: "Start typing here..." }],
-      },
-    ],
+    value: initialValue
   });
 
   return editor;
