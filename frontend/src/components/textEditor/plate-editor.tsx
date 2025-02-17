@@ -117,15 +117,27 @@ import { TableElement } from "../plate-ui/table-element";
 import { TableRowElement } from "../plate-ui/table-row-element";
 import { TodoListElement } from "../plate-ui/todo-list-element";
 import { withDraggables } from "../plate-ui/with-draggables";
+import { useContracts } from "../../store";
 
 export default function PlateEditor({ editor }: { editor: any }) {
   const containerRef = useRef(null);
+  const typingTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  const handleTyping = () => {
+    if(typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current)
+    }
+
+    typingTimerRef.current = setTimeout(() => {
+      useContracts.setState({ updated: new Date().toISOString() })
+    }, 10000)
+  }
 
   editor.tf.insert.comment("test");
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Plate editor={editor}>
+      <Plate editor={editor} onChange={handleTyping}>
         <div
           ref={containerRef}
           className={cn(

@@ -1,4 +1,5 @@
 import { Dispatch, SetStateAction, useState } from "react";
+import { useContracts } from "../store";
 
 interface Contract {
     name: string;
@@ -82,9 +83,12 @@ interface ContractsPageProps {
 }
 
 function ContractsPage({ setContentToShow }: ContractsPageProps) {
+    const { updated } = useContracts((state) => state) 
     const handleCreateNewPage = () => {
       setContentToShow('editor');
     }
+
+    console.log('Data Update :', updated)
 
     const [isOpen, setIsOpen] = useState(false);
     const [file, setFile] = useState<File | null>(null);
