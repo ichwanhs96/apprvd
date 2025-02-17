@@ -27,7 +27,7 @@ import {
   CodeSyntaxPlugin,
 } from "@udecode/plate-code-block/react";
 import { CommentsPlugin } from "@udecode/plate-comments/react";
-import { getCommentKeys, TComment } from "@udecode/plate-comments"
+import { TComment } from "@udecode/plate-comments"
 import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
