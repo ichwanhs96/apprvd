@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import AISidebar from "../components/aiSidebar";
 import PlateEditor, { InitiatePlateEditor } from "../components/textEditor/plate-editor";
 
