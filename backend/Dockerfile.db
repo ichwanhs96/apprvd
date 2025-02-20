@@ -1,0 +1,11 @@
+# Use the official MongoDB image
+FROM mongo:latest
+
+# Set the working directory in the container
+WORKDIR /data/db
+
+# Expose the default MongoDB port
+EXPOSE 27017
+
+# Command to run MongoDB
+CMD ["mongod"]
