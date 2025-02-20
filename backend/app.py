@@ -26,6 +26,17 @@ import json
 
 from dotenv import load_dotenv
 
+from mongoengine import connect
+
+# Connect to MongoDB
+connect(
+    db='testing',
+    host='localhost',  # or your MongoDB server address
+    port=27017,        # default MongoDB port
+    # username='your_username',  # if authentication is required
+    # password='your_password'   # if authentication is required
+)
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -215,3 +226,76 @@ def query(prompt: str) -> str:
     print(response.response)
 
     return response.response
+
+
+# endpoints definition for handling documents
+# TODO: use proper auth strategy to authenticate and authorize user and determine business id
+
+from services.document import DocumentService
+from services.content import ContentService
+
+@app.route("/document", methods=['POST'])
+def create_document():
+    business_id = request.headers.get("business-id") 
+    document_data = request.get_json()
+    created_document = DocumentService.create_document_with_content(business_id=business_id, **document_data)
+    return created_document, 201
+
+@app.route("/document", methods=['GET'])
+def get_documents():
+    business_id = request.headers.get("business-id") 
+    documents = DocumentService.get_document_by_business_id(business_id=business_id)
+    return documents, 200
+
+@app.route("/document/<string:id>/content", methods=['GET'])
+def get_document_with_content(id):
+    business_id = request.headers.get("business-id") 
+    contents = ContentService.get_contents_by_document_id(document_id=id)
+    return contents, 200
+
+# @app.route("/document", methods=['PATCH'])
+# def update_document():
+#     # Logic to update an existing document
+#     document_data = request.get_json()
+#     # Update document in the database
+#     return jsonify({"message": "Document updated successfully"}), 200
+
+# @app.route("/document/<string:id>/comment", methods=['POST'])
+# def add_comment(id):
+#     # Logic to add a new comment to the document
+#     comment_data = request.get_json()
+#     # Save comment_data to the database associated with document id
+#     return jsonify({"message": f"Comment added to document {id} successfully"}), 201
+
+# @app.route("/document/<string:doc_id>/comment/<string:comment_id>/resolve", methods=['POST'])
+# def resolve_comment(doc_id, comment_id):
+#     # Logic to resolve a comment
+#     # Update the comment status in the database
+#     return jsonify({"message": f"Comment {comment_id} on document {doc_id} resolved successfully"}), 200
+
+# @app.route("/document/<string:doc_id>/comment/<string:comment_id>", methods=['PATCH'])
+# def edit_comment(doc_id, comment_id):
+#     # Logic to edit a comment
+#     comment_data = request.get_json()
+#     # Update the comment in the database
+#     return jsonify({"message": f"Comment {comment_id} on document {doc_id} updated successfully"}), 200
+
+# @app.route("/document/<string:id>/ai/review", methods=['POST'])
+# def generate_review(id):
+#     # Logic to generate a review based on the document
+#     # Example: Use AI model to generate a review and save it as a comment
+#     return jsonify({"message": f"Review generated for document {id} successfully"}), 201
+
+# # Create a new user
+# @app.route('/users', methods=['POST'])
+# def create_user():
+#     data = request.json
+#     user = User(**data)
+#     user.save()
+#     return jsonify(user.to_json()), 201
+
+# # Get all users
+# @app.route('/users', methods=['GET'])
+# def get_users():
+#     users = User.objects()
+#     return jsonify(users), 200
