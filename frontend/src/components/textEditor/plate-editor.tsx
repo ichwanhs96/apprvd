@@ -118,32 +118,16 @@ import { TableElement } from "../plate-ui/table-element";
 import { TableRowElement } from "../plate-ui/table-row-element";
 import { TodoListElement } from "../plate-ui/todo-list-element";
 import { withDraggables } from "../plate-ui/with-draggables";
-import { useAuth } from "../../context/AuthContext"; // Add this import
 
 export default function PlateEditor({ editor }: { editor: any }) {
   const containerRef = useRef(null);
 
   const STORAGE_KEY = 'editor-content';
 
-  const loadInitialValue = () => {
-    const savedValue = localStorage.getItem(STORAGE_KEY);
-    if (savedValue) {
-        return JSON.parse(savedValue);
-    }
-
-    // Default content if nothing is saved
-    return [
-      {
-          id: "1",
-          type: "p",
-          children: [{ text: "Start typing here..." }],
-      },
-    ];
-  };
-
-  const [value, setValue] = useState(loadInitialValue);
+  const [value, setValue] = useState(null);
 
   useEffect(() => {
+    // TODO: whenever there is a value change, update document in the backend
     localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
   }, [value]);
 
@@ -188,8 +172,7 @@ export default function PlateEditor({ editor }: { editor: any }) {
   );
 }
 
-export const InitiatePlateEditor = (initialValue: any): any => {
-  const { userInfo } = useAuth();
+export const InitiatePlateEditor = (initialValue: any, userInfo: any): any => {
   const editor = createPlateEditor({
     plugins: [
       // Nodes
