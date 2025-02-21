@@ -33,7 +33,8 @@ const EditorPage: React.FC = () => {
 
     const loadInitialValue = async () => {
         try {
-            const data = await fetchDocument('67b704336fa04969bfa02ed5');
+            // TODO: value of document id should be dynamically determine from Contract page
+            const data = await fetchDocument('67b834719eee9139f9739768');
             return data || [{
                 id: "1",
                 type: "p",
