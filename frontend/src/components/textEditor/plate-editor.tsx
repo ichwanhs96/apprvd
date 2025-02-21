@@ -129,6 +129,34 @@ export default function PlateEditor({ editor }: { editor: any }) {
   useEffect(() => {
     // TODO: whenever there is a value change, update document in the backend
     localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+
+    const intervalId = setInterval(async () => {
+      const storedValue = localStorage.getItem(STORAGE_KEY);
+      if (storedValue) {
+        // TODO: how to send only the deltas to backend to optimize operation and reduce data sent to backend
+        try {
+          const documentId = '67b834719eee9139f9739768'
+          const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${documentId}/content`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: storedValue, // Send the whole documents
+          });
+
+          if (!response.ok) {
+            throw new Error('Unexpected error');
+          }
+
+          const data = await response.json();
+          console.log('Response from backend:', data);
+        } catch (error) {
+          throw new Error('Error updating document');
+        }
+      }
+    }, 10000); // 10 seconds
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
   }, [value]);
 
   const persistChange = (newValue: any) => {
