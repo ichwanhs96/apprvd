@@ -9,11 +9,7 @@ class DocumentService():
     def create_document_with_content(name, business_id, created_by, status, version, contents):
         try:
             created_document = Docs.create_document(name, business_id, created_by, status, version)
-            created_contents = []
-
-            for content in contents:
-                content_styling = {key: value for key, value in content.items() if key not in ["children", "id"]}
-                created_contents.append(ContentService.create_content(document_id=str(created_document.id), content_id=content['id'], styling=content_styling, contents=content['children']))
+            created_contents = ContentService.create_content(document_id=str(created_document.id), contents=contents)
 
             return json.dumps({ "document": created_document.to_json(), "contents": created_contents })
         except NotUniqueError as e:

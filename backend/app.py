@@ -253,12 +253,12 @@ def get_document_with_content(id):
     contents = ContentService.get_contents_by_document_id(document_id=id)
     return contents, 200
 
-# @app.route("/document", methods=['PATCH'])
-# def update_document():
-#     # Logic to update an existing document
-#     document_data = request.get_json()
-#     # Update document in the database
-#     return jsonify({"message": "Document updated successfully"}), 200
+@app.route("/document/<string:id>/content", methods=['PATCH'])
+def update_document_content(id):
+    business_id = request.headers.get("business-id") 
+    payload = request.get_json()
+    updated_content = ContentService.update_content_by_document_id(document_id=id, contents=payload)
+    return updated_content, 200
 
 # @app.route("/document/<string:id>/comment", methods=['POST'])
 # def add_comment(id):
