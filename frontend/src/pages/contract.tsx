@@ -141,6 +141,8 @@ function ContractsPage({ setContentToShow }: ContractsPageProps) {
           updated: new Date().toLocaleString(),
           status: 'Drafting', // You can modify this as needed
         };
+        // TODO: how to read the content of docx and serialize it to Plate Editor
+        // logic
         setContracts(prevContracts => [...prevContracts, newContract]); // Add new contract to the list
         closeModal();
       } else {
