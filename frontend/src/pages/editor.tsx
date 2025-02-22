@@ -98,8 +98,9 @@ const EditorPage: React.FC = () => {
             <PlateEditor editor={editor}/>
         </div>
         <div className="w-1/4">
-            <AISidebar editor={editor} />
-        </div>
+            { loading && <div>Loading...</div> }
+            { !loading &&  <AISidebar editor={editor} /> }
+        </div> 
         </>
     );
 };
