@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import AISidebar from "../components/aiSidebar";
 import PlateEditor, { InitiatePlateEditor } from "../components/textEditor/plate-editor";
+import axios from 'axios'
 import { useAuth } from "../context/AuthContext"; // Add this import
 
-const EditorPage: React.FC = () => {    
+const EditorPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
+    const [edit, setEdit] = useState(null);
     const [editorData, setEditorData] = useState(null);
     const STORAGE_KEY = 'editor-content';
 
+    
     const { userInfo } = useAuth();
 
     const fetchDocument = async (document_id: string) => {
@@ -41,13 +44,39 @@ const EditorPage: React.FC = () => {
                 children: [{ text: "Start typing here..." }],
             }];
         } catch (error) {
-            return [{
-                id: "1",
-                type: "p",
-                children: [{ text: "Start typing here..." }],
-            }];
+            const savedValue = localStorage.getItem(STORAGE_KEY);
+            if (savedValue) {
+                return JSON.parse(savedValue);
+            }
+
+            // Default content if nothing is saved
+            return [
+                {
+                    id: "1",
+                    type: "p",
+                    children: [{ text: edit }],
+                },
+            ];
         }
     };
+
+    useEffect(() => {
+        if(!editorData){
+            axios.get("/api/api/random")
+            .then((response) => {
+                setEdit(response.data);
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error("Error fetching data:", error);
+                setLoading(false);
+            });
+        }
+    }, []);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -69,9 +98,8 @@ const EditorPage: React.FC = () => {
             <PlateEditor editor={editor}/>
         </div>
         <div className="w-1/4">
-            { loading && <div>Loading...</div> }
-            { !loading &&  <AISidebar editor={editor} /> }
-        </div> 
+            <AISidebar editor={editor} />
+        </div>
         </>
     );
 };
