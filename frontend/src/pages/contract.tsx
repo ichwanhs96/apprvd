@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction, useState } from "react";
 import { useContracts } from "../store";
+import DocxImporter from "../components/docxImporter";
 
 interface Contract {
     name: string;
@@ -155,6 +156,7 @@ function ContractsPage({ setContentToShow }: ContractsPageProps) {
             <div className="flex justify-between items-center mb-5">
                 <div>
                 <button className="bg-green-500 text-white px-4 py-2 rounded-3xl mr-3" onClick={handleCreateNewPage}>Create new</button>
+                <DocxImporter />
                 <button className="bg-blue-500 text-white px-4 py-2 rounded-3xl" onClick={openModal}>Upload existing</button>
                 </div>
                 {/* TODO: ENABLE SEARCH FUNCTION */}

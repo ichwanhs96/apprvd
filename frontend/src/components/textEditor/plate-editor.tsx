@@ -37,6 +37,7 @@ import {
   createPlateEditor,
   ParagraphPlugin,
   Plate,
+  PlateElement,
   PlateLeaf,
 } from "@udecode/plate-common/react";
 import { DndPlugin } from "@udecode/plate-dnd";
@@ -58,7 +59,7 @@ import { JuicePlugin } from "@udecode/plate-juice";
 import { KbdPlugin } from "@udecode/plate-kbd/react";
 import { LineHeightPlugin } from "@udecode/plate-line-height/react";
 import { LinkPlugin } from "@udecode/plate-link/react";
-import { TodoListPlugin } from "@udecode/plate-list/react";
+import { BulletedListPlugin, ListItemPlugin, ListPlugin, NumberedListPlugin, TodoListPlugin } from "@udecode/plate-list/react";
 import { MarkdownPlugin } from "@udecode/plate-markdown";
 import { ImagePlugin, MediaEmbedPlugin } from "@udecode/plate-media/react";
 import {
@@ -120,6 +121,7 @@ import { TodoListElement } from "../plate-ui/todo-list-element";
 import { withDraggables } from "../plate-ui/with-draggables";
 import { useContracts } from "../../store";
 import { useAuth } from "../../context/AuthContext"; // Add this import
+import { ListElement } from "../plate-ui/list-element";
 
 export default function PlateEditor({ editor }: { editor: any }) {
   const containerRef = useRef(null);
@@ -163,7 +165,6 @@ export default function PlateEditor({ editor }: { editor: any }) {
     setValue(newValue.value);
     handleTyping();
   }
-
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -242,6 +243,10 @@ export const InitiatePlateEditor = (initialValue: any): any => {
       FontSizePlugin,
       HighlightPlugin,
       KbdPlugin,
+      ListPlugin,
+      ListItemPlugin,
+      NumberedListPlugin,
+      BulletedListPlugin,
 
       // Block Style
       AlignPlugin.configure({
@@ -476,6 +481,9 @@ export const InitiatePlateEditor = (initialValue: any): any => {
           [SuperscriptPlugin.key]: withProps(PlateLeaf, { as: "sup" }),
           [UnderlinePlugin.key]: withProps(PlateLeaf, { as: "u" }),
           [CommentsPlugin.key]: CommentLeaf,
+          [BulletedListPlugin.key]: withProps(ListElement, { variant: 'ul' }),
+          [ListItemPlugin.key]: withProps(PlateElement, { as: 'li' }),
+          [NumberedListPlugin.key]: withProps(ListElement, { variant: 'ol' }),    
         })
       ),
     },

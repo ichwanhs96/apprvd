@@ -17,3 +17,13 @@ export const useContracts = create<ContractsStore>(() => ({
     updated: '',
     status: ''
 }))
+
+interface EditorState {
+  content: any;
+  setContent: (content: any) => void;
+}
+
+export const useEditorStore = create<EditorState>((set) => ({
+  content: [], // Default empty content
+  setContent: (content) => set({ content }),
+}));
