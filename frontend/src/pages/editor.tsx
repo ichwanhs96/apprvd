@@ -3,15 +3,17 @@ import AISidebar from "../components/aiSidebar";
 import PlateEditor, { InitiatePlateEditor } from "../components/textEditor/plate-editor";
 import axios from 'axios'
 import { useAuth } from "../context/AuthContext"; // Add this import
+import { useCurrentDocId } from "../store";
 
 const EditorPage: React.FC = () => {
-    const [loading, setLoading] = useState(true);
-    const [edit, setEdit] = useState(null);
+    const { userInfo } = useAuth();
+    const [loadingLorem, setLoadingLorem] = useState(true);
+    const [edit, setEdit] = useState('');
     const [editorData, setEditorData] = useState(null);
     const STORAGE_KEY = 'editor-content';
+    const { id } = useCurrentDocId()
 
     
-    const { userInfo } = useAuth();
 
     const fetchDocument = async (document_id: string) => {
         try {
@@ -37,7 +39,7 @@ const EditorPage: React.FC = () => {
     const loadInitialValue = async () => {
         try {
             // TODO: value of document id should be dynamically determine from Contract page
-            const data = await fetchDocument('67b834719eee9139f9739768');
+            const data = await fetchDocument(id ?? '');
             return data || [{
                 id: "1",
                 type: "p",
@@ -65,24 +67,20 @@ const EditorPage: React.FC = () => {
             axios.get("/api/api/random")
             .then((response) => {
                 setEdit(response.data);
-                setLoading(false);
+                setLoadingLorem(false);
             })
             .catch((error) => {
                 console.error("Error fetching data:", error);
-                setLoading(false);
+                setLoadingLorem(false);
             });
         }
     }, []);
-
-    if (loading) {
-        return <div>Loading...</div>;
-    }
 
     useEffect(() => {
         const fetchData = async () => {
             const initialValue = await loadInitialValue();
             setEditorData(initialValue);
-            setLoading(false);
+            setLoadingLorem(false);
         };
 
         fetchData(); // Call fetchData on component mount
@@ -98,8 +96,8 @@ const EditorPage: React.FC = () => {
             <PlateEditor editor={editor}/>
         </div>
         <div className="w-1/4">
-            { loading && <div>Loading...</div> }
-            { !loading &&  <AISidebar editor={editor} /> }
+            { loadingLorem && <div>Loading...</div> }
+            { !loadingLorem &&  <AISidebar editor={editor} /> }
         </div> 
         </>
     );

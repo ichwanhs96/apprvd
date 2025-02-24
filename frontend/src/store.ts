@@ -9,6 +9,10 @@ type ContractsStore = {
     status: string;
 }
 
+type currentDoc = {
+  id: string;
+}
+
 export const useContracts = create<ContractsStore>(() => ({
     name: '',
     language: '',
@@ -16,6 +20,10 @@ export const useContracts = create<ContractsStore>(() => ({
     created: '',
     updated: '',
     status: ''
+}))
+
+export const useCurrentDocId = create<currentDoc>(() => ({
+  id: '',
 }))
 
 interface EditorState {

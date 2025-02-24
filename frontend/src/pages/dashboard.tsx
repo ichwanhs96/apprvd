@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DashboardNavbar from "../components/navbar/dashboard";
 import Sidebar from "../components/sidebar";
 import MainContainer from "../components/mainContainer";
@@ -21,6 +21,10 @@ const Dashboard: React.FC = () => {
         return EditorPage;
     }
   }
+
+  useEffect(() => {
+    console.log("refreshed!")
+  }, [contentToShow])
 
   return (
     <>
