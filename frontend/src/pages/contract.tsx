@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useContracts, useCurrentDocId } from "../store";
-import DocxImporter from "../components/docxImporter";
+// import DocxImporter from "../components/docxImporter";
 import { useAuth } from "../context/AuthContext";
 
 interface Contract {
