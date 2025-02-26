@@ -10,55 +10,54 @@ const EditorPage: React.FC = () => {
     const [loadingLorem, setLoadingLorem] = useState(true);
     const [edit, setEdit] = useState('');
     const [editorData, setEditorData] = useState(null);
-    const STORAGE_KEY = 'editor-content';
+    const EDITOR_CONTENT_KEY = 'editor-content';
     const { id } = useCurrentDocId()
 
-    console.log("id",id)
-
-    const fetchDocument = async () => {
+    const fetchDocument = async (doc_id: string) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/content`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${doc_id}`, {
                 method: 'GET',
                 headers: {
                     'business-id': 'ichwan@gmail.com',
                 },
             });
 
-        if (!response.ok) {
-            throw new Error("Unexpected error");
-        }
+            if (!response.ok) {
+                throw new Error("Unexpected error");
+            }
 
-        const data = await response.json();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); // Store the response in local storage
-        return data;
+            return await response.json();
         } catch (error) {
-        console.error("Failed to fetch document:", error);
+            console.error("Failed to fetch document:", error);
         }
     };
 
     const loadInitialValue = async () => {
         try {
-            // TODO: value of document id should be dynamically determine from Contract page
-            const data = await fetchDocument();
-            return data || [{
+            const data = await fetchDocument(id);
+            localStorage.setItem(EDITOR_CONTENT_KEY, JSON.stringify(data.contents)); // Store the response in local storage
+            return data || { contents: [{
                 id: "1",
                 type: "p",
                 children: [{ text: "Start typing here..." }],
-            }];
+            }], comments: [] };
         } catch (error) {
-            const savedValue = localStorage.getItem(STORAGE_KEY);
+            const savedValue = localStorage.getItem(EDITOR_CONTENT_KEY);
             if (savedValue) {
                 return JSON.parse(savedValue);
             }
 
             // Default content if nothing is saved
-            return [
-                {
-                    id: "1",
-                    type: "p",
-                    children: [{ text: edit }],
-                },
-            ];
+            return {
+                contents: [
+                    {
+                        id: "1",
+                        type: "p",
+                        children: [{ text: edit }],
+                    },
+                ],
+                comments: []
+            };
         }
     };
 
@@ -87,7 +86,7 @@ const EditorPage: React.FC = () => {
     }, []);
 
     // Initialize the editor only after data is loaded
-    const editor = editorData ? InitiatePlateEditor(editorData, userInfo) : null;
+    const editor = editorData ? InitiatePlateEditor(editorData, userInfo, id) : null;
 
     return (
         <>

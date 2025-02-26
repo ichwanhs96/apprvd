@@ -33,7 +33,7 @@ type ContentToShow = {
 }
 
 export const useContentToShow = create<ContentToShow>(() => ({
-  content: 'editor'
+  content: 'contracts'
 }))
 
 interface EditorState {
