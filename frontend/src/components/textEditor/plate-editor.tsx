@@ -126,7 +126,6 @@ export default function PlateEditor({ editor }: { editor: any }) {
   const containerRef = useRef(null);
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null)
   const { id } = useCurrentDocId()
-  console.log("id",id)
 
   const handleTyping = () => {
     if(typingTimerRef.current) {
@@ -142,10 +141,8 @@ export default function PlateEditor({ editor }: { editor: any }) {
 
   const [value, setValue] = useState(null);
 
-  console.log("data",editor)
-
   useEffect(() => {
-    // TODO: whenever there is a value change, update document in the backend
+    // TODO: to have handler only when update being made then update docs in backend
     localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
 
     const intervalId = setInterval(async () => {
@@ -219,7 +216,7 @@ export default function PlateEditor({ editor }: { editor: any }) {
   );
 }
 
-export const InitiatePlateEditor = (initialValue: any, userInfo: any): any => {
+export const InitiatePlateEditor = (initialValue: any, userInfo: any, doc_id: any): any => {
   const editor = createPlateEditor({
     plugins: [
       // Nodes
@@ -424,13 +421,15 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any): any => {
         options: {
           // TODO: store the comments into a proper storage i.e. database
           comments: (() => { // This is the part where comment are loaded every page reload
-            const comments = localStorage.getItem("editor-comments");
+            const comments = initialValue.comments;
             const parsedComments: Record<string, TComment> = comments 
-                ? JSON.parse(comments).reduce((acc: Record<string, TComment>, comment: TComment) => {
+                ? comments.reduce((acc: Record<string, TComment>, comment: TComment) => {
                     acc[comment.id] = comment;
                     return acc;
                 }, {})
                 : {};
+            // reset comments every editor reload
+            localStorage.setItem("editor-comments", JSON.stringify(comments));
           return parsedComments;
           })() as Record<string, TComment>, // Immediately invoke the function and assert the type
           // TODO: update based on users profile
@@ -451,6 +450,30 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any): any => {
               "editor-comments",
               JSON.stringify(parsedComments) // Store the updated array
             );
+
+            // New HTTP PATCH function to update comments on the backend
+            const updateCommentsOnBackend = async () => {
+              try {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${doc_id}/comment`, {
+                  method: 'PATCH',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(parsedComments), // Use parsedComments as payload
+                });
+
+                if (!response.ok) {
+                  throw new Error('Failed to update comments on backend');
+                }
+
+                const data = await response.json();
+                console.log('Comments updated successfully:', data);
+              } catch (error) {
+                console.error('Error updating comments:', error);
+              }
+            };
+
+            updateCommentsOnBackend(); // Call the function to update comments
           }),
         },
       }),
@@ -503,7 +526,7 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any): any => {
         })
       ),
     },
-    value: initialValue
+    value: initialValue.contents
   });
 
   return editor;

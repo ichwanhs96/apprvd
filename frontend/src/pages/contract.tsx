@@ -119,7 +119,7 @@ function ContractsPage() {
         throw new Error('Network response was not ok');
       }
 
-      let result = JSON.parse(await response.json());
+      let result = await response.json();
       useCurrentDocId.setState({ id: result?.document?.id })
       useContentToShow.setState({ content: "editor" }); // Set content to show
     } catch (error) {
@@ -325,7 +325,6 @@ function ContractItem({ contractItem }: { contractItem: Contract }) {
       <td className="px-4 py-8 text-gray-700 hover:cursor-pointer" onClick={() => {
         useCurrentDocId.setState({ id: contractItem.id });
         useContentToShow.setState({ content: "editor" });
-        console.log("ID: asdasdasdasdasd", contractItem.id)
       }}>{contractItem.name}</td>
       <td className="px-4 py-8 text-gray-700">
         {contractItem.language ?? 'EN'}
