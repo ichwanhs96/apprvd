@@ -239,7 +239,7 @@ from services.comment import CommentService
 def create_document():
     business_id = request.headers.get("business-id") 
     document_data = request.get_json()
-    created_document = DocumentService.create_document_with_content(business_id=business_id, **document_data)
+    created_document = DocumentService.create_document_with_content_and_comment(business_id=business_id, **document_data)
     return created_document, 201
 
 @app.route("/document", methods=['GET'])

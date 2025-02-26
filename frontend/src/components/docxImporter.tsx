@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useContentToShow, useCurrentDocId, useEditorStore } from "../store"; // Import Zustand store
 import * as mammoth from "mammoth";
 import { useAuth } from "../context/AuthContext";
-import { htmlToSlate } from '@slate-serializers/html'
+import { htmlToSlate } from "@slate-serializers/html";
 
 const DocxImporter = ({ setAllContract }: any) => {
   const { userInfo } = useAuth();
@@ -12,10 +12,10 @@ const DocxImporter = ({ setAllContract }: any) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const openModal = () => setIsOpen(true);
-  const closeModal = () =>{
+  const closeModal = () => {
     setIsOpen(false);
     fetchContracts();
-  }
+  };
 
   const handleFileChange = (event: any) => {
     setFile(event.target.files[0]);
@@ -60,23 +60,27 @@ const DocxImporter = ({ setAllContract }: any) => {
 
   const handleUpload = async () => {
     if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async (file) => {
-        const arrayBuffer = file?.target?.result as ArrayBuffer;
-        // const json = JSON.stringify(arrayBuffer)
+    const reader = new FileReader();
+    reader.onload = async (file) => {
+      const arrayBuffer = file?.target?.result as ArrayBuffer;
+      // const json = JSON.stringify(arrayBuffer)
 
-        // Convert DOCX to HTML
-        const { value } = await mammoth.convertToHtml({ arrayBuffer });
+      // Convert DOCX to HTML
+      const { value } = await mammoth.convertToHtml({ arrayBuffer });
 
-        // Convert HTML to Plate.js format (Basic Example)
-        const plateContent = htmlToSlate(value);
+      // Convert HTML to Plate.js format (Basic Example)
+      const plateContent = htmlToSlate(value);
 
-        // Store in Zustand
-        await setContent(plateContent);
-      };
-      reader.readAsArrayBuffer(file);
+      // Store in Zustand
+      await setContent(plateContent);
+    };
+    reader.readAsArrayBuffer(file);
+    if(content.length === 0) {
+      alert("Please upload a valid document");
+      return;
+    }
     try {
-      const response = await fetch("http://127.0.0.1:5000/document", {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -85,19 +89,20 @@ const DocxImporter = ({ setAllContract }: any) => {
         body: JSON.stringify({
           name: file?.name,
           created_by: userInfo?.displayName,
-          status: "Drafting",
+          status: "DRAFT",
           version: "1",
           contents: content,
         }), // Send the form data as JSON
       });
 
-      console.log("resp: ",response);
+      console.log("resp: ", response);
+
 
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
 
-      const result = await response.json()
+      let result = await response.json();
       console.log("Success:", result);
       useCurrentDocId.setState({ id: result?.document?.id });
       useContentToShow.setState({ content: "editor" });
@@ -128,31 +133,36 @@ const DocxImporter = ({ setAllContract }: any) => {
   //     console.error("Error loading HTML file:", error);
   //   }
   // };
-  
+
   const fetchContracts = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'business-id': 'ichwan@gmail.com'
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/document`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "business-id": "ichwan@gmail.com",
+          },
         }
-      }); // Adjust the URL as needed
+      ); // Adjust the URL as needed
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      setAllContract(data.map((contract: any) => ({
-        id: contract.id,
-        name: contract.name,
-        language: contract.language || 'EN',
-        version: contract.version,
-        created_at: contract.created_at,
-        updated_at: contract.updated_at,
-        status: contract.status
-      }))); // Assuming the response contains a 'contracts' array
+      setAllContract(
+        data.map((contract: any) => ({
+          id: contract.id,
+          name: contract.name,
+          language: contract.language || "EN",
+          version: contract.version,
+          created_at: contract.created_at,
+          updated_at: contract.updated_at,
+          status: contract.status,
+        }))
+      ); // Assuming the response contains a 'contracts' array
     } catch (error) {
-      console.error('Error fetching contracts:', error);
+      console.error("Error fetching contracts:", error);
     }
   };
 
