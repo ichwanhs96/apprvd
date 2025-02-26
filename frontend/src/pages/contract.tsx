@@ -4,16 +4,18 @@ import DocxImporter from "../components/docxImporter";
 import { useAuth } from "../context/AuthContext";
 
 interface Contract {
+  id: string;
   name: string;
   language: string;
   version: string;
-  created_contract: string;
-  updated_contract: string;
+  created_at: string;
+  updated_at: string;
   status: string;
 }
 
 interface Contracts {
   contracts: Contract[];
+  setContentToShow: Dispatch<SetStateAction<string>>;  
 }
 
 interface ContractItem {
@@ -83,12 +85,12 @@ function ContractsPage({ setContentToShow }: ContractsPageProps) {
 
   const handleUpload = () => {
     if (file) {
-      const newContract: Contract = {
+      const newContract: any = {
         name: file.name,
         language: "EN", // You can modify this as needed
         version: "1", // You can modify this as needed
-        created_contract: new Date().toLocaleString(),
-        updated_contract: new Date().toLocaleString(),
+        created_at: new Date().toLocaleString(),
+        updated_at: new Date().toLocaleString(),
         status: "Drafting", // You can modify this as needed
       };
       // TODO: how to read the content of docx and serialize it to Plate Editor
@@ -149,6 +151,7 @@ function ContractsPage({ setContentToShow }: ContractsPageProps) {
         }
         const data = await response.json();
         setAllContract(data.map((contract: any) => ({
+          id: contract.id,
           name: contract.name,
           language: contract.language,
           version: contract.version,
@@ -175,7 +178,7 @@ function ContractsPage({ setContentToShow }: ContractsPageProps) {
           >
             Create new
           </button>
-          <DocxImporter />
+          {/* <DocxImporter /> */}
           <button
             className="bg-blue-500 text-white px-4 py-2 rounded-3xl"
             onClick={openModal}
@@ -190,7 +193,7 @@ function ContractsPage({ setContentToShow }: ContractsPageProps) {
                     className="border px-3 py-2 rounded bg-white"
                 /> */}
       </div>
-      <ContractList contracts={allContract} />
+      <ContractList contracts={allContract} setContentToShow={setContentToShow} />
 
       {isOpen && (
         <div className="fixed inset-0 bg-slate-200 bg-opacity-50 flex items-center justify-center z-50">
@@ -311,7 +314,7 @@ function ContractsPage({ setContentToShow }: ContractsPageProps) {
 export default ContractsPage;
 
 
-function ContractItem(contractItem: any) {
+function ContractItem(contractItem: any, {setContentToShow}: ContractsPageProps) {
   const getStatusClass = (status: string) => {
     switch (status) {
       case "Drafting":
@@ -325,10 +328,14 @@ function ContractItem(contractItem: any) {
     }
   };
 
+  console.log("COBA ID: ",contractItem?.contract?.id)
+
   return (
     <tr className="border-b">
-      <td className="px-4 py-8 text-gray-700" onClick={() => {
-        // useCurrentDocId.setState(contractItem?.contract?.id)
+      <td className="px-4 py-8 text-gray-700 hover:cursor-pointer" onClick={() => {
+        useCurrentDocId.setState({id: contractItem?.contract?.id});
+        setContentToShow("editor");
+        console.log("ID: asdasdasdasdasd", contractItem?.contract?.id)
       }}>{contractItem.contract.name}</td>
       <td className="px-4 py-8 text-gray-700">
         {contractItem.contract.language ?? 'en'}
@@ -337,10 +344,10 @@ function ContractItem(contractItem: any) {
         {contractItem.contract.version}
       </td>
       <td className="px-4 py-8 text-gray-700">
-        {contractItem.contract.created_contract}
+        {contractItem.contract.created_at}
       </td>
       <td className="px-4 py-8 text-gray-700">
-        {contractItem.contract.updated_contract}
+        {contractItem.contract.updated_at}
       </td>
       <td className="px-4 py-8 text-gray-700">
         <span
@@ -355,7 +362,7 @@ function ContractItem(contractItem: any) {
   );
 }
 
-function ContractList({ contracts }: Contracts) {
+function ContractList({ contracts, setContentToShow }: Contracts) {
   // const contracts: Contract[] = [
   //     { name: 'Draft Service Agreement Apprvd', language: 'EN', version: 'First draft', created: '5 Aug, 10:02AM', updated: 'Today, 08:00AM', status: 'Uploading' },
   //     { name: 'NDA John Doe', language: 'EN', version: 'Draft v1', created: '5 Aug, 10:02AM', updated: 'Today, 08:00AM', status: 'Drafting' },
@@ -389,7 +396,7 @@ function ContractList({ contracts }: Contracts) {
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {contracts.map((contract, index) => (
-            <ContractItem key={index} contract={contract} />
+            <ContractItem key={index} contract={contract} setContentToShow={setContentToShow} />
           ))}
         </tbody>
       </table>

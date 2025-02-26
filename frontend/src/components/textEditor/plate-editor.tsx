@@ -119,12 +119,14 @@ import { TableElement } from "../plate-ui/table-element";
 import { TableRowElement } from "../plate-ui/table-row-element";
 import { TodoListElement } from "../plate-ui/todo-list-element";
 import { withDraggables } from "../plate-ui/with-draggables";
-import { useContracts } from "../../store"
+import { useContracts, useCurrentDocId } from "../../store"
 import { ListElement } from "../plate-ui/list-element";
 
 export default function PlateEditor({ editor }: { editor: any }) {
   const containerRef = useRef(null);
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const { id } = useCurrentDocId()
+  console.log("id",id)
 
   const handleTyping = () => {
     if(typingTimerRef.current) {
@@ -140,6 +142,8 @@ export default function PlateEditor({ editor }: { editor: any }) {
 
   const [value, setValue] = useState(null);
 
+  console.log("data",editor)
+
   useEffect(() => {
     // TODO: whenever there is a value change, update document in the backend
     localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
@@ -149,14 +153,15 @@ export default function PlateEditor({ editor }: { editor: any }) {
       if (storedValue) {
         // TODO: how to send only the deltas to backend to optimize operation and reduce data sent to backend
         try {
-          const documentId = '67b834719eee9139f9739768'
-          const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${documentId}/content`, {
+          const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/content`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
             },
             body: storedValue, // Send the whole documents
           });
+
+          console.log(storedValue)
 
           if (!response.ok) {
             throw new Error('Unexpected error');

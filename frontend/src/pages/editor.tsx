@@ -13,11 +13,11 @@ const EditorPage: React.FC = () => {
     const STORAGE_KEY = 'editor-content';
     const { id } = useCurrentDocId()
 
-    
+    console.log("id",id)
 
-    const fetchDocument = async (document_id: string) => {
+    const fetchDocument = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${document_id}/content`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/content`, {
                 method: 'GET',
                 headers: {
                     'business-id': 'ichwan@gmail.com',
@@ -39,7 +39,7 @@ const EditorPage: React.FC = () => {
     const loadInitialValue = async () => {
         try {
             // TODO: value of document id should be dynamically determine from Contract page
-            const data = await fetchDocument(id ?? '');
+            const data = await fetchDocument();
             return data || [{
                 id: "1",
                 type: "p",
