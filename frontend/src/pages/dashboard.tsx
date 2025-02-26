@@ -1,22 +1,23 @@
-import React, { useState } from "react";
+import React from "react";
 import DashboardNavbar from "../components/navbar/dashboard";
 import Sidebar from "../components/sidebar";
 import MainContainer from "../components/mainContainer";
 import { NavItem } from "../components/navbar/dashboard";
 import EditorPage from "./editor";
 import ContractPage from "./contract";
+import { useContentToShow } from "../store"
 
 const Dashboard: React.FC = () => {
-  const [contentToShow, setContentToShow] = useState<string>('editor');
   const navItems: NavItem[] = [];
 
+  const content = useContentToShow((state) => state.content);
 
   const getContentToShow = () => {
-    switch (contentToShow) {
+    switch (content) {
       case 'editor':
         return EditorPage;
       case 'contracts':
-        return () => <ContractPage setContentToShow={setContentToShow} />;
+        return () => <ContractPage/>;
       default:
         return EditorPage;
     }
@@ -25,7 +26,7 @@ const Dashboard: React.FC = () => {
   return (
     <>
       <DashboardNavbar navItems={navItems}></DashboardNavbar>
-      <Sidebar setContentToShow={setContentToShow}></Sidebar>
+      <Sidebar></Sidebar>
       <MainContainer content={getContentToShow()}></MainContainer>
     </>
   );

@@ -37,6 +37,7 @@ import {
   createPlateEditor,
   ParagraphPlugin,
   Plate,
+  PlateElement,
   PlateLeaf,
 } from "@udecode/plate-common/react";
 import { DndPlugin } from "@udecode/plate-dnd";
@@ -58,7 +59,7 @@ import { JuicePlugin } from "@udecode/plate-juice";
 import { KbdPlugin } from "@udecode/plate-kbd/react";
 import { LineHeightPlugin } from "@udecode/plate-line-height/react";
 import { LinkPlugin } from "@udecode/plate-link/react";
-import { TodoListPlugin } from "@udecode/plate-list/react";
+import { BulletedListPlugin, ListItemPlugin, ListPlugin, NumberedListPlugin, TodoListPlugin } from "@udecode/plate-list/react";
 import { MarkdownPlugin } from "@udecode/plate-markdown";
 import { ImagePlugin, MediaEmbedPlugin } from "@udecode/plate-media/react";
 import {
@@ -118,13 +119,30 @@ import { TableElement } from "../plate-ui/table-element";
 import { TableRowElement } from "../plate-ui/table-row-element";
 import { TodoListElement } from "../plate-ui/todo-list-element";
 import { withDraggables } from "../plate-ui/with-draggables";
+import { useContracts, useCurrentDocId } from "../../store"
+import { ListElement } from "../plate-ui/list-element";
 
 export default function PlateEditor({ editor }: { editor: any }) {
   const containerRef = useRef(null);
+  const typingTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const { id } = useCurrentDocId()
+  console.log("id",id)
+
+  const handleTyping = () => {
+    if(typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current)
+    }
+
+    typingTimerRef.current = setTimeout(() => {
+      useContracts.setState({ updated: new Date().toISOString() })
+    }, 10000)
+  }
 
   const STORAGE_KEY = 'editor-content';
 
   const [value, setValue] = useState(null);
+
+  console.log("data",editor)
 
   useEffect(() => {
     // TODO: whenever there is a value change, update document in the backend
@@ -135,14 +153,15 @@ export default function PlateEditor({ editor }: { editor: any }) {
       if (storedValue) {
         // TODO: how to send only the deltas to backend to optimize operation and reduce data sent to backend
         try {
-          const documentId = '67b834719eee9139f9739768'
-          const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${documentId}/content`, {
+          const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/content`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
             },
             body: storedValue, // Send the whole documents
           });
+
+          console.log(storedValue)
 
           if (!response.ok) {
             throw new Error('Unexpected error');
@@ -161,8 +180,8 @@ export default function PlateEditor({ editor }: { editor: any }) {
 
   const persistChange = (newValue: any) => {
     setValue(newValue.value);
+    handleTyping();
   }
-
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -240,6 +259,10 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any): any => {
       FontSizePlugin,
       HighlightPlugin,
       KbdPlugin,
+      ListPlugin,
+      ListItemPlugin,
+      NumberedListPlugin,
+      BulletedListPlugin,
 
       // Block Style
       AlignPlugin.configure({
@@ -474,6 +497,9 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any): any => {
           [SuperscriptPlugin.key]: withProps(PlateLeaf, { as: "sup" }),
           [UnderlinePlugin.key]: withProps(PlateLeaf, { as: "u" }),
           [CommentsPlugin.key]: CommentLeaf,
+          [BulletedListPlugin.key]: withProps(ListElement, { variant: 'ul' }),
+          [ListItemPlugin.key]: withProps(PlateElement, { as: 'li' }),
+          [NumberedListPlugin.key]: withProps(ListElement, { variant: 'ol' }),    
         })
       ),
     },

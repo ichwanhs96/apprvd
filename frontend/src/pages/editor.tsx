@@ -1,18 +1,23 @@
 import React, { useEffect, useState } from "react";
 import AISidebar from "../components/aiSidebar";
 import PlateEditor, { InitiatePlateEditor } from "../components/textEditor/plate-editor";
+import axios from 'axios'
 import { useAuth } from "../context/AuthContext"; // Add this import
+import { useCurrentDocId } from "../store";
 
-const EditorPage: React.FC = () => {    
-    const [loading, setLoading] = useState(true);
+const EditorPage: React.FC = () => {
+    const { userInfo } = useAuth();
+    const [loadingLorem, setLoadingLorem] = useState(true);
+    const [edit, setEdit] = useState('');
     const [editorData, setEditorData] = useState(null);
     const STORAGE_KEY = 'editor-content';
+    const { id } = useCurrentDocId()
 
-    const { userInfo } = useAuth();
+    console.log("id",id)
 
-    const fetchDocument = async (document_id: string) => {
+    const fetchDocument = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${document_id}/content`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/content`, {
                 method: 'GET',
                 headers: {
                     'business-id': 'ichwan@gmail.com',
@@ -34,26 +39,48 @@ const EditorPage: React.FC = () => {
     const loadInitialValue = async () => {
         try {
             // TODO: value of document id should be dynamically determine from Contract page
-            const data = await fetchDocument('67b834719eee9139f9739768');
+            const data = await fetchDocument();
             return data || [{
                 id: "1",
                 type: "p",
                 children: [{ text: "Start typing here..." }],
             }];
         } catch (error) {
-            return [{
-                id: "1",
-                type: "p",
-                children: [{ text: "Start typing here..." }],
-            }];
+            const savedValue = localStorage.getItem(STORAGE_KEY);
+            if (savedValue) {
+                return JSON.parse(savedValue);
+            }
+
+            // Default content if nothing is saved
+            return [
+                {
+                    id: "1",
+                    type: "p",
+                    children: [{ text: edit }],
+                },
+            ];
         }
     };
+
+    useEffect(() => {
+        if(!editorData){
+            axios.get("/api/api/random")
+            .then((response) => {
+                setEdit(response.data);
+                setLoadingLorem(false);
+            })
+            .catch((error) => {
+                console.error("Error fetching data:", error);
+                setLoadingLorem(false);
+            });
+        }
+    }, []);
 
     useEffect(() => {
         const fetchData = async () => {
             const initialValue = await loadInitialValue();
             setEditorData(initialValue);
-            setLoading(false);
+            setLoadingLorem(false);
         };
 
         fetchData(); // Call fetchData on component mount
@@ -69,8 +96,8 @@ const EditorPage: React.FC = () => {
             <PlateEditor editor={editor}/>
         </div>
         <div className="w-1/4">
-            { loading && <div>Loading...</div> }
-            { !loading &&  <AISidebar editor={editor} /> }
+            { loadingLorem && <div>Loading...</div> }
+            { !loadingLorem &&  <AISidebar editor={editor} /> }
         </div> 
         </>
     );
