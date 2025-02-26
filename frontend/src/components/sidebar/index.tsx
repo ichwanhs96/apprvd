@@ -1,4 +1,5 @@
 import React from "react";
+import { useContentToShow } from "../../store"
 
 // interface SidebarItem {
 //     label: string;
@@ -12,13 +13,9 @@ import React from "react";
 
 // TODO: make the sidebar responsive
 
-interface SideBarProps {
-  setContentToShow: React.Dispatch<React.SetStateAction<string>>;
-}
-
-const Sidebar: React.FC<SideBarProps> = (prop: SideBarProps) => {
+const Sidebar: React.FC = () => {
   const handleSideBarMenuOnClick = (menu: string) => {
-    return prop.setContentToShow(menu);
+    return useContentToShow.setState({ content: menu });
   }
 
   return (

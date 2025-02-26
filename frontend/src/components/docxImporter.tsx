@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useCurrentDocId, useEditorStore } from "../store"; // Import Zustand store
+import { useContentToShow, useCurrentDocId, useEditorStore } from "../store"; // Import Zustand store
 import * as mammoth from "mammoth";
 import { useAuth } from "../context/AuthContext";
 import { htmlToSlate } from '@slate-serializers/html'
 
-const DocxImporter = ({ setContentToShow }: any) => {
+const DocxImporter = ({ setAllContract }: any) => {
   const { userInfo } = useAuth();
   const { content } = useEditorStore();
   const setContent = useEditorStore((state) => state.setContent);
@@ -12,7 +12,10 @@ const DocxImporter = ({ setContentToShow }: any) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const openModal = () => setIsOpen(true);
-  const closeModal = () => setIsOpen(false);
+  const closeModal = () =>{
+    setIsOpen(false);
+    fetchContracts();
+  }
 
   const handleFileChange = (event: any) => {
     setFile(event.target.files[0]);
@@ -94,12 +97,10 @@ const DocxImporter = ({ setContentToShow }: any) => {
         throw new Error("Network response was not ok");
       }
 
-      const result = JSON.parse(await response.json());
+      const result = await response.json()
       console.log("Success:", result);
-      useCurrentDocId.setState({ id: await result?.document?.id });
-      // await localStorage.setItem("uploaded-id", result?.document?.id);
-      closeModal();
-      setContentToShow("editor"); // Set content to show
+      useCurrentDocId.setState({ id: result?.document?.id });
+      useContentToShow.setState({ content: "editor" });
     } catch (error) {
       console.error("Error:", error);
     }
@@ -127,6 +128,33 @@ const DocxImporter = ({ setContentToShow }: any) => {
   //     console.error("Error loading HTML file:", error);
   //   }
   // };
+  
+  const fetchContracts = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'business-id': 'ichwan@gmail.com'
+        }
+      }); // Adjust the URL as needed
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setAllContract(data.map((contract: any) => ({
+        id: contract.id,
+        name: contract.name,
+        language: contract.language || 'EN',
+        version: contract.version,
+        created_at: contract.created_at,
+        updated_at: contract.updated_at,
+        status: contract.status
+      }))); // Assuming the response contains a 'contracts' array
+    } catch (error) {
+      console.error('Error fetching contracts:', error);
+    }
+  };
 
   console.log(content[0]?.children[0]?.text);
 

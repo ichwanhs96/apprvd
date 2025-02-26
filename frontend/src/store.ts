@@ -9,21 +9,31 @@ type ContractsStore = {
     status: string;
 }
 
+export const useContracts = create<ContractsStore>(() => ({
+  name: '',
+  language: '',
+  version: '',
+  created: '',
+  updated: '',
+  status: ''
+}))
+
 type currentDoc = {
   id: string;
+  is_updated: boolean;
 }
-
-export const useContracts = create<ContractsStore>(() => ({
-    name: '',
-    language: '',
-    version: '',
-    created: '',
-    updated: '',
-    status: ''
-}))
 
 export const useCurrentDocId = create<currentDoc>(() => ({
   id: '',
+  is_updated: false
+}))
+
+type ContentToShow = {
+  content: string;
+}
+
+export const useContentToShow = create<ContentToShow>(() => ({
+  content: 'contracts'
 }))
 
 interface EditorState {
