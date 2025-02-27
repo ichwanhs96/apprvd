@@ -1,0 +1,180 @@
+{
+	"info": {
+		"_postman_id": "4aa87f1a-7eb7-438e-a493-28516642a0cd",
+		"name": "Apprvd",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "813633"
+	},
+	"item": [
+		{
+			"name": "update document content by id",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "business-id",
+						"value": "ichwan@gmail.com"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[{\n    \"children\": [\n        {\n            \"text\": \"hello my friend 12345\"\n        },\n        {\n            \"text\": \"hehe\",\n            \"comment\": true,\n            \"comment_jL2Hzdlo4R5rCdaRcAVBL\": true\n        }\n    ],\n    \"type\": \"p\",\n    \"id\": \"ahjhd\"\n},\n{\n    \"children\": [\n        {\n            \"text\": \"how are you todayyy\"\n        },\n        {\n            \"text\": \"???\",\n            \"comment\": true,\n            \"comment_jL2Hzdlo4R5rCdaRcAVBM\": true\n        }\n    ],\n    \"type\": \"p\",\n    \"id\": \"ahjhe\"\n}]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5001/document/67b834719eee9139f9739768/content",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5001",
+					"path": [
+						"document",
+						"67b834719eee9139f9739768",
+						"content"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create document",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "business-id",
+						"value": "ichwan@gmail.com"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"this is a legal doc 2\",\n    \"created_by\": \"ichwan\",\n    \"status\": \"final\",\n    \"version\": \"1\",\n    \"contents\":\n        [{\n                \"children\": [\n                    {\n                        \"text\": \"hello my friend\"\n                    },\n                    {\n                        \"text\": \"hehe\",\n                        \"comment\": true,\n                        \"comment_jL2Hzdlo4R5rCdaRcAVBL\": true\n                    }\n                ],\n                \"type\": \"p\",\n                \"id\": \"ahjhd\"\n            },\n            {\n                \"children\": [\n                    {\n                        \"text\": \"how are you today\"\n                    },\n                    {\n                        \"text\": \"?\",\n                        \"comment\": true,\n                        \"comment_jL2Hzdlo4R5rCdaRcAVBM\": true\n                    }\n                ],\n                \"type\": \"p\",\n                \"id\": \"ahjhe\"\n            }]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5001/document",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5001",
+					"path": [
+						"document"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get document content by id",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "business-id",
+						"value": "ichwan@gmail.com"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5001/document/67b834719eee9139f9739768/content",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5001",
+					"path": [
+						"document",
+						"67b834719eee9139f9739768",
+						"content"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get list of document",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "business-id",
+						"value": "ichwan@gmail.com"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5001/document",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5001",
+					"path": [
+						"document"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
