@@ -30,9 +30,9 @@ from mongoengine import connect
 
 # Connect to MongoDB
 connect(
-    db=os.environ('DB_NAME'),
-    host=os.environ('DB_HOST'),
-    port=os.environ('DB_PORT')
+    db=os.environ['DB_NAME'],
+    host=os.environ['DB_HOST'],
+    port=int(os.environ['DB_PORT'])
 )
 
 load_dotenv()
