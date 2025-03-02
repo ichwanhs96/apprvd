@@ -30,11 +30,9 @@ from mongoengine import connect
 
 # Connect to MongoDB
 connect(
-    db='testing',
-    host='localhost',  # or your MongoDB server address
-    port=27017,        # default MongoDB port
-    # username='your_username',  # if authentication is required
-    # password='your_password'   # if authentication is required
+    db=os.environ('DB_NAME'),
+    host=os.environ('DB_HOST'),
+    port=os.environ('DB_PORT')
 )
 
 load_dotenv()
