@@ -3,6 +3,7 @@ import { useContentToShow, useCurrentDocId, useEditorStore } from "../store"; //
 import * as mammoth from "mammoth";
 import { useAuth } from "../context/AuthContext";
 import { htmlToSlate } from "@slate-serializers/html";
+import { useNavigate } from "react-router-dom";
 
 const DocxImporter = ({ setAllContract }: any) => {
   const { userInfo } = useAuth();
@@ -11,6 +12,7 @@ const DocxImporter = ({ setAllContract }: any) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
   const openModal = () => setIsOpen(true);
   const closeModal = () => {
     setIsOpen(false);
@@ -75,16 +77,22 @@ const DocxImporter = ({ setAllContract }: any) => {
       await setContent(plateContent);
     };
     reader.readAsArrayBuffer(file);
+
     if(content.length === 0) {
-      alert("Please upload a valid document");
+      alert("Please wait for a moment, upload document is still in progress...");
       return;
     }
+
     try {
+      if (!userInfo?.email) {
+        alert("Please login!");
+        return navigate('/');
+      }
       const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "business-id": "ichwan@gmail.com",
+          "business-id": userInfo?.email,
         },
         body: JSON.stringify({
           name: file?.name,
@@ -136,13 +144,18 @@ const DocxImporter = ({ setAllContract }: any) => {
 
   const fetchContracts = async () => {
     try {
+      if (!userInfo?.email) {
+        alert("Please login!");
+        return navigate('/');
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/document`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "business-id": "ichwan@gmail.com",
+            "business-id": userInfo?.email,
           },
         }
       ); // Adjust the URL as needed
