@@ -6,7 +6,6 @@ llama-index==0.11.3
 pinecone-client==5.0.1
 urllib3==1.26.6
 llama-index-llms-openai==0.2.9
-uvicorn
 python-dotenv==1.0.1
 pymongo
 mongoengine
