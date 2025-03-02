@@ -13,13 +13,13 @@ const Dashboard: React.FC = () => {
   const content = useContentToShow((state) => state.content);
 
   const getContentToShow = () => {
-    switch (content) {
+    switch (content.toLowerCase()) {
       case 'editor':
         return EditorPage;
       case 'contracts':
-        return () => <ContractPage/>;
+        return ContractPage;
       default:
-        return EditorPage;
+        return ContractPage;
     }
   }
 

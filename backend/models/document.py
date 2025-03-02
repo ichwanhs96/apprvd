@@ -46,6 +46,11 @@ class Docs(Document):
         # Retrieve all documents with the specified business_id
         return cls.objects(business_id=business_id)
     
+    @classmethod
+    def get_document_by_business_id_and_document_id(cls, business_id, document_id):
+        # Retrieve all documents with the specified business_id
+        return cls.objects(business_id=business_id, id=document_id)[0]
+    
     def to_json(self):
         return {
             "id": str(self.id),

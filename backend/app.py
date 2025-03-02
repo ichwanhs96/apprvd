@@ -233,12 +233,13 @@ def query(prompt: str) -> str:
 
 from services.document import DocumentService
 from services.content import ContentService
+from services.comment import CommentService
 
 @app.route("/document", methods=['POST'])
 def create_document():
     business_id = request.headers.get("business-id") 
     document_data = request.get_json()
-    created_document = DocumentService.create_document_with_content(business_id=business_id, **document_data)
+    created_document = DocumentService.create_document_with_content_and_comment(business_id=business_id, **document_data)
     return created_document, 201
 
 @app.route("/document", methods=['GET'])
@@ -246,6 +247,12 @@ def get_documents():
     business_id = request.headers.get("business-id") 
     documents = DocumentService.get_document_by_business_id(business_id=business_id)
     return documents, 200
+
+@app.route("/document/<string:id>", methods=['GET'])
+def get_document_by_id(id):
+    business_id = request.headers.get("business-id") 
+    document = DocumentService.get_document_by_business_id_and_document_id(business_id=business_id, document_id=id)
+    return document, 200
 
 @app.route("/document/<string:id>/content", methods=['GET'])
 def get_document_with_content(id):
@@ -259,6 +266,13 @@ def update_document_content(id):
     payload = request.get_json()
     updated_content = ContentService.update_content_by_document_id(document_id=id, contents=payload)
     return updated_content, 200
+
+@app.route("/document/<string:id>/comment", methods=['PATCH'])
+def update_document_comment(id):
+    business_id = request.headers.get("business-id") 
+    payload = request.get_json()
+    updated_comments = CommentService.update_comment_by_document_id(document_id=id, comments=payload)
+    return updated_comments, 200
 
 # @app.route("/document/<string:id>/comment", methods=['POST'])
 # def add_comment(id):
