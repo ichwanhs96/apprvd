@@ -4,6 +4,7 @@ import PlateEditor, { InitiatePlateEditor } from "../components/textEditor/plate
 import axios from 'axios'
 import { useAuth } from "../context/AuthContext"; // Add this import
 import { useCurrentDocId } from "../store";
+import { useNavigate } from "react-router-dom";
 
 const EditorPage: React.FC = () => {
     const { userInfo } = useAuth();
@@ -11,14 +12,20 @@ const EditorPage: React.FC = () => {
     const [edit, setEdit] = useState('');
     const [editorData, setEditorData] = useState(null);
     const EDITOR_CONTENT_KEY = 'editor-content';
-    const { id } = useCurrentDocId()
+    const { id } = useCurrentDocId();
+    const navigate = useNavigate();
 
     const fetchDocument = async (doc_id: string) => {
         try {
+            if (!userInfo?.email) {
+                alert("Please login!");
+                return navigate('/');
+            }
+
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${doc_id}`, {
                 method: 'GET',
                 headers: {
-                    'business-id': 'ichwan@gmail.com',
+                    'business-id': userInfo?.email,
                 },
             });
 

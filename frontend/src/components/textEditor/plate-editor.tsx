@@ -141,6 +141,8 @@ export default function PlateEditor({ editor }: { editor: any }) {
 
   const [value, setValue] = useState(null);
 
+  console.log("data",editor)
+
   useEffect(() => {
     // TODO: to have handler only when update being made then update docs in backend
     localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
