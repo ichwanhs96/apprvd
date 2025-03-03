@@ -218,7 +218,7 @@ export default function PlateEditor({ editor }: { editor: any }) {
   );
 }
 
-export const InitiatePlateEditor = (initialValue: any, userInfo: any, doc_id: any): any => {
+export const InitiatePlateEditor = (initialValue: any, userInfo: any, doc_id: any, commento: any): any => {
   const editor = createPlateEditor({
     plugins: [
       // Nodes
@@ -423,7 +423,7 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any, doc_id: an
         options: {
           // TODO: store the comments into a proper storage i.e. database
           comments: (() => { // This is the part where comment are loaded every page reload
-            const comments = initialValue.comments;
+            const comments = commento;
             const parsedComments: Record<string, TComment> = comments 
                 ? comments.reduce((acc: Record<string, TComment>, comment: TComment) => {
                     acc[comment.id] = comment;
