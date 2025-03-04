@@ -27,7 +27,7 @@ const Sidebar: React.FC = () => {
       >
         <div className="h-full px-3 pt-[150px] overflow-y-auto border-r-2">
           <ul className="space-y-2 font-medium">
-            <li>
+            <li className="hidden">
               <a
                 href="#"
                 className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group"
@@ -75,7 +75,7 @@ const Sidebar: React.FC = () => {
                 <span className="flex-1 ms-3 whitespace-nowrap">Contracts</span>
               </a>
             </li>
-            <li>
+            {/* <li>
               <a
                 href="#"
                 className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group"
@@ -102,7 +102,7 @@ const Sidebar: React.FC = () => {
                 </svg>
                 <span className="flex-1 ms-3 whitespace-nowrap">Settings</span>
               </a>
-            </li>
+            </li> */}
           </ul>
         </div>
       </aside>

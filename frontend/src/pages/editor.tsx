@@ -69,20 +69,6 @@ const EditorPage: React.FC = () => {
     };
 
     useEffect(() => {
-        if(!editorData){
-            axios.get("/api/api/random")
-            .then((response) => {
-                setEdit(response.data);
-                setLoadingLorem(false);
-            })
-            .catch((error) => {
-                console.error("Error fetching data:", error);
-                setLoadingLorem(false);
-            });
-        }
-    }, []);
-
-    useEffect(() => {
         const fetchData = async () => {
             const initialValue = await loadInitialValue();
             setEditorData(initialValue);
