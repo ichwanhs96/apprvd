@@ -51,21 +51,11 @@ const DocxImporter = ({ setAllContract }: any) => {
     }
   };
 
-  // const htmlToPlate = (html: string) => {
-  //   return [
-  //     {
-  //       type: "p",
-  //       children: [{ text: html }],
-  //     },
-  //   ];
-  // };
-
   const handleUpload = async () => {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = async (file) => {
       const arrayBuffer = file?.target?.result as ArrayBuffer;
-      // const json = JSON.stringify(arrayBuffer)
 
       // Convert DOCX to HTML
       const { value } = await mammoth.convertToHtml({ arrayBuffer });
@@ -96,7 +86,7 @@ const DocxImporter = ({ setAllContract }: any) => {
         },
         body: JSON.stringify({
           name: file?.name,
-          created_by: userInfo?.displayName,
+          created_by: userInfo?.email,
           status: "DRAFT",
           version: "1",
           contents: content,
