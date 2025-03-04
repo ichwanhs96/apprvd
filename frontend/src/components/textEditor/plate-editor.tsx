@@ -445,19 +445,13 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any, doc_id: an
             // New HTTP PATCH function to update comments on the backend
             const updateCommentsOnBackend = async () => {
               try {
-                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${doc_id}/comment`, {
+                await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${doc_id}/comment`, {
                   method: 'PATCH',
                   headers: {
                     'Content-Type': 'application/json',
                   },
                   body: JSON.stringify(parsedComments), // Use parsedComments as payload
                 });
-
-                if (!response.ok) {
-                  throw new Error('Failed to update comments on backend');
-                }
-
-                const data = await response.json();
               } catch (error) {
                 console.error('Error updating comments:', error);
               }
