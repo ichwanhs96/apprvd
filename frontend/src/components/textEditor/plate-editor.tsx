@@ -152,22 +152,13 @@ export default function PlateEditor({ editor }: { editor: any }) {
       if (storedValue) {
         // TODO: how to send only the deltas to backend to optimize operation and reduce data sent to backend
         try {
-          const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/content`, {
+          await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/content`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
             },
             body: storedValue, // Send the whole documents
           });
-
-          console.log(storedValue)
-
-          if (!response.ok) {
-            throw new Error('Unexpected error');
-          }
-
-          const data = await response.json();
-          console.log('Response from backend:', data);
         } catch (error) {
           throw new Error('Error updating document');
         }
@@ -424,7 +415,7 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any, doc_id: an
           // TODO: store the comments into a proper storage i.e. database
           comments: (() => { // This is the part where comment are loaded every page reload
             const comments = initialValue.comments;
-            const parsedComments: Record<string, TComment> = comments 
+            const parsedComments: Record<string, TComment> = comments.length > 0 
                 ? comments.reduce((acc: Record<string, TComment>, comment: TComment) => {
                     acc[comment.id] = comment;
                     return acc;
@@ -432,7 +423,7 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any, doc_id: an
                 : {};
             // reset comments every editor reload
             localStorage.setItem("editor-comments", JSON.stringify(comments));
-          return parsedComments;
+            return parsedComments;
           })() as Record<string, TComment>, // Immediately invoke the function and assert the type
           // TODO: update based on users profile
           users: {
@@ -456,20 +447,13 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any, doc_id: an
             // New HTTP PATCH function to update comments on the backend
             const updateCommentsOnBackend = async () => {
               try {
-                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${doc_id}/comment`, {
+                await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${doc_id}/comment`, {
                   method: 'PATCH',
                   headers: {
                     'Content-Type': 'application/json',
                   },
                   body: JSON.stringify(parsedComments), // Use parsedComments as payload
                 });
-
-                if (!response.ok) {
-                  throw new Error('Failed to update comments on backend');
-                }
-
-                const data = await response.json();
-                console.log('Comments updated successfully:', data);
               } catch (error) {
                 console.error('Error updating comments:', error);
               }

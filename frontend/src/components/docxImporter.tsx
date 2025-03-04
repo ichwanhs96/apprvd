@@ -3,6 +3,7 @@ import { useContentToShow, useCurrentDocId, useEditorStore } from "../store"; //
 import * as mammoth from "mammoth";
 import { useAuth } from "../context/AuthContext";
 import { htmlToSlate } from "@slate-serializers/html";
+import { useNavigate } from "react-router-dom";
 
 const DocxImporter = ({ setAllContract }: any) => {
   const { userInfo } = useAuth();
@@ -11,6 +12,7 @@ const DocxImporter = ({ setAllContract }: any) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
   const openModal = () => setIsOpen(true);
   const closeModal = () => {
     setIsOpen(false);
@@ -49,21 +51,11 @@ const DocxImporter = ({ setAllContract }: any) => {
     }
   };
 
-  // const htmlToPlate = (html: string) => {
-  //   return [
-  //     {
-  //       type: "p",
-  //       children: [{ text: html }],
-  //     },
-  //   ];
-  // };
-
   const handleUpload = async () => {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = async (file) => {
       const arrayBuffer = file?.target?.result as ArrayBuffer;
-      // const json = JSON.stringify(arrayBuffer)
 
       // Convert DOCX to HTML
       const { value } = await mammoth.convertToHtml({ arrayBuffer });
@@ -75,27 +67,31 @@ const DocxImporter = ({ setAllContract }: any) => {
       await setContent(plateContent);
     };
     reader.readAsArrayBuffer(file);
+
     if(content.length === 0) {
-      alert("Please upload a valid document");
+      alert("Please wait for a moment, upload document is still in progress...");
       return;
     }
+
     try {
+      if (!userInfo?.email) {
+        alert("Please login!");
+        return navigate('/');
+      }
       const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "business-id": "ichwan@gmail.com",
+          "business-id": userInfo?.email,
         },
         body: JSON.stringify({
           name: file?.name,
-          created_by: userInfo?.displayName,
+          created_by: userInfo?.email,
           status: "DRAFT",
           version: "1",
           contents: content,
         }), // Send the form data as JSON
       });
-
-      console.log("resp: ", response);
 
 
       if (!response.ok) {
@@ -103,7 +99,6 @@ const DocxImporter = ({ setAllContract }: any) => {
       }
 
       let result = await response.json();
-      console.log("Success:", result);
       useCurrentDocId.setState({ id: result?.document?.id });
       useContentToShow.setState({ content: "editor" });
     } catch (error) {
@@ -136,13 +131,18 @@ const DocxImporter = ({ setAllContract }: any) => {
 
   const fetchContracts = async () => {
     try {
+      if (!userInfo?.email) {
+        alert("Please login!");
+        return navigate('/');
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/document`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "business-id": "ichwan@gmail.com",
+            "business-id": userInfo?.email,
           },
         }
       ); // Adjust the URL as needed
@@ -165,8 +165,6 @@ const DocxImporter = ({ setAllContract }: any) => {
       console.error("Error fetching contracts:", error);
     }
   };
-
-  console.log(content[0]?.children[0]?.text);
 
   return (
     <>

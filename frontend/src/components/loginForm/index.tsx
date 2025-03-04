@@ -87,12 +87,12 @@ const LoginForm: React.FC = () => {
       </form>
       <button className="bg-white mt-4" onClick={signInWithGoogle}>Sign in with Google</button>
       <div className="flex flex-row mt-4">
-        <p>Don't have an account?</p>
+        <p>Join our waitlist</p>
         <a
-          href="/signup"
+          href="https://www.apprvd.co/#waitlist"
           className="ml-2 text-apprvd-primary font-semibold hover:scale-110 transition-all duration-300"
         >
-          Sign up
+          here
         </a>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { useCurrentDocId, useContentToShow } from "../store";
 // import DocxImporter from "../components/docxImporter";
 import { useAuth } from "../context/AuthContext";
 import DocxImporter from "../components/docxImporter";
+import { useNavigate } from "react-router-dom";
 
 interface Contract {
   id: string;
@@ -36,15 +37,23 @@ function ContractsPage() {
     setAddOpen(false);
     fetchContracts();
   }
+
+  const navigate = useNavigate();
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // Prevent the default form submission
 
     try {
+      if (!userInfo?.email) {
+        alert("Please login!");
+        return navigate('/');
+      }
+
       const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'business-id': 'ichwan@gmail.com'
+          'business-id': userInfo?.email
         },
         body: JSON.stringify({
           name: baseData.name,
@@ -69,11 +78,16 @@ function ContractsPage() {
 
   const fetchContracts = async () => {
     try {
+      if (!userInfo?.email) {
+        alert("Please login!");
+        return navigate('/');
+      }
+
       const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'business-id': 'ichwan@gmail.com'
+          'business-id': userInfo?.email
         }
       }); // Adjust the URL as needed
       if (!response.ok) {

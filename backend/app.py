@@ -28,16 +28,14 @@ from dotenv import load_dotenv
 
 from mongoengine import connect
 
+load_dotenv()
+
 # Connect to MongoDB
 connect(
-    db='testing',
-    host='localhost',  # or your MongoDB server address
-    port=27017,        # default MongoDB port
-    # username='your_username',  # if authentication is required
-    # password='your_password'   # if authentication is required
+    db=os.environ['DB_NAME'],
+    host=os.environ['DB_HOST'],
+    port=int(os.environ['DB_PORT'])
 )
-
-load_dotenv()
 
 app = Flask(__name__)
 CORS(app)

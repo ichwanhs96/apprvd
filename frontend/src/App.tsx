@@ -7,7 +7,6 @@ import "./styles/globals.css";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "./context/ProtectedRoute";
 import { AuthProvider } from './context/AuthContext';
-import Home from "./pages/home";
 import Template from "./pages/template";
 import Login from "./pages/login";
 import Signup from "./pages/signup";
@@ -37,7 +36,7 @@ function App() {
       <Router>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Login />} />
             <Route path="/template" element={<Template />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />

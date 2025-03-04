@@ -135,6 +135,7 @@ export default function ExportToDoxc() {
       });
 
       Packer.toBlob(doc).then((blob) => {
+        // TODO: change this to follow document name
         saveAs(blob, "exported-content.docx");
       });
     } else {
