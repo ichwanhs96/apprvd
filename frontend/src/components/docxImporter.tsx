@@ -93,15 +93,12 @@ const DocxImporter = ({ setAllContract }: any) => {
         }), // Send the form data as JSON
       });
 
-      console.log("resp: ", response);
-
 
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
 
       let result = await response.json();
-      console.log("Success:", result);
       useCurrentDocId.setState({ id: result?.document?.id });
       useContentToShow.setState({ content: "editor" });
     } catch (error) {
@@ -168,8 +165,6 @@ const DocxImporter = ({ setAllContract }: any) => {
       console.error("Error fetching contracts:", error);
     }
   };
-
-  console.log(content[0]?.children[0]?.text);
 
   return (
     <>
