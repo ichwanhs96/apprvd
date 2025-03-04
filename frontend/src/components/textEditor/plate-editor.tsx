@@ -412,9 +412,6 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any, doc_id: an
         options: {
           // TODO: store the comments into a proper storage i.e. database
           comments: (() => { // This is the part where comment are loaded every page reload
-            console.log("comments initial value");
-            console.log(initialValue.comments);
-            console.log(initialValue.comments.length);
             const comments = initialValue.comments;
             const parsedComments: Record<string, TComment> = comments.length > 0 
                 ? comments.reduce((acc: Record<string, TComment>, comment: TComment) => {
