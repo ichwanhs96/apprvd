@@ -141,8 +141,6 @@ export default function PlateEditor({ editor }: { editor: any }) {
 
   const [value, setValue] = useState(null);
 
-  console.log("data",editor)
-
   useEffect(() => {
     // TODO: to have handler only when update being made then update docs in backend
     localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
@@ -152,22 +150,13 @@ export default function PlateEditor({ editor }: { editor: any }) {
       if (storedValue) {
         // TODO: how to send only the deltas to backend to optimize operation and reduce data sent to backend
         try {
-          const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/content`, {
+          await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/content`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: storedValue, // Send the whole documents
+            body: storedValue,
           });
-
-          console.log(storedValue)
-
-          if (!response.ok) {
-            throw new Error('Unexpected error');
-          }
-
-          const data = await response.json();
-          console.log('Response from backend:', data);
         } catch (error) {
           throw new Error('Error updating document');
         }

@@ -3,7 +3,6 @@ import AISidebar from "../components/aiSidebar";
 import PlateEditor, {
   InitiatePlateEditor,
 } from "../components/textEditor/plate-editor";
-import axios from "axios";
 import { useAuth } from "../context/AuthContext"; // Add this import
 import { useCurrentDocId } from "../store";
 import { v4 as uuidv4 } from "uuid"; // To generate unique IDs
@@ -42,24 +41,28 @@ const EditorPage: React.FC = () => {
   const { userInfo } = useAuth();
   const [loadingLorem, setLoadingLorem] = useState(true);
   const [comments, setComments] = useState<CommentBlock[]>([]);
-  const [edit, setEdit] = useState("");
   const [editorData, setEditorData] = useState<EditorData | null>(null);
   const EDITOR_CONTENT_KEY = "editor-content";
   const EDITOR_CONTENT_COMMENTS = "editor-comments";
   const { id } = useCurrentDocId();
-  const router = useNavigate();
+  const navigate = useNavigate();
 
   // console.log(editorData)
   // console.log("comments: ",localStorage.getItem('editor-comments'))
 
   const fetchDocument = async (doc_id: string) => {
     try {
+      if (!userInfo?.email) {
+        alert("Please login!");
+        return navigate('/');
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/document/${doc_id}`,
         {
           method: "GET",
           headers: {
-            "business-id": "ichwan@gmail.com",
+            "business-id": userInfo?.email,
           },
         }
       );
@@ -68,7 +71,7 @@ const EditorPage: React.FC = () => {
         throw new Error("Unexpected error");
       }
 
-      return await response.json();
+      return response.json();
     } catch (error) {
       console.error("Failed to fetch document:", error);
     }
@@ -106,7 +109,7 @@ const EditorPage: React.FC = () => {
           {
             id: "1",
             type: "p",
-            children: [{ text: edit }],
+            children: [{ text: "Start typing here..." }],
           },
         ],
         comments: [],
@@ -115,34 +118,15 @@ const EditorPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!editorData) {
-      axios
-        .get("/api/api/random")
-        .then((response) => {
-          setEdit(response.data);
-          setLoadingLorem(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
-          setLoadingLorem(false);
-        });
-    }
-  }, []);
-
-  useEffect(() => {
     const fetchData = async () => {
       const initialValue = await loadInitialValue();
+      console.log("initial value")
+      console.log(initialValue)
       setEditorData(initialValue);
       setLoadingLorem(false);
     };
 
     fetchData(); // Call fetchData on component mount
-  }, []);
-
-  useEffect(() => {
-    // if (editorData) {
-    //     localStorage.setItem(EDITOR_CONTENT_KEY, JSON.stringify(editorData)); // Store the response in local storage
-    // }
   }, []);
 
   // Initialize the editor only after data is loaded
@@ -212,21 +196,11 @@ const EditorPage: React.FC = () => {
     return { arrayA, arrayB };
   }
 
-  // Example data
-  const originalArray: Block[] = [
-    { children: [{ text: "Start typing here…" }], type: "p", id: "sjhd1" },
-  ];
-
   const suggestionsArray: Suggestion[] = [
     { target_text: "typing", suggestion: "this is a typing" },
     { target_text: "here", suggestion: "this is here" },
     { target_text: "...", suggestion: "this is ..." },
   ];
-
-  const { arrayA, arrayB } = processTextData(originalArray, suggestionsArray);
-
-  console.log("Array A:", JSON.stringify(arrayA, null, 2));
-  console.log("Array B:", JSON.stringify(arrayB, null, 2));
 
   const updateEditorContent = (newContent: any) => {
     setEditorData((prevState: any) => ({
@@ -242,7 +216,7 @@ const EditorPage: React.FC = () => {
     // localStorage.setItem(EDITOR_CONTENT_KEY, JSON.stringify(arrayA)); // Store the response in local storage
     // console.log('editor-comments: ',JSON.stringify(arrayB, null, 2));
     // localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(arrayB)); // Store the response in local storage
-    // router('/dashboard')
+    // navigate('/dashboard')
 
     if (editorData && editorData.contents) {
       let { arrayA, arrayB } = processTextData(
@@ -253,7 +227,7 @@ const EditorPage: React.FC = () => {
       updateEditorContent(arrayA);
       setComments(arrayB);
       localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(arrayB)); // Store the response in local storage
-      router("/dashboard");
+      navigate("/dashboard");
     }
   };
 
