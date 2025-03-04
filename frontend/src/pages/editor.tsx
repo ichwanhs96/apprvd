@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AISidebar from "../components/aiSidebar";
 import PlateEditor, { InitiatePlateEditor } from "../components/textEditor/plate-editor";
-import axios from 'axios'
 import { useAuth } from "../context/AuthContext"; // Add this import
 import { useCurrentDocId } from "../store";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 const EditorPage: React.FC = () => {
     const { userInfo } = useAuth();
     const [loadingLorem, setLoadingLorem] = useState(true);
-    const [edit, setEdit] = useState('');
     const [editorData, setEditorData] = useState(null);
     const EDITOR_CONTENT_KEY = 'editor-content';
     const { id } = useCurrentDocId();
@@ -55,16 +53,11 @@ const EditorPage: React.FC = () => {
             }
 
             // Default content if nothing is saved
-            return {
-                contents: [
-                    {
-                        id: "1",
-                        type: "p",
-                        children: [{ text: edit }],
-                    },
-                ],
-                comments: []
-            };
+            return { contents: [{
+                id: "1",
+                type: "p",
+                children: [{ text: "Start typing here..." }],
+            }], comments: [] };
         }
     };
 
