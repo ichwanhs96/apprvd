@@ -16,3 +16,8 @@ services:
       dockerfile: Dockerfile.db
     ports:
       - "27017:27017"
+    volumes:
+      - db_data:/data/db
+
+volumes:
+  db_data:

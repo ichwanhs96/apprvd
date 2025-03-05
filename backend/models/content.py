@@ -1,4 +1,5 @@
 from models.document import Docs
+from datetime import datetime, timezone
 
 from mongoengine import Document, LazyReferenceField, DictField, ListField
 
@@ -35,6 +36,8 @@ class Content(Document):
             if content:
                 content[0].contents = contents
                 content[0].save()
+                content[0].document_id.updated_at = datetime.now(timezone.utc)
+                content[0].document_id.save()  # Save the document after updating
                 return content[0].to_plate_editor_format()
             else:
                 raise {"error_code": "NOT_FOUND", "error_message": "Content not found"}
