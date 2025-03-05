@@ -126,6 +126,7 @@ export default function PlateEditor({ editor }: { editor: any }) {
   const containerRef = useRef(null);
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null)
   const { id } = useCurrentDocId()
+  // const { updated } = useContracts()
 
   const handleTyping = () => {
     if(typingTimerRef.current) {

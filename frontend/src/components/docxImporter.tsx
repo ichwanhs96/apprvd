@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useContentToShow, useCurrentDocId, useEditorStore } from "../store"; // Import Zustand store
+import { useContentToShow, useContractSelected, useCurrentDocId, useEditorStore } from "../store"; // Import Zustand store
 import * as mammoth from "mammoth";
 import { useAuth } from "../context/AuthContext";
 import { htmlToSlate } from "@slate-serializers/html";
@@ -17,6 +17,7 @@ const DocxImporter = ({ setAllContract }: any) => {
   const closeModal = () => {
     setIsOpen(false);
     fetchContracts();
+    setFile(null);
   };
 
   const handleFileChange = (event: any) => {
@@ -52,7 +53,10 @@ const DocxImporter = ({ setAllContract }: any) => {
   };
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file || file.type !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+      alert("Only .docx files are accepted!");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = async (file) => {
       const arrayBuffer = file?.target?.result as ArrayBuffer;
@@ -101,6 +105,12 @@ const DocxImporter = ({ setAllContract }: any) => {
       let result = await response.json();
       useCurrentDocId.setState({ id: result?.document?.id });
       useContentToShow.setState({ content: "editor" });
+      useContractSelected.setState({
+        created: new Date(result?.document?.created_at),
+        name: result?.document?.name,
+        status: result?.document?.status,
+        version: result?.document?.version,
+      });
     } catch (error) {
       console.error("Error:", error);
     }
@@ -221,7 +231,7 @@ const DocxImporter = ({ setAllContract }: any) => {
                 <p className="text-gray-500">
                   {file
                     ? file.name
-                    : "Drag and drop a file here, or click to select a file"}
+                    : "Drag and drop a file here, or click to select a file (only .docx files are accepted)"}
                 </p>
               </label>
             </div>
