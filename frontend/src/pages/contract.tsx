@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useCurrentDocId, useContentToShow, useEditContracts, useContractSelected } from "../store";
+import { useCurrentDocId, useContentToShow, useContractSelected } from "../store";
 // import DocxImporter from "../components/docxImporter";
 import { useAuth } from "../context/AuthContext";
 import DocxImporter from "../components/docxImporter";
