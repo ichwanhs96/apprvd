@@ -34,7 +34,9 @@ load_dotenv()
 connect(
     db=os.environ['DB_NAME'],
     host=os.environ['DB_HOST'],
-    port=int(os.environ['DB_PORT'])
+    port=int(os.environ['DB_PORT']),
+    username=os.environ['DB_USERNAME'],
+    password=os.environ['DB_PASSWORD']
 )
 
 app = Flask(__name__)
