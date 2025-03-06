@@ -316,7 +316,7 @@ const EditorPage: React.FC = () => {
         <div className="w-1/4">
             { loadingLorem && <div>Loading...</div> }
             { !loadingLorem &&  <AISidebar editor={editor} /> }
-            {/* <button onClick={handleComment} className="bg-blue-500">Comment</button> */}
+            <button onClick={handleComment} className="bg-blue-500 hidden">Comment</button>
         </div> 
         </>
     );
