@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import Markdown from "markdown-to-jsx";
 import { TPlateEditor } from "@udecode/plate-common/react";
 import ExportToDoxc from "../exportButton";
-import { useCurrentDocId, useSuggestions } from "../../store";
-import { TComment } from "@udecode/plate-comments";
+import { useSuggestions } from "../../store";
 
 interface AISidebarProps {
   editor: TPlateEditor;
@@ -19,10 +18,6 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
   const [reviewInput, setReviewInput] = useState<string>(
     "My company does highly confidential data & innovation, this NDA has to be very strong and also compliant with EU law."
   ); // Added state for textarea
-  // const { editor_content } = useEditorContent()
-  // const { editor_comments } = useEditorComments()
-
-  const { id } = useCurrentDocId();
 
   const handleGenerateSummary = async () => {
     setIsLoading(true)
@@ -54,43 +49,6 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
       setIsLoading(false)
     } catch (error) {
       console.error("Error fetching document summary:", error);
-    }
-  };
-
-  const updateContentOnBackend = async() => {
-    
-    const storedValue = localStorage.getItem('editor-content');
-    // const storedValue = editor_content
-      if (storedValue) {
-        try {
-          await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/content`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: storedValue, // Send the whole documents
-          });
-        } catch (error) {
-          throw new Error('Error updating document');
-        }
-      }
-  }
-
-  const updateCommentsOnBackend = async () => {
-    let comments = localStorage.getItem("editor-comments");
-    // let comments = editor_comments
-    const parsedComments: Record<string, TComment>[] = comments ? JSON.parse(comments) : [];
-
-    try {
-      await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/comment`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(parsedComments), // Use parsedComments as payload
-      });
-    } catch (error) {
-      console.error('Error updating comments:', error);
     }
   };
 
@@ -135,7 +93,6 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
                 suggestion: s.suggestion || ''
             }));
             useSuggestions.setState(validSuggestions);
-            await Promise.all([updateContentOnBackend, updateCommentsOnBackend]);
         } else {
             console.error("Parsed suggestions is not an array:", suggestions);
         }
