@@ -15,9 +15,11 @@ services:
       context: .
       dockerfile: Dockerfile.db
     ports:
-      - "27017:27017"
+      - "27015:27017"
     volumes:
       - db_data:/data/db
+    env_file:
+      - .env
 
 volumes:
   db_data:

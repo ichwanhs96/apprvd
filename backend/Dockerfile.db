@@ -7,5 +7,8 @@ WORKDIR /data/db
 # Expose the default MongoDB port
 EXPOSE 27017
 
+# Copy the initialization script into the container
+COPY init-mongo.js /docker-entrypoint-initdb.d/
+
 # Command to run MongoDB
 CMD ["mongod"]
