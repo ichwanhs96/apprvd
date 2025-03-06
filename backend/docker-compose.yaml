@@ -21,7 +21,6 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: $(DB_USER)
       MONGO_INITDB_ROOT_PASSWORD: $(DB_PASSWORD)
-    command: ["sh", "-c", "echo $DB_USER && echo $DB_PASSWORD"]
 
 volumes:
   db_data:
