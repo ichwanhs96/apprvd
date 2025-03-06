@@ -4,11 +4,14 @@ FROM mongo:latest
 # Set the working directory in the container
 WORKDIR /data/db
 
+# Copy the init script into the container
+COPY init-mongo.sh /init-mongo.sh
+
+# Grant execute permissions for the script
+RUN chmod +x /init-mongo.sh
+
 # Expose the default MongoDB port
 EXPOSE 27017
 
-# Copy the initialization script into the container
-COPY init-mongo.js /docker-entrypoint-initdb.d/
-
-# Command to run MongoDB
-CMD ["mongod"]
+# Use the init script as the entrypoint
+ENTRYPOINT ["/init-mongo.sh"]
