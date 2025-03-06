@@ -8,15 +8,18 @@ import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid"; // To generate unique IDs
 
 interface TextSegment {
-  text: string;
+  text?: string;
   comment?: boolean;
   [key: `comment_${string}`]: boolean | string;
+  children?: TextSegment[];
+  [key: string]: any;
 }
 
 interface Block {
   children: TextSegment[];
   type: string;
   id: string;
+  [key: string]: any;
 }
 
 interface Suggestion {
@@ -108,72 +111,168 @@ const EditorPage: React.FC = () => {
         fetchData(); // Call fetchData on component mount
     }, []);
 
+    const deepCopy = (obj: any): any => {
+      return JSON.parse(JSON.stringify(obj));
+    };
+
+    function recursiveSegmentCheck(
+      child: any,
+      idMap: any,
+      suggestionsArray: Suggestion[],
+      arrayB: CommentBlock[],
+      depth: number
+    ) {
+      console.log("Entering recursiveSegmentCheck with depth:", depth);
+
+      const segments: TextSegment[] = [];
+      let childItemCounter: number = 0;
+      console.log('Child before processing:', JSON.stringify(child, null, 2));
+      console.log('Initial segments:', JSON.stringify(segments, null, 2));
+    
+      if (child !== undefined && child.length > 0) {
+        console.log("Initialized segments:", segments);
+    
+        child.forEach((childElement: any) => {
+          console.log("Processing item:", childItemCounter, " with childElement:", JSON.stringify(childElement, null, 2));
+    
+          if (childElement.children) {
+            const newChild = recursiveSegmentCheck(childElement.children, idMap, suggestionsArray, arrayB, depth + 1);
+            const segmentItem = { ...deepCopy(childElement), children: newChild }
+            console.log("Segments before adding newChild at dept:", depth, " and item: ", childItemCounter, " segments:", JSON.stringify(segments, null, 2), " child:", JSON.stringify(newChild, null, 2), " segment item to be pushed:", JSON.stringify(segmentItem, null, 2));
+            segments.push({ ...deepCopy(childElement), children: newChild }); // Use deep copy here
+            console.log("Segments after adding newChild at dept:", depth,  " and item: ", childItemCounter, " segments:", JSON.stringify(segments, null, 2));
+            childItemCounter++
+            return;
+          }
+    
+          let text = childElement.text;
+          let startIdx = 0;
+    
+          suggestionsArray.forEach((suggestion) => {
+            let index = text.indexOf(suggestion.target_text, startIdx);
+            if (index !== -1) {
+              let id = idMap.get(suggestion.target_text) || uuidv4().replace(/-/g, "").slice(0, 20);
+              idMap.set(suggestion.target_text, id);
+    
+              // Push text before match
+              if (index > startIdx) {
+                segments.push({ text: text.substring(startIdx, index), ...deepCopy(childElement) }); // Use deep copy here
+                console.log("Segments after adding text before match at depth:", depth, " segments: ", JSON.stringify(segments, null, 2));
+              }
+    
+              // Push matched text with comment metadata
+              segments.push({
+                text: suggestion.target_text,
+                comment: true,
+                [`comment_${id}`]: true,
+                ...deepCopy(childElement) // Use deep copy here
+              });
+              console.log("Segments after adding matched text at depth:", depth, " segments: ", JSON.stringify(segments, null, 2));
+    
+              // Store suggestion in arrayB if not already added
+              if (!arrayB.some((b) => b.id === id)) {
+                arrayB.push({
+                  createdAt: Date.now(),
+                  id: id,
+                  userId: "1",
+                  value: [
+                    { children: [{ text: suggestion.suggestion }], type: "p" },
+                  ],
+                });
+              }
+    
+              startIdx = index + suggestion.target_text.length;
+            }
+          });
+    
+          // Push remaining text
+          if (startIdx < text.length) {
+            segments.push({ text: text.substring(startIdx), ...deepCopy(childElement) }); // Use deep copy here
+            console.log("Segments after adding remaining text at depth:", depth, " segments: ", JSON.stringify(segments, null, 2));
+          }
+
+          childItemCounter++
+        });
+    
+        if (segments.length === 0) {
+          segments.push({ text: "" });
+        }
+    
+        console.log("Final segments at depth", depth, ":", JSON.stringify(segments, null, 2));
+        return segments;
+      } else {
+        console.log("Returning empty segment for depth", depth);
+        return [{ text: "" }];
+      }
+    }
+
     function processTextData(
         originalArray: Block[],
         suggestionsArray: Suggestion[]
       ): { arrayA: Block[]; arrayB: CommentBlock[] } {
-        let arrayA: Block[] = JSON.parse(JSON.stringify(originalArray)); // Deep copy
+        let arrayA: Block[] = deepCopy(originalArray)
         let arrayB: CommentBlock[] = [];
         let idMap = new Map<string, string>(); // Store target_text -> generated ID mapping
     
         arrayA.forEach((block) => {
-          block.children = block.children.flatMap((child) => {
-            let segments: TextSegment[] = [];
-            let text = child.text;
-            let startIdx = 0;
+          block.children = recursiveSegmentCheck(block.children, idMap, suggestionsArray, arrayB, 0)
+          // block.children = block.children.flatMap((child) => {
+          //   let segments: TextSegment[] = [];
+          //   let text = child.text;
+          //   let startIdx = 0;
     
-            suggestionsArray.forEach((suggestion) => {
-              let index = text.indexOf(suggestion.target_text, startIdx);
-              if (index !== -1) {
-                let id =
-                  idMap.get(suggestion.target_text) ||
-                  uuidv4().replace(/-/g, "").slice(0, 20);
-                idMap.set(suggestion.target_text, id); // Store/retrieve the same ID for consistency
+          //   suggestionsArray.forEach((suggestion) => {
+          //     let index = text.indexOf(suggestion.target_text, startIdx);
+          //     if (index !== -1) {
+          //       let id =
+          //         idMap.get(suggestion.target_text) ||
+          //         uuidv4().replace(/-/g, "").slice(0, 20);
+          //       idMap.set(suggestion.target_text, id); // Store/retrieve the same ID for consistency
     
-                // Push text before match
-                if (index > startIdx) {
-                  segments.push({ text: text.substring(startIdx, index) });
-                }
+          //       // Push text before match
+          //       if (index > startIdx) {
+          //         segments.push({ text: text.substring(startIdx, index) });
+          //       }
     
-                // Push matched text with comment metadata
-                segments.push({
-                  text: suggestion.target_text,
-                  comment: true,
-                  [`comment_${id}`]: true,
-                });
+          //       // Push matched text with comment metadata
+          //       segments.push({
+          //         text: suggestion.target_text,
+          //         comment: true,
+          //         [`comment_${id}`]: true,
+          //       });
     
-                // Store suggestion in arrayB if not already added
-                if (!arrayB.some((b) => b.id === id)) {
-                  arrayB.push({
-                    createdAt: Date.now(),
-                    id: id,
-                    userId: "1",
-                    value: [
-                      { children: [{ text: suggestion.suggestion }], type: "p" },
-                    ],
-                  });
-                }
+          //       // Store suggestion in arrayB if not already added
+          //       if (!arrayB.some((b) => b.id === id)) {
+          //         arrayB.push({
+          //           createdAt: Date.now(),
+          //           id: id,
+          //           userId: "1",
+          //           value: [
+          //             { children: [{ text: suggestion.suggestion }], type: "p" },
+          //           ],
+          //         });
+          //       }
     
-                startIdx = index + suggestion.target_text.length;
-              }
-            });
+          //       startIdx = index + suggestion.target_text.length;
+          //     }
+          //   });
     
-            // Push remaining text
-            if (startIdx < text.length) {
-              segments.push({ text: text.substring(startIdx) });
-            }
+          //   // Push remaining text
+          //   if (startIdx < text.length) {
+          //     segments.push({ text: text.substring(startIdx) });
+          //   }
     
-            return segments;
-          });
+          //   return segments;
+          // });
         });
     
         return { arrayA, arrayB };
       }
     
       const suggestionsArray: Suggestion[] = [
-        { target_text: "typing", suggestion: "this is a typing" },
-        { target_text: "here", suggestion: "this is here" },
-        { target_text: "...", suggestion: "this is ..." },
+        { target_text: "as defined below", suggestion: "this is a typing" },
+        { target_text: "DETAILS OF THE PARTIES. ", suggestion: "this is a suggestion wanna be!" },
+        { target_text: "DEFINITIONS AND INTERPRETATION", suggestion: "UUIIAAA!" }
       ];
     
       const updateEditorContentAndComment = (newContents: any, newComments: any) => {
@@ -195,6 +294,9 @@ const EditorPage: React.FC = () => {
             editorData.contents,
             suggestionsArray
           );
+
+          console.log(arrayA)
+          console.log(arrayB)
     
           updateEditorContentAndComment(arrayA, arrayB);
           
@@ -214,7 +316,7 @@ const EditorPage: React.FC = () => {
         <div className="w-1/4">
             { loadingLorem && <div>Loading...</div> }
             { !loadingLorem &&  <AISidebar editor={editor} /> }
-            <button onClick={handleComment} className="bg-blue-500 hidden">Comment</button>
+            {/* <button onClick={handleComment} className="bg-blue-500">Comment</button> */}
         </div> 
         </>
     );
