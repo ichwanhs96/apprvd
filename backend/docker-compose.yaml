@@ -18,9 +18,11 @@ services:
       - "27015:27017"
     volumes:
       - db_data:/data/db
+    env_file:
+      - .env
     environment:
-      MONGO_INITDB_ROOT_USERNAME: $(DB_USER)
-      MONGO_INITDB_ROOT_PASSWORD: $(DB_PASSWORD)
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
 
 volumes:
   db_data:
