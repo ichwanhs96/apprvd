@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../../../context/AuthContext"; // Add this import
+import { useContentToShow, useContractSelected } from "../../../store";
 
 interface NavItem {
   label: string;
@@ -13,6 +14,8 @@ interface DashboardNavbarProps {
 const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
   const [navBarOpen, setNavBarOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { created, name, status, version } = useContractSelected();
+  const { content } = useContentToShow();
   const { user, logout } = useAuth();
 
   function onClick() {
@@ -27,6 +30,8 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
       console.error("Failed to logout:", error);
     }
   };
+
+  console.log(created, name, status, version);
 
   return (
     <>
@@ -46,6 +51,26 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
             </span>
           </a>
         </div>
+        {content === 'editor' && <div className="flex flex-col gap-y-2 items-start justify-center">
+          <div className="flex flex-row gap-x-4">
+            <div>{name ?? ''}</div>
+            <div className="bg-slate-400 text-white text-xs px-2 py-1 rounded-md">{version ?? ''}</div>
+            <div className={`px-3 py-1 rounded-3xl text-xs ${status.toLowerCase() === 'draft' ? 'bg-blue-100 text-blue-700' : status.toLowerCase() === 'review' ? 'bg-yellow-100 text-yellow-700' : status.toLowerCase() === 'final' ? 'bg-green-100 text-green-700' : ''}`}>{status ?? ''}</div>
+          </div>
+          <div className="flex flex-row gap-x-2">
+            <div className="text-sm">
+              Created {created
+                ? new Intl.DateTimeFormat('en-GB', {
+                    day: 'numeric',
+                    month: 'long',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  }).format(created)
+                : ''}
+            </div>
+          </div>
+        </div>}
         <div className="block lg:hidden">
           <button className="group flex items-center px-6 py-4 border rounded text-teal-200 border-teal-400 hover:text-white hover:border-white">
             <svg

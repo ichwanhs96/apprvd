@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useCurrentDocId, useContentToShow } from "../store";
+import { useCurrentDocId, useContentToShow, useEditContracts, useContractSelected } from "../store";
 // import DocxImporter from "../components/docxImporter";
 import { useAuth } from "../context/AuthContext";
 import DocxImporter from "../components/docxImporter";
@@ -206,6 +206,7 @@ function ContractItem({ contractItem }: { contractItem: Contract }) {
       <td className="px-4 py-8 text-gray-700 hover:cursor-pointer" onClick={() => {
         useCurrentDocId.setState({ id: contractItem.id });
         useContentToShow.setState({ content: "editor" });
+        useContractSelected.setState({ name: contractItem.name, version: contractItem.version, status: contractItem.status, created: new Date(contractItem.created_at) });
       }}>{contractItem.name}</td>
       <td className="px-4 py-8 text-gray-700">
         {contractItem.language ?? 'EN'}
@@ -227,6 +228,12 @@ function ContractItem({ contractItem }: { contractItem: Contract }) {
         >
           {contractItem.status}
         </span>
+      </td>
+      <td className="px-4 py-8">
+        <div className="flex flex-row gap-x-2 w-full items-center justify-center">
+          <button className="bg-white border rounded-lg border-neutral-400 text-blue-500 hover:underline" onClick={() => useEditContracts.setState({isOpen: !useEditContracts.getState().isOpen})}>Edit</button>
+          <button className="bg-white border rounded-lg border-neutral-400 text-red-500 hover:underline">Delete</button>
+        </div>
       </td>
     </tr>
   );
@@ -261,6 +268,9 @@ function ContractList({ contracts }: Contracts) {
             </th>
             <th className="px-4 py-8 text-left text-xs font-bold text-gray-500 uppercase">
               Status
+            </th>
+            <th className="px-4 py-8 text-left text-xs font-bold text-gray-500 uppercase">
+              Actions
             </th>
           </tr>
         </thead>
