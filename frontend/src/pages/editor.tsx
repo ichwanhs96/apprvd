@@ -4,7 +4,7 @@ import PlateEditor, { InitiatePlateEditor } from "../components/textEditor/plate
 import { useAuth } from "../context/AuthContext"; // Add this import
 import { useCurrentDocId, useSuggestions } from "../store";
 import { useNavigate } from "react-router-dom";
-
+import { TComment } from "@udecode/plate-comments";
 import { v4 as uuidv4 } from "uuid"; // To generate unique IDs
 
 interface TextSegment {
@@ -279,8 +279,42 @@ const EditorPage: React.FC = () => {
         const updatedComments = existingComments ? [...JSON.parse(existingComments), ...newComments] : newComments;
         localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(updatedComments));
       };
+
+      const updateContentOnBackend = async() => {
+        const storedValue = localStorage.getItem('editor-content');
+          if (storedValue) {
+            try {
+              await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/content`, {
+                method: 'PATCH',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: storedValue, // Send the whole documents
+              });
+            } catch (error) {
+              throw new Error('Error updating document');
+            }
+          }
+      }
     
-      const handleDynamicComment = (suggestionsArray: Suggestion[]) => {
+      const updateCommentsOnBackend = async () => {
+        let comments = localStorage.getItem("editor-comments");
+        const parsedComments: Record<string, TComment>[] = comments ? JSON.parse(comments) : [];
+    
+        try {
+          await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/comment`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(parsedComments), // Use parsedComments as payload
+          });
+        } catch (error) {
+          console.error('Error updating comments:', error);
+        }
+      };
+    
+      const handleDynamicComment = async (suggestionsArray: Suggestion[]) => {
         if (editorData && editorData.contents) {
           let { arrayA, arrayB } = processTextData(
             editorData.contents,
@@ -288,6 +322,7 @@ const EditorPage: React.FC = () => {
           );
     
           updateEditorContentAndComment(arrayA, arrayB);
+          await Promise.all([updateContentOnBackend(), updateCommentsOnBackend()]);
           
           navigate("/dashboard");
         }
