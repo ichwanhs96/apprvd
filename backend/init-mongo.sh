@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+apt-get update
+apt-get install -y mongodb-org-shell
+
 # Start MongoDB with limited concurrency to allow for setup
 mongod --bind_ip_all --fork --logpath /var/log/mongodb.log
 
