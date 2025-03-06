@@ -45,3 +45,25 @@ export const useEditorStore = create<EditorState>((set) => ({
   content: [], // Default empty content
   setContent: (content) => set({ content }),
 }));
+
+interface EditContract {
+  isOpen: boolean;
+}
+
+export const useEditContracts = create<EditContract>(() => ({
+  isOpen: false
+}))
+
+interface ContractSelected {
+  name: string;
+  version: string;
+  status: string;
+  created: Date;
+}
+
+export const useContractSelected = create<ContractSelected>(() => ({
+  name: '',
+  version: '',
+  status: '',
+  created: new Date()
+}))

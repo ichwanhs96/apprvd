@@ -7,12 +7,15 @@ import {
   TableRow,
   Table,
   ShadingType,
-  UnderlineType /*ImageRun*/,
+  UnderlineType, /*ImageRun*/
+  LevelFormat,
 } from "docx"; // Import docx library
 import { saveAs } from "file-saver";
+import { useContractSelected } from "../store";
 
 export default function ExportToDoxc() {
   const STORAGE_KEY = "editor-content";
+  const { name, version } =useContractSelected();
 
   const exportToDocx = () => {
     const savedValue = localStorage.getItem(STORAGE_KEY);
@@ -26,8 +29,35 @@ export default function ExportToDoxc() {
 
     if (savedValue) {
       const content = JSON.parse(savedValue);
+      console.log(content);
 
       const doc = new Document({
+        numbering: {
+          config: [
+            {
+              reference: "orderedList",
+              levels: [
+                {
+                  level: 0,
+                  format: LevelFormat.DECIMAL,
+                  text: "%1.",
+                  alignment: "left",
+                },
+              ],
+            },
+            {
+              reference: "unorderedList",
+              levels: [
+                {
+                  level: 0,
+                  format: LevelFormat.BULLET,
+                  text: "\u1F60",
+                  alignment: "left",
+                },
+              ],
+            },
+          ],
+        },
         sections: [
           {
             properties: {},
@@ -61,6 +91,64 @@ export default function ExportToDoxc() {
                   children: paragraphChildren,
                   alignment: item.align ? item.align : "left",
                 });
+              }else if(item.type === 'h1'){
+                return new Paragraph({
+                  text: item.children[0]?.text,
+                  heading: "Heading1",
+                  alignment: item.align ? item.align : "left",
+                });
+              }else if(item.type === 'h2'){
+                return new Paragraph({
+                  text: item.children[0]?.text,
+                  heading: "Heading2",
+                  alignment: item.align ? item.align : "left",
+                });
+              }else if(item.type === 'h3'){
+                return new Paragraph({
+                  text: item.children[0]?.text,
+                  heading: "Heading3",
+                  alignment: item.align ? item.align : "left",
+                });
+              }else if(item.type === 'h4'){
+                return new Paragraph({
+                  text: item.children[0]?.text,
+                  heading: "Heading4",
+                  alignment: item.align ? item.align : "left",
+                });
+              }else if(item.type === 'h5'){
+                return new Paragraph({
+                  text: item.children[0]?.text,
+                  heading: "Heading5",
+                  alignment: item.align ? item.align : "left",
+                });
+              } else if (item.type === "ol") {
+                const listOl = item.children.map((child: any) => {
+                  return new TextRun({
+                    text: child[0]?.text,
+                  });
+                });
+                // Handle ordered list
+                   return new Paragraph({
+                    children: listOl,
+                    numbering: {
+                      reference: "orderedList",
+                      level: 0,
+                    },
+                });
+              } else if (item.type === "ul") {
+                // Handle unordered list
+                item.children.map((child: any) => {
+                   return new Paragraph({
+                    text: child[0]?.text,
+                    // numbering: {
+                    //   reference: "unorderedList",
+                    //   level: 0,
+                    // },
+                    bullet: {
+                      level: 0,
+                    }
+                  });
+                });
               } else if (item.type === "table") {
                 // Handle table
                 const rows = item.children.map((row: any) => {
@@ -93,8 +181,8 @@ export default function ExportToDoxc() {
                   text: item.children[0]?.text,
                   numbering: isDecimal
                     ? {
-                        reference: isDecimal ? "orderList" : "unorderedList",
-                        level: item.listStart - 1, // Adjust level for zero-based index
+                        reference: isDecimal ? "orderedList" : "unorderedList",
+                        level: 0, // Adjust level for zero-based index
                       }
                     : undefined, // No numbering for bullet style
                 });
@@ -136,7 +224,7 @@ export default function ExportToDoxc() {
 
       Packer.toBlob(doc).then((blob) => {
         // TODO: change this to follow document name
-        saveAs(blob, "exported-content.docx");
+        saveAs(blob, `${name}-${version}.docx`);
       });
     } else {
       console.error("No content found in localStorage.");
