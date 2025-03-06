@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AISidebar from "../components/aiSidebar";
 import PlateEditor, { InitiatePlateEditor } from "../components/textEditor/plate-editor";
 import { useAuth } from "../context/AuthContext"; // Add this import
-import { useCurrentDocId, useSuggestions } from "../store";
+import { useCurrentDocId, useEditorComments, useEditorContent, useSuggestions } from "../store";
 import { useNavigate } from "react-router-dom";
 
 import { v4 as uuidv4 } from "uuid"; // To generate unique IDs
@@ -47,6 +47,8 @@ const EditorPage: React.FC = () => {
     const EDITOR_CONTENT_COMMENTS = "editor-comments";
     const { id } = useCurrentDocId();
     const suggestions = useSuggestions();
+    // const { editor_content } = useEditorContent()
+    // const { editor_comments } = useEditorComments()
     const navigate = useNavigate();
 
     const fetchDocument = async (doc_id: string) => {
@@ -76,6 +78,8 @@ const EditorPage: React.FC = () => {
     const loadInitialValue = async () => {
         try {
             const data = await fetchDocument(id);
+            useEditorComments.setState({editor_comments: JSON.stringify(data.comments)})
+            useEditorContent.setState({editor_content: JSON.stringify(data.contents)})
             localStorage.setItem(EDITOR_CONTENT_KEY, JSON.stringify(data.contents)); // Store the response in local storage
             localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(data.comments)); // Store the response in local storage
 
@@ -86,6 +90,7 @@ const EditorPage: React.FC = () => {
             }], comments: [] };
         } catch (error) {
             const savedValue = localStorage.getItem(EDITOR_CONTENT_KEY);
+            // const savedValue = editor_content
             if (savedValue) {
                 return JSON.parse(savedValue);
             }
@@ -274,9 +279,12 @@ const EditorPage: React.FC = () => {
           comments: newComments
         }));
         // set local storage content and comment with the new value
+        useEditorContent.setState({editor_content: JSON.stringify(newContents)})
         localStorage.setItem(EDITOR_CONTENT_KEY, JSON.stringify(newContents));
         const existingComments = localStorage.getItem(EDITOR_CONTENT_COMMENTS);
+        // const existingComments = editor_comments
         const updatedComments = existingComments ? [...JSON.parse(existingComments), ...newComments] : newComments;
+        useEditorComments.setState({editor_comments: JSON.stringify(updatedComments) })
         localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(updatedComments));
       };
     
@@ -299,6 +307,8 @@ const EditorPage: React.FC = () => {
 
     // Initialize the editor only after data is loaded
     const editor = editorData ? InitiatePlateEditor(editorData, userInfo, id) : null;
+
+    // console.log("From zustand: ", editor_content, editor_comments)
 
     return (
         <>

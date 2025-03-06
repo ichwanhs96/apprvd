@@ -119,13 +119,14 @@ import { TableElement } from "../plate-ui/table-element";
 import { TableRowElement } from "../plate-ui/table-row-element";
 import { TodoListElement } from "../plate-ui/todo-list-element";
 import { withDraggables } from "../plate-ui/with-draggables";
-import { useContracts, useCurrentDocId } from "../../store"
+import { useContracts, useCurrentDocId, useEditorComments } from "../../store"
 import { ListElement } from "../plate-ui/list-element";
 
 export default function PlateEditor({ editor }: { editor: any }) {
   const containerRef = useRef(null);
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null)
   const { id } = useCurrentDocId()
+  // const { editor_content } = useEditorContent()
   // const { updated } = useContracts()
 
   const handleTyping = () => {
@@ -143,20 +144,21 @@ export default function PlateEditor({ editor }: { editor: any }) {
   const [value, setValue] = useState(null);
 
   useEffect(() => {
-    // TODO: to have handler only when update being made then update docs in backend
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+    let previousValue = value; // Store the previous value
 
     const intervalId = setInterval(async () => {
       const storedValue = localStorage.getItem(STORAGE_KEY);
-      if (storedValue) {
-        // TODO: how to send only the deltas to backend to optimize operation and reduce data sent to backend
+      // const storedValue = editor_content
+      if (storedValue && storedValue !== JSON.stringify(previousValue)) {
+        previousValue = JSON.parse(storedValue); // Update previous value
+
         try {
           await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/content`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: storedValue, // Send the whole documents
+            body: JSON.stringify(value), // Send the whole document
           });
         } catch (error) {
           throw new Error('Error updating document');
@@ -164,13 +166,15 @@ export default function PlateEditor({ editor }: { editor: any }) {
       }
     }, 10000); // 10 seconds
 
-    return () => clearInterval(intervalId); // Cleanup on unmount
+    return () => clearInterval(intervalId);
   }, [value]);
 
   const persistChange = (newValue: any) => {
     setValue(newValue.value);
     handleTyping();
   }
+
+  console.log("last vallue: ", value)
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -422,6 +426,7 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any, doc_id: an
                 : {};
             // reset comments every editor reload
             localStorage.setItem("editor-comments", JSON.stringify(comments));
+            useEditorComments.setState({editor_comments: JSON.stringify(comments)})
             return parsedComments;
           })() as Record<string, TComment>, // Immediately invoke the function and assert the type
           // TODO: update based on users profile
@@ -435,13 +440,16 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any, doc_id: an
           },
           myUserId: "1",
           onCommentAdd: ((val: any) => {
+            // const { editor_comments } = useEditorComments()
             let comments = localStorage.getItem("editor-comments");
+            // let comments = editor_comments
             const parsedComments: Record<string, TComment>[] = comments ? JSON.parse(comments) : [];
             parsedComments.push(val); // Append the new comment object
             localStorage.setItem(
               "editor-comments",
               JSON.stringify(parsedComments) // Store the updated array
             );
+            useEditorComments.setState({editor_comments: JSON.stringify(parsedComments)})
 
             // New HTTP PATCH function to update comments on the backend
             const updateCommentsOnBackend = async () => {

@@ -26,6 +26,7 @@ interface ContractItem {
 function ContractsPage() {
   const { userInfo } = useAuth();
   const [addOpen, setAddOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
   const [allContract, setAllContract] = useState<Contract[]>([])
   const [baseData, setBaseData] = useState({
     name: '',
@@ -42,7 +43,8 @@ function ContractsPage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // Prevent the default form submission
-
+    
+    setIsLoading(true)
     try {
       if (!userInfo?.email) {
         alert("Please login!");
@@ -71,6 +73,7 @@ function ContractsPage() {
       let result = await response.json();
       useCurrentDocId.setState({ id: result?.document?.id })
       useContentToShow.setState({ content: "editor" }); // Set content to show
+      setIsLoading(false)
     } catch (error) {
       console.error('Error:', error);
     }
@@ -165,7 +168,8 @@ function ContractsPage() {
               <div className="flex flex-row gap-x-2 mt-4 items-center justify-end">
               <button
                 type="submit"
-                className="bg-green-500 text-white px-4 py-2 rounded-md"
+                disabled={isLoading}
+                className="bg-green-500 text-white px-4 py-2 rounded-md disabled:cursor-not-allowed"
               >
                 Create
               </button>

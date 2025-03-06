@@ -12,16 +12,20 @@ interface AISidebarProps {
 const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [docSummary, setDocSummary] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false)
   // const [suggestionSummary, setSuggestionSummary] = useState<string>("");
   // const [isOpen, setIsOpen] = useState(false);
   // const [contentModal, setContentModal] = useState("");
   const [reviewInput, setReviewInput] = useState<string>(
     "My company does highly confidential data & innovation, this NDA has to be very strong and also compliant with EU law."
   ); // Added state for textarea
+  // const { editor_content } = useEditorContent()
+  // const { editor_comments } = useEditorComments()
 
   const { id } = useCurrentDocId();
 
   const handleGenerateSummary = async () => {
+    setIsLoading(true)
     try {
       const markdownContent = (editor.api as any).markdown.serialize();
 
@@ -47,13 +51,16 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
       if (keyItems) keyItems.classList.remove("hidden");
 
       setIsTyping(true);
+      setIsLoading(false)
     } catch (error) {
       console.error("Error fetching document summary:", error);
     }
   };
 
   const updateContentOnBackend = async() => {
+    
     const storedValue = localStorage.getItem('editor-content');
+    // const storedValue = editor_content
       if (storedValue) {
         try {
           await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/content`, {
@@ -71,6 +78,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
 
   const updateCommentsOnBackend = async () => {
     let comments = localStorage.getItem("editor-comments");
+    // let comments = editor_comments
     const parsedComments: Record<string, TComment>[] = comments ? JSON.parse(comments) : [];
 
     try {
@@ -87,6 +95,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
   };
 
   const handleReviewRequest = async () => {
+    setIsLoading(true)
     try {
       const markdownContent = (editor.api as any).markdown.serialize();
 
@@ -138,6 +147,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
   
         setIsTyping(true); 
       }
+      setIsLoading(false)
     } catch (error) {
       console.error("Error fetching review request:", error);
     }
@@ -154,7 +164,8 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
         </div>
         <div className="mb-6">
           <button
-            className="w-full bg-gray-200 py-2 px-4 rounded-lg text-gray-800 font-medium hover:bg-gray-300"
+            disabled={isLoading}
+            className="w-full bg-gray-200 py-2 px-4 rounded-lg text-gray-800 font-medium hover:bg-gray-300 disabled:cursor-not-allowed"
             onClick={handleGenerateSummary}
           >
             Generate Document Summary
@@ -220,7 +231,8 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
         </div>
         <div className="mb-6">
           <button
-            className="w-full bg-gray-200 py-2 px-4 rounded-lg text-gray-800 font-medium hover:bg-gray-300"
+            className="w-full bg-gray-200 py-2 px-4 rounded-lg text-gray-800 font-medium hover:bg-gray-300 disabled:cursor-not-allowed"
+            disabled={isLoading}
             onClick={handleReviewRequest}
           >
             Ask for Review

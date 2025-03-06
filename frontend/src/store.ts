@@ -66,6 +66,7 @@ export const useContractSelected = create<ContractSelected>(() => ({
   version: '',
   status: '',
   created: new Date()
+
 }))
 
 interface Suggestion {
@@ -74,3 +75,19 @@ interface Suggestion {
 }
 
 export const useSuggestions = create<Suggestion[]>(() => [])
+
+interface EditorComments {
+  editor_comments: string;
+}
+
+export const useEditorComments = create<EditorComments>(() => ({
+  editor_comments: '',
+}))
+
+interface EditorContent {
+  editor_content: string;
+}
+
+export const useEditorContent = create<EditorContent>(() => ({
+  editor_content: '',
+}))

@@ -12,6 +12,7 @@ const DocxImporter = ({ setAllContract }: any) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate();
   const openModal = () => setIsOpen(true);
   const closeModal = () => {
@@ -77,6 +78,8 @@ const DocxImporter = ({ setAllContract }: any) => {
       return;
     }
 
+    setIsLoading(true)
+
     try {
       if (!userInfo?.email) {
         alert("Please login!");
@@ -111,6 +114,7 @@ const DocxImporter = ({ setAllContract }: any) => {
         status: result?.document?.status,
         version: result?.document?.version,
       });
+      setIsLoading(false)
     } catch (error) {
       console.error("Error:", error);
     }
@@ -239,7 +243,8 @@ const DocxImporter = ({ setAllContract }: any) => {
             <div className="flex justify-end">
               <button
                 onClick={handleUpload}
-                className="bg-green-500 text-white px-4 py-2 rounded-md mr-2"
+                disabled={isLoading}
+                className="bg-green-500 text-white px-4 py-2 rounded-md mr-2 disabled:cursor-not-allowed"
               >
                 Upload
               </button>

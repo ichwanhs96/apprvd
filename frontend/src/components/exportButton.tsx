@@ -16,9 +16,11 @@ import { useContractSelected } from "../store";
 export default function ExportToDoxc() {
   const STORAGE_KEY = "editor-content";
   const { name, version } =useContractSelected();
+  // const { editor_content } = useEditorContent();
 
   const exportToDocx = () => {
     const savedValue = localStorage.getItem(STORAGE_KEY);
+    // const savedValue = editor_content
     const rgbToHex = (rgb: string) => {
       const match = rgb.match(/\d+/g);
       if (!match) return "#000000"; // Default to black if invalid
