@@ -229,12 +229,12 @@ function ContractItem({ contractItem }: { contractItem: Contract }) {
           {contractItem.status}
         </span>
       </td>
-      <td className="px-4 py-8">
+      {/* <td className="px-4 py-8">
         <div className="flex flex-row gap-x-2 w-full items-center justify-center">
           <button className="bg-white border rounded-lg border-neutral-400 text-blue-500 hover:underline" onClick={() => useEditContracts.setState({isOpen: !useEditContracts.getState().isOpen})}>Edit</button>
           <button className="bg-white border rounded-lg border-neutral-400 text-red-500 hover:underline">Delete</button>
         </div>
-      </td>
+      </td> */}
     </tr>
   );
 }
@@ -269,9 +269,9 @@ function ContractList({ contracts }: Contracts) {
             <th className="px-4 py-8 text-left text-xs font-bold text-gray-500 uppercase">
               Status
             </th>
-            <th className="px-4 py-8 text-left text-xs font-bold text-gray-500 uppercase">
+            {/* <th className="px-4 py-8 text-left text-xs font-bold text-gray-500 uppercase">
               Actions
-            </th>
+            </th> */}
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">

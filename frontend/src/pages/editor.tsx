@@ -77,10 +77,7 @@ const EditorPage: React.FC = () => {
         try {
             const data = await fetchDocument(id);
             localStorage.setItem(EDITOR_CONTENT_KEY, JSON.stringify(data.contents)); // Store the response in local storage
-            const savedComments = localStorage.getItem(EDITOR_CONTENT_COMMENTS);
-            if (data && data.comments && savedComments !== null) {
-                data.comments = JSON.parse(savedComments);
-            }
+            localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(data.comments)); // Store the response in local storage
 
             return data || { contents: [{
                 id: "1",
