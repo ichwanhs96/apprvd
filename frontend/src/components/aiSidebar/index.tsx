@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Markdown from "markdown-to-jsx";
 import { TPlateEditor } from "@udecode/plate-common/react";
 import ExportToDoxc from "../exportButton";
+import { useSuggestions } from "../../store";
 
 interface AISidebarProps {
   editor: TPlateEditor;
@@ -10,7 +11,7 @@ interface AISidebarProps {
 const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [docSummary, setDocSummary] = useState<string>("");
-  const [suggestionSummary, setSuggestionSummary] = useState<string>("");
+  // const [suggestionSummary, setSuggestionSummary] = useState<string>("");
   // const [isOpen, setIsOpen] = useState(false);
   // const [contentModal, setContentModal] = useState("");
   const [reviewInput, setReviewInput] = useState<string>(
@@ -60,17 +61,46 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            prompt: `with this document written in markdown format as context "${markdownContent}", generate contextual response based on user prompt as follows "${reviewInput}".`,
+            prompt: `
+            With this document written in markdown format as context "${markdownContent}", generate contextual response based on user prompt as follows "${reviewInput}".
+            
+            Your response must be in form of suggestions to the document.
+            
+            Response only with valid JSON format with format
+            {
+               "target_text": referring to text in the document,
+               "suggestion": your own suggestion to improve the document
+            }
+            `,
           }),
         }
       );
       const data = await response.json();
-      setSuggestionSummary(data.response); // Assuming the response has a 'summary' field
+      // setSuggestionSummary(data.response);
 
-      const suggestionSummary = document.getElementById("SuggestionSummary");
-      if (suggestionSummary) suggestionSummary.classList.remove("hidden");
+      try {
+        let extractedText = data.response.split("```json")[1];
+        extractedText = extractedText.split("```")[0];
+        let suggestions: any[] = JSON.parse(extractedText);
 
-      setIsTyping(true);
+        // Ensure suggestions is an array of Suggestion objects before setting the state
+        if (Array.isArray(suggestions)) {
+            const validSuggestions = suggestions.map(s => ({
+                target_text: s.target_text || '',
+                suggestion: s.suggestion || ''
+            }));
+            useSuggestions.setState(validSuggestions);
+        } else {
+            console.error("Parsed suggestions is not an array:", suggestions);
+        }
+      } catch (error) {
+        console.error("error parsing response ", error);
+      } finally {
+        const suggestionSummary = document.getElementById("SuggestionSummary");
+        if (suggestionSummary) suggestionSummary.classList.remove("hidden");
+  
+        setIsTyping(true); 
+      }
     } catch (error) {
       console.error("Error fetching review request:", error);
     }
@@ -156,10 +186,10 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
             className="w-full bg-gray-200 py-2 px-4 rounded-lg text-gray-800 font-medium hover:bg-gray-300"
             onClick={handleReviewRequest}
           >
-            Review query
+            Ask for Review
           </button>
         </div>
-        <div id="SuggestionSummary" className="mb-6 hidden">
+        {/* <div id="SuggestionSummary" className="mb-6 hidden">
           <h3 className="font-medium text-lg">Suggestions</h3>
           <div className="border rounded-lg">
             <p
@@ -170,13 +200,13 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
               <Markdown>{suggestionSummary}</Markdown>
             </p>
           </div>
-          {/* <div className="text-blue-500 underline hover:cursor-pointer" onClick={() => {
+          <div className="text-blue-500 underline hover:cursor-pointer" onClick={() => {
                 setIsOpen(true);
                 setContentModal("suggestionSummary");
               }}>
             Read more
-          </div> */}
-        </div>
+          </div>
+        </div> */}
         {/* <div className='text-center'>
                     <button
                         className='bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring focus:bg-blue-500'>

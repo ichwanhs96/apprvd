@@ -67,3 +67,10 @@ export const useContractSelected = create<ContractSelected>(() => ({
   status: '',
   created: new Date()
 }))
+
+interface Suggestion {
+  target_text: string;
+  suggestion: string;
+}
+
+export const useSuggestions = create<Suggestion[]>(() => [])

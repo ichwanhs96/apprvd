@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AISidebar from "../components/aiSidebar";
 import PlateEditor, { InitiatePlateEditor } from "../components/textEditor/plate-editor";
 import { useAuth } from "../context/AuthContext"; // Add this import
-import { useCurrentDocId } from "../store";
+import { useCurrentDocId, useSuggestions } from "../store";
 import { useNavigate } from "react-router-dom";
 
 import { v4 as uuidv4 } from "uuid"; // To generate unique IDs
@@ -46,6 +46,7 @@ const EditorPage: React.FC = () => {
     const EDITOR_CONTENT_KEY = 'editor-content';
     const EDITOR_CONTENT_COMMENTS = "editor-comments";
     const { id } = useCurrentDocId();
+    const suggestions = useSuggestions();
     const navigate = useNavigate();
 
     const fetchDocument = async (doc_id: string) => {
@@ -269,12 +270,6 @@ const EditorPage: React.FC = () => {
         return { arrayA, arrayB };
       }
     
-      const suggestionsArray: Suggestion[] = [
-        { target_text: "as defined below", suggestion: "this is a typing" },
-        { target_text: "DETAILS OF THE PARTIES. ", suggestion: "this is a suggestion wanna be!" },
-        { target_text: "DEFINITIONS AND INTERPRETATION", suggestion: "UUIIAAA!" }
-      ];
-    
       const updateEditorContentAndComment = (newContents: any, newComments: any) => {
         setEditorData((prevState: any) => ({
           ...prevState,
@@ -288,21 +283,22 @@ const EditorPage: React.FC = () => {
         localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(updatedComments));
       };
     
-      const handleComment = () => {
+      const handleDynamicComment = (suggestionsArray: Suggestion[]) => {
         if (editorData && editorData.contents) {
           let { arrayA, arrayB } = processTextData(
             editorData.contents,
             suggestionsArray
           );
-
-          console.log(arrayA)
-          console.log(arrayB)
     
           updateEditorContentAndComment(arrayA, arrayB);
           
           navigate("/dashboard");
         }
       };
+
+    useEffect(() => {
+      handleDynamicComment(Object.values(suggestions).map(value => value));
+    }, [suggestions]);
 
     // Initialize the editor only after data is loaded
     const editor = editorData ? InitiatePlateEditor(editorData, userInfo, id) : null;
@@ -316,7 +312,7 @@ const EditorPage: React.FC = () => {
         <div className="w-1/4">
             { loadingLorem && <div>Loading...</div> }
             { !loadingLorem &&  <AISidebar editor={editor} /> }
-            <button onClick={handleComment} className="bg-blue-500 hidden">Comment</button>
+            {/* <button onClick={handleComment} className="bg-blue-500 hidden">Comment</button> */}
         </div> 
         </>
     );
