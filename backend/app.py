@@ -35,7 +35,7 @@ connect(
     db=os.environ['DB_NAME'],
     host=os.environ['DB_HOST'],
     port=int(os.environ['DB_PORT']),
-    username=os.environ['DB_USERNAME'],
+    username=os.environ['DB_USER'],
     password=os.environ['DB_PASSWORD']
 )
 
