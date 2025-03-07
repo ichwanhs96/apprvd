@@ -8,7 +8,7 @@ export const HighlightLeaf = withRef<typeof PlateLeaf>(
   ({ children, className, ...props }, ref) => (
     <PlateLeaf
       asChild
-      className={cn('bg-primary/20 text-inherit dark:bg-primary/40', className)}
+      className={cn('bg-yellow-400/20 text-inherit dark:bg-primary/40', className)}
       ref={ref}
       {...props}
     >
