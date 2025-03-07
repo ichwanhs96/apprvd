@@ -137,7 +137,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
             {isLoading ? (
                   <svg
                     aria-hidden="true"
-                    className="inline w-6 h-6 text-gray-400 animate-spin dark:text-gray-600 fill-white dark:fill-gray-300"
+                    className="inline w-6 h-6 text-white animate-spin dark:text-gray-600 fill-gray-400 dark:fill-gray-300"
                     viewBox="0 0 100 101"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -223,7 +223,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
             {isLoadingReview ? (
                   <svg
                     aria-hidden="true"
-                    className="inline w-6 h-6 text-gray-400 animate-spin dark:text-gray-600 fill-white dark:fill-gray-300"
+                    className="inline w-6 h-6 text-white animate-spin dark:text-gray-600 fill-gray-400 dark:fill-gray-300"
                     viewBox="0 0 100 101"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
