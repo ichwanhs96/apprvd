@@ -66,15 +66,21 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
           },
           body: JSON.stringify({
             prompt: `
-            With this document written in markdown format as context "${markdownContent}", generate contextual response based on user prompt as follows "${reviewInput}".
+            Use this document written in Markdown format as a context:
+            
+            \`\`\`markdown
+            "${markdownContent}".
+            \`\`\`
+            
+            With markdown document attached as context, generate contextual response based on this user question: "${reviewInput}".
             
             Your response must be in form of suggestions to the document.
             
-            Response only with valid JSON format with format
-            {
+            Response only with valid JSON format as follows:
+            [{
                "target_text": referring to text in the document,
                "suggestion": your own suggestion to improve the document
-            }
+            }]
             `,
           }),
         }
