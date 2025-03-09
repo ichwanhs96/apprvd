@@ -1,5 +1,5 @@
 import React from "react";
-import { useContentToShow } from "../../store"
+import { useContentToShow, useContractSelected } from "../../store"
 
 // interface SidebarItem {
 //     label: string;
@@ -16,6 +16,14 @@ import { useContentToShow } from "../../store"
 const Sidebar: React.FC = () => {
   const handleSideBarMenuOnClick = (menu: string) => {
     return useContentToShow.setState({ content: menu });
+  }
+  const resetNavbarDetail = () => {
+    useContractSelected.setState({
+       created: new Date,
+       name: '',
+       status: '',
+       version: ''
+    })
   }
 
   return (
@@ -48,7 +56,10 @@ const Sidebar: React.FC = () => {
               <a
                 href="#"
                 className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group"
-                onClick={() => handleSideBarMenuOnClick('contracts')}
+                onClick={() => {
+                  handleSideBarMenuOnClick('contracts'); 
+                  resetNavbarDetail();
+                }}
               >
                 <svg
                   width="24"

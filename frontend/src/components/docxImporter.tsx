@@ -1,9 +1,15 @@
 import { useState } from "react";
-import { useContentToShow, useContractSelected, useCurrentDocId, useEditorStore } from "../store"; // Import Zustand store
+import {
+  useContentToShow,
+  useContractSelected,
+  useCurrentDocId,
+  useEditorStore,
+} from "../store"; // Import Zustand store
 import * as mammoth from "mammoth";
 import { useAuth } from "../context/AuthContext";
 import { htmlToSlate } from "@slate-serializers/html";
 import { useNavigate } from "react-router-dom";
+import Loader from "./Loader";
 
 const DocxImporter = ({ setAllContract }: any) => {
   const { userInfo } = useAuth();
@@ -12,7 +18,7 @@ const DocxImporter = ({ setAllContract }: any) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const openModal = () => setIsOpen(true);
   const closeModal = () => {
@@ -54,7 +60,11 @@ const DocxImporter = ({ setAllContract }: any) => {
   };
 
   const handleUpload = async () => {
-    if (!file || file.type !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+    if (
+      !file ||
+      file.type !==
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
       alert("Only .docx files are accepted!");
       return;
     }
@@ -73,33 +83,37 @@ const DocxImporter = ({ setAllContract }: any) => {
     };
     reader.readAsArrayBuffer(file);
 
-    if(content.length === 0) {
-      alert("Please wait for a moment, upload document is still in progress...");
+    if (content.length === 0) {
+      alert(
+        "Please wait for a moment, upload document is still in progress..."
+      );
       return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
       if (!userInfo?.email) {
         alert("Please login!");
-        return navigate('/');
+        return navigate("/");
       }
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "business-id": userInfo?.email,
-        },
-        body: JSON.stringify({
-          name: file?.name,
-          created_by: userInfo?.email,
-          status: "DRAFT",
-          version: "1",
-          contents: content,
-        }), // Send the form data as JSON
-      });
-
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/document`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "business-id": userInfo?.email,
+          },
+          body: JSON.stringify({
+            name: file?.name,
+            created_by: userInfo?.email,
+            status: "DRAFT",
+            version: "1",
+            contents: content,
+          }), // Send the form data as JSON
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -114,9 +128,10 @@ const DocxImporter = ({ setAllContract }: any) => {
         status: result?.document?.status,
         version: result?.document?.version,
       });
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error) {
       console.error("Error:", error);
+      setIsLoading(false);
     }
   };
 
@@ -147,7 +162,7 @@ const DocxImporter = ({ setAllContract }: any) => {
     try {
       if (!userInfo?.email) {
         alert("Please login!");
-        return navigate('/');
+        return navigate("/");
       }
 
       const response = await fetch(
@@ -246,7 +261,11 @@ const DocxImporter = ({ setAllContract }: any) => {
                 disabled={isLoading}
                 className="bg-green-500 text-white px-4 py-2 rounded-md mr-2 disabled:cursor-not-allowed"
               >
-                Upload
+                {isLoading ? (
+                  <Loader />
+                ) : (
+                  "Upload"
+                )}
               </button>
               <button
                 onClick={closeModal}

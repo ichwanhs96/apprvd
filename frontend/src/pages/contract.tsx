@@ -4,6 +4,7 @@ import { useCurrentDocId, useContentToShow, useContractSelected } from "../store
 import { useAuth } from "../context/AuthContext";
 import DocxImporter from "../components/docxImporter";
 import { useNavigate } from "react-router-dom";
+import Loader from "../components/Loader";
 
 interface Contract {
   id: string;
@@ -76,6 +77,7 @@ function ContractsPage() {
       setIsLoading(false)
     } catch (error) {
       console.error('Error:', error);
+      setIsLoading(false)
     }
   };
 
@@ -171,7 +173,11 @@ function ContractsPage() {
                 disabled={isLoading}
                 className="bg-green-500 text-white px-4 py-2 rounded-md disabled:cursor-not-allowed"
               >
-                Create
+                {isLoading ? (
+                  <Loader />
+                ) : (
+                  "Create"
+                )}
               </button>
               <button
                 onClick={closeModalAdd}
