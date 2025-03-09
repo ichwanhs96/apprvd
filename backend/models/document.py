@@ -53,7 +53,17 @@ class Docs(Document):
     
     @classmethod
     def update_document_timestamp_to_now(cls, document_id):
-        return cls.objects(id=document_id).update(set__updated_at=datetime.now(timezone.utc))
+        result = cls.objects(id=document_id).update(set__updated_at=datetime.now(timezone.utc))
+        if result == 0:
+            raise ValueError("Document not found or update failed.")
+        return result
+    
+    @classmethod
+    def finalize_document(cls, business_id, document_id):
+        result = cls.objects(business_id=business_id, id=document_id).update(set__status='FINAL', set__updated_at=datetime.now(timezone.utc))
+        if result == 0:
+            raise ValueError("Document not found or update failed.")
+        return result
     
     def to_json(self):
         return {

@@ -1,4 +1,5 @@
 from models.document import Docs
+from models.content_history import ContentHistory
 from datetime import datetime, timezone
 
 from mongoengine import Document, LazyReferenceField, DictField, ListField
@@ -30,15 +31,26 @@ class Content(Document):
     def get_contents_by_document_id(cls, document_id):
         return cls.objects(document_id=document_id)
     
-    def update_content_by_document_id(document_id, contents):
+    @classmethod
+    def update_content_by_document_id(cls, document_id, contents):
         try:
-            content = Content.get_contents_by_document_id(document_id)
+            content = cls.get_contents_by_document_id(document_id)[0]
             if content:
-                content[0].contents = contents
-                content[0].save()
-                content[0].document_id.updated_at = datetime.now(timezone.utc)
-                content[0].document_id.save()  # Save the document after updating
-                return content[0].to_plate_editor_format()
+                # Record the previous state before updating
+                previous_content = content.contents
+                content_history = ContentHistory(
+                    content_id=content.id,
+                    content=previous_content
+                )
+                content_history.save()  # Save the previous content to history
+
+                # Update the content
+                content.contents = contents
+                content.save()
+                document = content.document_id.fetch()  # Load the referenced document
+                document.updated_at = datetime.now(timezone.utc)
+                document.save()
+                return content.to_plate_editor_format()
             else:
                 raise {"error_code": "NOT_FOUND", "error_message": "Content not found"}
         except Exception as e:
