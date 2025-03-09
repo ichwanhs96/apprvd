@@ -274,6 +274,12 @@ def update_document_comment(id):
     updated_comments = CommentService.update_comment_by_document_id(document_id=id, comments=payload)
     return updated_comments, 200
 
+@app.route("/document/<string:id>/finalize", methods=['PATCH'])
+def finalize_document(id):
+    business_id = request.headers.get("business-id") 
+    DocumentService.finalize_document(business_id=business_id, document_id=id)
+    return { 'status': 'ok' }, 200
+
 # @app.route("/document/<string:id>/comment", methods=['POST'])
 # def add_comment(id):
 #     # Logic to add a new comment to the document
