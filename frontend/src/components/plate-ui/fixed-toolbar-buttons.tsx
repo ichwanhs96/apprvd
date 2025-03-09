@@ -35,6 +35,8 @@ import { MarkToolbarButton } from "./mark-toolbar-button";
 import { ModeDropdownMenu } from "./mode-dropdown-menu";
 import { ToolbarGroup } from "./toolbar";
 import { TurnIntoDropdownMenu } from "./turn-into-dropdown-menu";
+import { ExportToolbarButton } from "./export-toolbar-button";
+import { ArrowUpToLineIcon } from "lucide-react";
 
 export function FixedToolbarButtons() {
   const readOnly = useEditorReadOnly();
@@ -55,6 +57,12 @@ export function FixedToolbarButtons() {
               <InsertDropdownMenu />
               <TurnIntoDropdownMenu />
             </ToolbarGroup>
+
+            {/* <ToolbarGroup>
+              <ExportToolbarButton>
+                <ArrowUpToLineIcon />
+              </ExportToolbarButton>
+            </ToolbarGroup> */}
 
             <ToolbarGroup>
               <MarkToolbarButton nodeType={BoldPlugin.key} tooltip="Bold (⌘+B)">
