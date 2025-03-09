@@ -3,6 +3,7 @@ import Markdown from "markdown-to-jsx";
 import { TPlateEditor } from "@udecode/plate-common/react";
 import ExportToDoxc from "../exportButton";
 import { useSuggestions } from "../../store";
+import Loader from "../Loader";
 
 interface AISidebarProps {
   editor: TPlateEditor;
@@ -12,6 +13,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [docSummary, setDocSummary] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingReview, setIsLoadingReview] = useState(false)
   // const [suggestionSummary, setSuggestionSummary] = useState<string>("");
   // const [isOpen, setIsOpen] = useState(false);
   // const [contentModal, setContentModal] = useState("");
@@ -49,11 +51,12 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
       setIsLoading(false)
     } catch (error) {
       console.error("Error fetching document summary:", error);
+      setIsLoading(false)
     }
   };
 
   const handleReviewRequest = async () => {
-    setIsLoading(true)
+    setIsLoadingReview(true)
     try {
       const markdownContent = (editor.api as any).markdown.serialize();
 
@@ -110,9 +113,10 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
   
         setIsTyping(true); 
       }
-      setIsLoading(false)
+      setIsLoadingReview(false)
     } catch (error) {
       console.error("Error fetching review request:", error);
+      setIsLoadingReview(false)
     }
   };
 
@@ -131,7 +135,11 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
             className="w-full bg-gray-200 py-2 px-4 rounded-lg text-gray-800 font-medium hover:bg-gray-300 disabled:cursor-not-allowed"
             onClick={handleGenerateSummary}
           >
-            Generate Document Summary
+            {isLoading ? (
+                  <Loader />
+                ) : (
+                  "Generate Document Summary"
+                )}
           </button>
         </div>
         <div id="ContentSummary" className="mb-6 flex-column hidden">
@@ -195,10 +203,14 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
         <div className="mb-6">
           <button
             className="w-full bg-gray-200 py-2 px-4 rounded-lg text-gray-800 font-medium hover:bg-gray-300 disabled:cursor-not-allowed"
-            disabled={isLoading}
+            disabled={isLoadingReview}
             onClick={handleReviewRequest}
           >
-            Ask for Review
+            {isLoadingReview ? (
+                  <Loader />
+                ) : (
+                  "Ask for Review"
+                )}
           </button>
         </div>
         {/* <div id="SuggestionSummary" className="mb-6 hidden">
