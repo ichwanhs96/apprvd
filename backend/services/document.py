@@ -33,3 +33,9 @@ class DocumentService():
             return { "document": document.to_json(), "contents": contents, "comments": comments }  # Changed to a dictionary
         except Exception as e:
             raise {"error_code": "SERVER_ERROR", "error_message": str(e)}
+        
+    def update_document_timestamp_to_now(document_id):
+        try:
+            Docs.update_document_timestamp_to_now(document_id=document_id)
+        except Exception as e:
+            raise {"error_code": "SERVER_ERROR", "error_message": str(e)}
