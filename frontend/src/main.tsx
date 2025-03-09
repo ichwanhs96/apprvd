@@ -14,3 +14,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
 
 askldaklsjdkljasd
+
+ada komponen baru nih loader
