@@ -144,7 +144,7 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
               </a>
             ))}
           </div>
-          {content === 'editor' && <div className="pr-4">
+          {content === 'editor' && status !== 'FINAL' && <div className="pr-4">
             <button className="bg-green-100 text-green-700" onClick={handleFinalizeDoc}>Finalize doc</button>
           </div>}
           <div className="flex items-center">
