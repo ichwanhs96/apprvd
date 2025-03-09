@@ -51,6 +51,10 @@ class Docs(Document):
         # Retrieve all documents with the specified business_id
         return cls.objects(business_id=business_id, id=document_id)[0]
     
+    @classmethod
+    def update_document_timestamp_to_now(cls, document_id):
+        return cls.objects(id=document_id).update(set__updated_at=datetime.now(timezone.utc))
+    
     def to_json(self):
         return {
             "id": str(self.id),

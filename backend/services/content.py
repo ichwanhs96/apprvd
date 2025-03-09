@@ -7,7 +7,9 @@ class ContentService():
     
     def get_contents_by_document_id(document_id):
         try:
+            from services.document import DocumentService
             result = Content.get_contents_by_document_id(document_id)
+            DocumentService.update_document_timestamp_to_now(document_id=document_id)
             return result[0].contents
         except Exception as e:
             raise {"error_code": "SERVER_ERROR", "error_message": str(e)}
