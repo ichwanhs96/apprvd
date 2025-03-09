@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../../../context/AuthContext"; // Add this import
-import { useContentToShow, useContractSelected } from "../../../store";
+import { useContentToShow, useContractSelected, useCurrentDocId } from "../../../store";
+import { useNavigate } from "react-router-dom";
 
 interface NavItem {
   label: string;
@@ -17,6 +18,9 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
   const { created, name, status, version } = useContractSelected();
   const { content } = useContentToShow();
   const { user, logout } = useAuth();
+  const { id } = useCurrentDocId();
+  const navigate = useNavigate();
+  const { userInfo } = useAuth();
 
   function onClick() {
     setNavBarOpen(!navBarOpen);
@@ -31,7 +35,30 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
     }
   };
 
-  console.log(created, name, status, version);
+  const handleFinalizeDoc = async () => {
+    try {
+      if (!userInfo?.email) {
+        alert("Please login!");
+        return navigate('/');
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/finalize`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'business-id': userInfo?.email
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to finalize document');
+      }
+
+      useContractSelected.setState({ status: 'FINAL' })
+    } catch (error) {
+      console.error("Error finalizing document:", error);
+    }
+  }
 
   return (
     <>
@@ -51,7 +78,7 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
             </span>
           </a>
         </div>
-        {content === 'editor' && <div className="flex flex-col gap-y-2 items-start justify-center">
+        {content === 'editor' && <div className="flex flex-col gap-y-2 items-start justify-center pt-2 pl-4">
           <div className="flex flex-row gap-x-4">
             <div>{name ?? ''}</div>
             <div className="bg-slate-400 text-white text-xs px-2 py-1 rounded-md">{version ?? ''}</div>
@@ -117,6 +144,9 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
               </a>
             ))}
           </div>
+          {content === 'editor' && <div className="pr-4">
+            <button className="bg-green-100 text-green-700" onClick={handleFinalizeDoc}>Finalize doc</button>
+          </div>}
           <div className="flex items-center">
             <div className="relative">
               <button
