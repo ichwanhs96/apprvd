@@ -10,7 +10,7 @@ import DocxImporter from "../components/docxImporter";
 import { useNavigate } from "react-router-dom";
 import Loader from "../components/Loader";
 import { Trash2 } from "lucide-react";
-import { Bounce, ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 interface Contract {
   id: string;
