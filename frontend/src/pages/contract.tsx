@@ -74,6 +74,12 @@ function ContractsPage() {
       let result = await response.json();
       useCurrentDocId.setState({ id: result?.document?.id })
       useContentToShow.setState({ content: "editor" }); // Set content to show
+      useContractSelected.setState({
+        created: new Date(result?.document?.created_at),
+        name: result?.document?.name,
+        status: result?.document?.status,
+        version: result?.document?.version,
+      });
       setIsLoading(false)
     } catch (error) {
       console.error('Error:', error);
@@ -138,7 +144,9 @@ function ContractsPage() {
                     className="border px-3 py-2 rounded bg-white"
                 /> */}
       </div>
-      <ContractList contracts={allContract} />
+      <div className="h-[calc(100vh-200px)] overflow-y-auto">
+        <ContractList contracts={allContract} />
+      </div>
 
       {addOpen && (
         <div className="fixed inset-0 bg-slate-200 bg-opacity-50 flex items-center justify-center z-50">
