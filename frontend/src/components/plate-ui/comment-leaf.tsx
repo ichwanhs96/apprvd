@@ -32,6 +32,7 @@ export function CommentLeaf({
 
   return (
     <PlateLeaf
+      id={state.lastCommentId}
       {...props}
       className={cn(
         "border-b-2 border-b-primary/40",
