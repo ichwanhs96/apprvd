@@ -67,6 +67,13 @@ class Docs(Document):
             raise ValueError("Document not found or update failed.")
         return result
     
+    @classmethod
+    def delete_document(cls, business_id, document_id):
+        result = cls.objects(business_id=business_id, id=document_id).delete()
+        if result == 0:
+            raise ValueError("Document not found or delete failed.")
+        return result
+    
     def to_json(self):
         return {
             "id": str(self.id),
