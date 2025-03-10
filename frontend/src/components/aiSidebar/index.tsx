@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Markdown from "markdown-to-jsx";
 import { TPlateEditor } from "@udecode/plate-common/react";
-import ExportToDoxc from "../exportButton";
+// import ExportToDoxc from "../exportButton";
 import { useSuggestions } from "../../store";
 import Loader from "../Loader";
 import { MinusCircleIcon } from "lucide-react";
@@ -143,9 +143,9 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
   return (
     <div className="text-sm pt-4">
       <div className="bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto">
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <ExportToDoxc />
-        </div>
+        </div> */}
         <div className="mb-4">
           <h2 className="font-semibold text-xl">Smart Review</h2>
         </div>

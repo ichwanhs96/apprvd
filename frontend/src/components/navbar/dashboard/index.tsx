@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useAuth } from "../../../context/AuthContext"; // Add this import
 import { useContentToShow, useContractSelected, useCurrentDocId } from "../../../store";
 import { useNavigate } from "react-router-dom";
+import { toast } from 'react-toastify';
+import Loader from "../../Loader";
 
 interface NavItem {
   label: string;
@@ -21,6 +23,20 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
   const { id } = useCurrentDocId();
   const navigate = useNavigate();
   const { userInfo } = useAuth();
+  const [isFinalized, setIsFinalized] = useState(false)
+
+  const successFinalize = () => {
+    toast.success('Success: Finalize Document!', {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      });
+  }
 
   function onClick() {
     setNavBarOpen(!navBarOpen);
@@ -36,6 +52,7 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
   };
 
   const handleFinalizeDoc = async () => {
+    setIsFinalized(true)
     try {
       if (!userInfo?.email) {
         alert("Please login!");
@@ -54,8 +71,11 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
         throw new Error('Failed to finalize document');
       }
 
+      successFinalize()
+      setIsFinalized(false)
       useContractSelected.setState({ status: 'FINAL' })
     } catch (error) {
+      setIsFinalized(false)
       console.error("Error finalizing document:", error);
     }
   }
@@ -145,7 +165,7 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
             ))}
           </div>
           {content === 'editor' && status !== 'FINAL' && <div className="pr-4">
-            <button className="bg-green-100 text-green-700" onClick={handleFinalizeDoc}>Finalize doc</button>
+            <button className="bg-green-100 text-green-700 disabled:pointer-events-none" onClick={handleFinalizeDoc} disabled={isFinalized}>{isFinalized ? <Loader /> :  'Finalize doc'}</button>
           </div>}
           <div className="flex items-center">
             <div className="relative">
