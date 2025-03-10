@@ -36,7 +36,9 @@ class Docs(Document):
             business_id=business_id,
             created_by=created_by,
             status=status,
-            version=version
+            version=version,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
         )
         document.save()
         return document
