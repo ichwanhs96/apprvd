@@ -4,6 +4,7 @@ import { TPlateEditor } from "@udecode/plate-common/react";
 import ExportToDoxc from "../exportButton";
 import { useSuggestions } from "../../store";
 import Loader from "../Loader";
+import { MinusCircleIcon } from "lucide-react";
 
 interface AISidebarProps {
   editor: TPlateEditor;
@@ -12,8 +13,9 @@ interface AISidebarProps {
 const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [docSummary, setDocSummary] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false)
-  const [isLoadingReview, setIsLoadingReview] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingReview, setIsLoadingReview] = useState(false);
+  const [commentOpen, setCommentOpen] = useState(false);
   // const [suggestionSummary, setSuggestionSummary] = useState<string>("");
   // const [isOpen, setIsOpen] = useState(false);
   // const [contentModal, setContentModal] = useState("");
@@ -21,8 +23,19 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
     "My company does highly confidential data & innovation, this NDA has to be very strong and also compliant with EU law."
   ); // Added state for textarea
 
+  const contentwchild = localStorage.getItem("editor-content");
+  const filteredContents = contentwchild
+    ? JSON.parse(contentwchild).filter(
+        (item: any) => item.children.comment === true
+      )
+    : [];
+
+  const comment = localStorage.getItem("editor-comments");
+  const commentData = JSON.parse(comment ? comment : "");
+  console.log("coment: ", filteredContents);
+
   const handleGenerateSummary = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const markdownContent = (editor.api as any).markdown.serialize();
 
@@ -55,15 +68,15 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
       if (keyItems) keyItems.classList.remove("hidden");
 
       setIsTyping(true);
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error) {
       console.error("Error fetching document summary:", error);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   };
 
   const handleReviewRequest = async () => {
-    setIsLoadingReview(true)
+    setIsLoadingReview(true);
     try {
       const markdownContent = (editor.api as any).markdown.serialize();
 
@@ -104,26 +117,26 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
 
         // Ensure suggestions is an array of Suggestion objects before setting the state
         if (Array.isArray(suggestions)) {
-            const validSuggestions = suggestions.map(s => ({
-                target_text: s.target_text || '',
-                suggestion: s.suggestion || ''
-            }));
-            useSuggestions.setState(validSuggestions);
+          const validSuggestions = suggestions.map((s) => ({
+            target_text: s.target_text || "",
+            suggestion: s.suggestion || "",
+          }));
+          useSuggestions.setState(validSuggestions);
         } else {
-            console.error("Parsed suggestions is not an array:", suggestions);
+          console.error("Parsed suggestions is not an array:", suggestions);
         }
       } catch (error) {
         console.error("error parsing response ", error);
       } finally {
         const suggestionSummary = document.getElementById("SuggestionSummary");
         if (suggestionSummary) suggestionSummary.classList.remove("hidden");
-  
-        setIsTyping(true); 
+
+        setIsTyping(true);
       }
-      setIsLoadingReview(false)
+      setIsLoadingReview(false);
     } catch (error) {
       console.error("Error fetching review request:", error);
-      setIsLoadingReview(false)
+      setIsLoadingReview(false);
     }
   };
 
@@ -142,11 +155,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
             className="w-full bg-gray-200 py-2 px-4 rounded-lg text-gray-800 font-medium hover:bg-gray-300 disabled:cursor-not-allowed"
             onClick={handleGenerateSummary}
           >
-            {isLoading ? (
-                  <Loader />
-                ) : (
-                  "Generate Document Summary"
-                )}
+            {isLoading ? <Loader /> : "Generate Document Summary"}
           </button>
         </div>
         <div id="ContentSummary" className="mb-6 flex-column hidden">
@@ -213,11 +222,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
             disabled={isLoadingReview}
             onClick={handleReviewRequest}
           >
-            {isLoadingReview ? (
-                  <Loader />
-                ) : (
-                  "Ask for Review"
-                )}
+            {isLoadingReview ? <Loader /> : "Ask for Review"}
           </button>
         </div>
         {/* <div id="SuggestionSummary" className="mb-6 hidden">
@@ -245,6 +250,65 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
                     </button>
                 </div> */}
       </div>
+      {!commentOpen && (
+        <div className="w-full flex items-center justify-center">
+          <button
+            className="bg-white border rounded-lg border-neutral-400 m-4 text-black"
+            onClick={() => setCommentOpen(true)}
+          >
+            See All Comments
+          </button>
+        </div>
+      )}
+      {commentOpen && (
+        <div className="p-4 rounded-lg flex flex-col gap-y-4">
+          <div className="flex w-full flex-row items-center justify-between">
+            <div className="text-xl font-bold">Comments</div>
+            <MinusCircleIcon onClick={() => setCommentOpen(false)} />
+          </div>
+          <div className="flex flex-col gap-y-4">
+            {commentData?.map((coment: any) => {
+              const createdAt = new Date(coment.createdAt); // Assuming createdAt is in ISO format
+              const timeDiff = Math.floor(
+                (new Date().getTime() - createdAt.getTime()) / 1000
+              ); // Time difference in seconds
+
+              let timeAgo = "";
+              if (timeDiff < 60) {
+                timeAgo = `${timeDiff} seconds ago`;
+              } else if (timeDiff < 3600) {
+                timeAgo = `${Math.floor(timeDiff / 60)} minutes ago`;
+              } else if (timeDiff < 86400) {
+                timeAgo = `${Math.floor(timeDiff / 3600)} hours ago`;
+              } else {
+                timeAgo = `${Math.floor(timeDiff / 86400)} days ago`;
+              }
+              return (
+                <a
+                  href={`#${coment?.id}`}
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevent default anchor behavior
+                    const element = document.getElementById(
+                      `${coment?.id}`
+                    );
+                    if (element) {
+                      element.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center",
+                      });
+                    }
+                  }}
+                >
+                  <div className="border rounded-lg p-4 flex w-full items-start justify-center flex-col gap-y-2">
+                    <div>Comment: {coment?.value[0]?.children[0]?.text}</div>
+                    <div className="text-xs text-neutral-400">{timeAgo}</div>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
       {/* {isOpen && (
         <div className="fixed inset-0 flex items-center justify-center">
           <div className="bg-black bg-opacity-70 absolute inset-0 w-screen h-screen z-40"></div>

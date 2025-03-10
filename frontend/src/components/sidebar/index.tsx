@@ -24,6 +24,7 @@ const Sidebar: React.FC = () => {
        status: '',
        version: ''
     })
+    localStorage.clear()
   }
 
   return (
