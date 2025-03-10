@@ -122,11 +122,12 @@ import { withDraggables } from "../plate-ui/with-draggables";
 import { useContracts, useCurrentDocId, useEditorComments } from "../../store"
 import { ListElement } from "../plate-ui/list-element";
 
+import { useEditorContent } from "../../store";
+
 export default function PlateEditor({ editor }: { editor: any }) {
   const containerRef = useRef(null);
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null)
   const { id } = useCurrentDocId()
-  // const { editor_content } = useEditorContent()
   // const { updated } = useContracts()
 
   const handleTyping = () => {
@@ -144,9 +145,13 @@ export default function PlateEditor({ editor }: { editor: any }) {
   const [value, setValue] = useState(null);
 
   useEffect(() => {
-    let previousValue = value; // Store the previous value
+    if (value !== null) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(value)); // update local storage every change in editor
+      useEditorContent.setState({ editor_content: JSON.stringify(value) }) // update zustand storage
+    }
 
     const intervalId = setInterval(async () => {
+      let previousValue = value; // Store the previous value
       if(value === null){
         return
       }
