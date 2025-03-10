@@ -147,6 +147,9 @@ export default function PlateEditor({ editor }: { editor: any }) {
     let previousValue = value; // Store the previous value
 
     const intervalId = setInterval(async () => {
+      if(value === null){
+        return
+      }
       const storedValue = localStorage.getItem(STORAGE_KEY);
       // const storedValue = editor_content
       if (storedValue && storedValue !== JSON.stringify(previousValue)) {
@@ -173,8 +176,6 @@ export default function PlateEditor({ editor }: { editor: any }) {
     setValue(newValue.value);
     handleTyping();
   }
-
-  console.log("last vallue: ", value)
 
   return (
     <DndProvider backend={HTML5Backend}>
