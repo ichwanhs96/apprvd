@@ -39,8 +39,21 @@ function ContractsPage() {
     name: "",
     version: "",
   });
-  const notify = () => {
+  const notifyDuplicate = () => {
     toast.error('Error: Document already existed!', {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      });
+  }
+
+  const notifySuccess = (event: any) => {
+    toast.success(`Scucess: ${event} document!`, {
       position: "bottom-right",
       autoClose: 5000,
       hideProgressBar: false,
@@ -97,7 +110,9 @@ function ContractsPage() {
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
-
+      
+      notifySuccess('Creating')
+      
       let result = await response.json();
       useCurrentDocId.setState({ id: result?.document?.id });
       useContentToShow.setState({ content: "editor" }); // Set content to show
@@ -110,7 +125,7 @@ function ContractsPage() {
       setIsLoading(false);
     } catch (error) {
       console.error("Error:", error);
-      notify()
+      notifyDuplicate()
       setIsLoading(false);
     }
   };
@@ -168,7 +183,7 @@ function ContractsPage() {
           >
             Create new
           </button>
-          <DocxImporter setAllContract={setAllContract} notify={notify} />
+          <DocxImporter setAllContract={setAllContract} notifyDuplicate={notifyDuplicate} notifySuccess={notifySuccess} />
         </div>
         {/* TODO: ENABLE SEARCH FUNCTION */}
         {/* <input
@@ -246,6 +261,19 @@ function ContractItem({ contractItem }: { contractItem: Contract }) {
   const { userInfo } = useAuth();
   const [loadDelete, setLoadDelete] = useState(false);
 
+  const notifyDelete = (event: any) => {
+    toast.success(`Scucess: ${event} document!`, {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      });
+  }
+
   const deleteContract = async (id: any) => {
     setLoadDelete(true);
     try {
@@ -268,6 +296,7 @@ function ContractItem({ contractItem }: { contractItem: Contract }) {
         throw new Error("Network response was not ok");
       }
       const statuses = await response.json();
+      notifyDelete('Deleted')
       window.location.reload();
       setLoadDelete(false);
       return statuses;
