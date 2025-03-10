@@ -45,3 +45,9 @@ class DocumentService():
             Docs.finalize_document(business_id=business_id, document_id=document_id)
         except Exception as e:
             raise {"error_code": "SERVER_ERROR", "error_message": str(e)}
+        
+    def delete_document(business_id, document_id):
+        try:
+            Docs.delete_document(business_id=business_id, document_id=document_id)
+        except Exception as e:
+            raise {"error_code": "SERVER_ERROR", "error_message": str(e)}

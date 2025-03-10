@@ -35,6 +35,7 @@ import { MarkToolbarButton } from "./mark-toolbar-button";
 import { ModeDropdownMenu } from "./mode-dropdown-menu";
 import { ToolbarGroup } from "./toolbar";
 import { TurnIntoDropdownMenu } from "./turn-into-dropdown-menu";
+import { ExportToolbarButton } from "./export-toolbar-button";
 
 export function FixedToolbarButtons() {
   const readOnly = useEditorReadOnly();
@@ -112,6 +113,7 @@ export function FixedToolbarButtons() {
             </ToolbarGroup>
 
             <ToolbarGroup>
+              <ExportToolbarButton />
               <LinkToolbarButton />
 
               <MediaToolbarButton nodeType={ImagePlugin.key} />

@@ -280,6 +280,12 @@ def finalize_document(id):
     DocumentService.finalize_document(business_id=business_id, document_id=id)
     return { 'status': 'ok' }, 200
 
+@app.route("/document/<string:id>", methods=['DELETE'])
+def delete_document(id):
+    business_id = request.headers.get("business-id") 
+    DocumentService.delete_document(business_id=business_id, document_id=id)
+    return { 'status': 'ok' }, 200
+
 # @app.route("/document/<string:id>/comment", methods=['POST'])
 # def add_comment(id):
 #     # Logic to add a new comment to the document

@@ -39,6 +39,7 @@ function ContractsPage() {
     name: "",
     version: "",
   });
+
   const notifyDuplicate = () => {
     toast.error('Error: Document already existed!', {
       position: "bottom-right",

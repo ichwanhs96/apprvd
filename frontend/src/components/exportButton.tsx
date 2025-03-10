@@ -224,6 +224,9 @@ export default function ExportToDoxc() {
         ],
       });
 
+      console.log("generate docs");
+      console.log(doc);
+
       Packer.toBlob(doc).then((blob) => {
         // TODO: change this to follow document name
         saveAs(blob, `${name}-${version}.docx`);
