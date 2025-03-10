@@ -126,9 +126,12 @@ import { ToolbarButton } from './toolbar';
 // const siteUrl = 'https://platejs.org';
 // const lowlight = createLowlight(all);
 
+import { useContractSelected } from '../../store';
+
 export function ExportToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
   const openState = useOpenState();
+  const { name, version } = useContractSelected();
 
   const getCanvas = async () => {
     const { default: html2canvas } = await import('html2canvas');
@@ -182,12 +185,12 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
 
     const pdfBase64 = await pdfDoc.saveAsBase64({ dataUri: true });
 
-    await downloadFile(pdfBase64, 'plate.pdf');
+    await downloadFile(pdfBase64, `${name}-${version}.pdf`);
   };
 
   const exportToImage = async () => {
     const canvas = await getCanvas();
-    await downloadFile(canvas.toDataURL('image/png'), 'plate.png');
+    await downloadFile(canvas.toDataURL('image/png'), `${name}-${version}.png`);
   };
 
   // const getHtml = async () => {
@@ -287,7 +290,7 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   const exportToMarkdown = async () => {
     const md = editor.getApi(MarkdownPlugin).markdown.serialize();
     const url = `data:text/markdown;charset=utf-8,${encodeURIComponent(md)}`;
-    await downloadFile(url, 'plate.md');
+    await downloadFile(url, `${name}-${version}.md`);
   };
 
   return (
