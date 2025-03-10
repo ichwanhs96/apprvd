@@ -11,7 +11,7 @@ import { htmlToSlate } from "@slate-serializers/html";
 import { useNavigate } from "react-router-dom";
 import Loader from "./Loader";
 
-const DocxImporter = ({ setAllContract }: any) => {
+const DocxImporter = ({ setAllContract, notify }: any) => {
   const { userInfo } = useAuth();
   const { content } = useEditorStore();
   const setContent = useEditorStore((state) => state.setContent);
@@ -131,6 +131,7 @@ const DocxImporter = ({ setAllContract }: any) => {
       setIsLoading(false);
     } catch (error) {
       console.error("Error:", error);
+      notify()
       setIsLoading(false);
     }
   };

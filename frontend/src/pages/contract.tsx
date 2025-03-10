@@ -10,6 +10,7 @@ import DocxImporter from "../components/docxImporter";
 import { useNavigate } from "react-router-dom";
 import Loader from "../components/Loader";
 import { Trash2 } from "lucide-react";
+import { Bounce, ToastContainer, toast } from 'react-toastify';
 
 interface Contract {
   id: string;
@@ -38,6 +39,18 @@ function ContractsPage() {
     name: "",
     version: "",
   });
+  const notify = () => {
+    toast.error('Error: Document already existed!', {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      });
+  }
 
   const openModalAdd = () => setAddOpen(true);
   const closeModalAdd = () => {
@@ -97,6 +110,7 @@ function ContractsPage() {
       setIsLoading(false);
     } catch (error) {
       console.error("Error:", error);
+      notify()
       setIsLoading(false);
     }
   };
@@ -154,7 +168,7 @@ function ContractsPage() {
           >
             Create new
           </button>
-          <DocxImporter setAllContract={setAllContract} />
+          <DocxImporter setAllContract={setAllContract} notify={notify} />
         </div>
         {/* TODO: ENABLE SEARCH FUNCTION */}
         {/* <input
@@ -221,6 +235,7 @@ function ContractsPage() {
           </div>
         </div>
       )}
+      <ToastContainer transition={Bounce} />
     </div>
   );
 }
