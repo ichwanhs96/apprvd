@@ -6,6 +6,7 @@ import { NavItem } from "../components/navbar/dashboard";
 import EditorPage from "./editor";
 import ContractPage from "./contract";
 import { useContentToShow } from "../store"
+import { Bounce, ToastContainer } from "react-toastify";
 
 const Dashboard: React.FC = () => {
   const navItems: NavItem[] = [];
@@ -28,6 +29,7 @@ const Dashboard: React.FC = () => {
       <DashboardNavbar navItems={navItems}></DashboardNavbar>
       <Sidebar></Sidebar>
       <MainContainer content={getContentToShow()}></MainContainer>
+      <ToastContainer transition={Bounce} />
     </>
   );
 };

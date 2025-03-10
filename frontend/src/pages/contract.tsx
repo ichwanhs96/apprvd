@@ -250,7 +250,6 @@ function ContractsPage() {
           </div>
         </div>
       )}
-      <ToastContainer transition={Bounce} />
     </div>
   );
 }
