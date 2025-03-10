@@ -11,6 +11,7 @@ import {
 import { cva } from 'class-variance-authority';
 
 import { Button } from './button';
+import { TNode } from '@udecode/plate-common';
 
 const headingItemVariants = cva(
   'block h-auto w-full cursor-pointer truncate rounded-none px-0.5 py-1.5 text-left font-medium text-muted-foreground underline decoration-[0.5px] underline-offset-4 hover:bg-accent hover:text-muted-foreground',
@@ -37,7 +38,7 @@ export function TocElementStatic({
     <SlateElement className={cn(className, 'mb-1 p-0')} {...props}>
       <div>
         {headingList.length > 0 ? (
-          headingList.map((item) => (
+          headingList.map((item: any) => (
             <Button
               key={item.title}
               variant="ghost"
@@ -79,7 +80,7 @@ const getHeadingList = (editor?: SlateEditor) => {
 
   const values = editor.api.nodes<TElement>({
     at: [],
-    match: (n) => isHeading(n),
+    match: (n) => isHeading(n as TNode),
   });
 
   if (!values) return [];
