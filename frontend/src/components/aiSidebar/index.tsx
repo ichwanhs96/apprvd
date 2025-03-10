@@ -34,7 +34,14 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            prompt: `with this document written in markdown format "${markdownContent}", please summarize the document.`,
+            prompt: `
+            Use this document written in Markdown format as a context:
+            
+            \`\`\`markdown
+            "${markdownContent}".
+            \`\`\`
+            
+            With markdown document attached as context, the user asked you to generate summary of the documents`,
           }),
         }
       );
@@ -154,16 +161,16 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
             </p>
           </div>
 
-          <div className="flex justify-end">
-            {/* <div className="text-blue-500 underline hover:cursor-pointer" onClick={() => {
+          {/* <div className="flex justify-end">
+            <div className="text-blue-500 underline hover:cursor-pointer" onClick={() => {
                 setIsOpen(true);
                 setContentModal("docSummary");
               }}>
               Read more
-            </div> */}
-          </div>
+            </div>
+          </div> */}
         </div>
-        <div id="KeyItems" className="mb-6 hidden">
+        {/* <div id="KeyItems" className="mb-6 hidden">
           <h3 className="font-medium text-lg">Key items</h3>
           <div className="border rounded-lg">
             <ul
@@ -182,14 +189,14 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
             </ul>
           </div>
           <div className="flex justify-end">
-            {/* <div className="text-blue-500 underline hover:cursor-pointer" onClick={() => {
+            <div className="text-blue-500 underline hover:cursor-pointer" onClick={() => {
                 setIsOpen(true);
                 setContentModal("keyitems");
               }}>
               Read more
-            </div> */}
+            </div>
           </div>
-        </div>
+        </div> */}
         <div className="mb-6">
           <h3 className="font-medium text-lg">Review request</h3>
           <textarea
