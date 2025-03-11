@@ -26,6 +26,18 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
 
   const comment = localStorage.getItem("editor-comments");
   const commentData = JSON.parse(comment ? comment : "");
+  const toastError = () => {
+    toast.error('Error: Something went wrong!', {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      });
+  }
 
   const handleGenerateSummary = async () => {
     setIsLoading(true);
@@ -63,18 +75,6 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
       setIsTyping(true);
       setIsLoading(false);
     } catch (error) {
-      const toastError = () => {
-        toast.error('Error: Something went wrong!', {
-          position: "bottom-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          });
-      }
       toastError()
       console.error("Error fetching document summary:", error);
       setIsLoading(false);
@@ -132,18 +132,6 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
           console.error("Parsed suggestions is not an array:", suggestions);
         }
       } catch (error) {
-        const toastError = () => {
-          toast.error('Error: Something went wrong!', {
-            position: "bottom-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-            });
-        }
         toastError()
         console.error("error parsing response ", error);
       } finally {
@@ -154,18 +142,6 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
       }
       setIsLoadingReview(false);
     } catch (error) {
-      const toastError = () => {
-        toast.error('Error: Something went wrong!', {
-          position: "bottom-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          });
-      }
       toastError()
       console.error("Error fetching review request:", error);
       setIsLoadingReview(false);

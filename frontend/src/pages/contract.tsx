@@ -51,7 +51,20 @@ function ContractsPage() {
       progress: undefined,
       theme: "light",
       });
-  }
+    }
+
+    const toastError = () => {
+      toast.error('Error: Something went wrong!', {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        });
+    }
 
   const notifySuccess = (event: any) => {
     toast.success(`Scucess: ${event} document!`, {
@@ -125,18 +138,6 @@ function ContractsPage() {
       });
       setIsLoading(false);
     } catch (error) {
-      const toastError = () => {
-        toast.error('Error: Something went wrong!', {
-          position: "bottom-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          });
-      }
       toastError()
       console.error("Error:", error);
       notifyDuplicate()
@@ -177,18 +178,6 @@ function ContractsPage() {
         }))
       ); // Assuming the response contains a 'contracts' array
     } catch (error) {
-      const toastError = () => {
-        toast.error('Error: Something went wrong!', {
-          position: "bottom-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          });
-      }
       toastError()
       console.error("Error fetching contracts:", error);
     }

@@ -51,6 +51,18 @@ const EditorPage: React.FC = () => {
     // const { editor_content } = useEditorContent()
     // const { editor_comments } = useEditorComments()
     const navigate = useNavigate();
+    const toastError = () => {
+      toast.error('Error: Something went wrong!', {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        });
+    }
 
     const fetchDocument = async (doc_id: string) => {
         try {
@@ -72,18 +84,6 @@ const EditorPage: React.FC = () => {
 
             return await response.json();
         } catch (error) {
-          const toastError = () => {
-            toast.error('Error: Something went wrong!', {
-              position: "bottom-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: false,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "light",
-              });
-          }
           toastError()
             console.error("Failed to fetch document:", error);
         }
@@ -103,18 +103,6 @@ const EditorPage: React.FC = () => {
                 children: [{ text: "Start typing here..." }],
             }], comments: [] };
         } catch (error) {
-          const toastError = () => {
-            toast.error('Error: Something went wrong!', {
-              position: "bottom-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: false,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "light",
-              });
-          }
           toastError()
             const savedValue = localStorage.getItem(EDITOR_CONTENT_KEY);
             // const savedValue = editor_content
@@ -330,18 +318,6 @@ const EditorPage: React.FC = () => {
                 body: storedValue, // Send the whole documents
               });
             } catch (error) {
-              const toastError = () => {
-                toast.error('Error: Something went wrong!', {
-                  position: "bottom-right",
-                  autoClose: 5000,
-                  hideProgressBar: false,
-                  closeOnClick: false,
-                  pauseOnHover: true,
-                  draggable: true,
-                  progress: undefined,
-                  theme: "light",
-                  });
-              }
               toastError()
               throw new Error('Error updating document');
             }
@@ -361,18 +337,6 @@ const EditorPage: React.FC = () => {
             body: JSON.stringify(parsedComments), // Use parsedComments as payload
           });
         } catch (error) {
-          const toastError = () => {
-            toast.error('Error: Something went wrong!', {
-              position: "bottom-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: false,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "light",
-              });
-          }
           toastError()
           console.error('Error updating comments:', error);
         }

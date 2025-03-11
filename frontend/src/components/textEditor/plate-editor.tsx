@@ -130,7 +130,19 @@ export default function PlateEditor({ editor }: { editor: any }) {
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null)
   const { id } = useCurrentDocId()
   // const { updated } = useContracts()
-
+  
+  const toastError = () => {
+    toast.error('Error: Something went wrong!', {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      });
+  }
   const handleTyping = () => {
     if(typingTimerRef.current) {
       clearTimeout(typingTimerRef.current)
@@ -170,18 +182,6 @@ export default function PlateEditor({ editor }: { editor: any }) {
             body: JSON.stringify(value), // Send the whole document
           });
         } catch (error) {
-          const toastError = () => {
-            toast.error('Error: Something went wrong!', {
-              position: "bottom-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: false,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "light",
-              });
-          }
           toastError()
           throw new Error('Error updating document');
         }

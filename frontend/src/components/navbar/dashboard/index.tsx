@@ -41,24 +41,24 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
   function onClick() {
     setNavBarOpen(!navBarOpen);
   }
+  const toastError = () => {
+    toast.error('Error: Something went wrong!', {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      });
+  }
 
   const handleLogout = async () => {
     try {
       await logout();
       // Redirect will be handled by AuthContext
     } catch (error) {
-      const toastError = () => {
-        toast.error('Error: Something went wrong!', {
-          position: "bottom-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          });
-      }
       toastError()
       console.error("Failed to logout:", error);
     }
@@ -88,18 +88,6 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
       setIsFinalized(false)
       useContractSelected.setState({ status: 'FINAL' })
     } catch (error) {
-      const toastError = () => {
-        toast.error('Error: Something went wrong!', {
-          position: "bottom-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-          });
-      }
       toastError()
       setIsFinalized(false)
       console.error("Error finalizing document:", error);
