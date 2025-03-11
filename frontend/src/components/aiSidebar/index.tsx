@@ -24,16 +24,8 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
     "My company does highly confidential data & innovation, this NDA has to be very strong and also compliant with EU law."
   ); // Added state for textarea
 
-  const contentwchild = localStorage.getItem("editor-content");
-  const filteredContents = contentwchild
-    ? JSON.parse(contentwchild).filter(
-        (item: any) => item.children.comment === true
-      )
-    : [];
-
   const comment = localStorage.getItem("editor-comments");
   const commentData = JSON.parse(comment ? comment : "");
-  console.log("coment: ", filteredContents);
 
   const handleGenerateSummary = async () => {
     setIsLoading(true);
@@ -115,7 +107,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
             
             Response only with valid JSON format as follows:
             [{
-               "target_text": referring to text in the document,
+               "target_text": referring to text in the document and remove the Markdown format such as bold (**) and italic (*),
                "suggestion": your own suggestion to improve the document
             }]
             `,
@@ -300,7 +292,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
           </button>
         </div>
       )}
-      {commentOpen && (
+      {commentOpen && commentData.length > 0 ? (
         <div className="p-4 rounded-lg flex flex-col gap-y-4">
           <div className="flex w-full flex-row items-center justify-between">
             <div className="text-xl font-bold">Comments</div>
@@ -326,6 +318,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
               return (
                 <a
                   href={`#${coment?.id}`}
+                  key={coment?.id}
                   onClick={(e) => {
                     e.preventDefault(); // Prevent default anchor behavior
                     const element = document.getElementById(
@@ -348,7 +341,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
             })}
           </div>
         </div>
-      )}
+      ) : commentOpen && commentData <= 0 &&  <div className="w-full flex text-center p-8 items-center justify-between">No comments found <MinusCircleIcon onClick={() => setCommentOpen(false)} /></div>}
       {/* {isOpen && (
         <div className="fixed inset-0 flex items-center justify-center">
           <div className="bg-black bg-opacity-70 absolute inset-0 w-screen h-screen z-40"></div>
