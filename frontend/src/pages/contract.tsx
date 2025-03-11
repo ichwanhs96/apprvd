@@ -297,7 +297,6 @@ function ContractItem({ contractItem }: { contractItem: Contract }) {
       }
       const statuses = await response.json();
       notifyDelete('Deleted')
-      window.location.reload();
       setLoadDelete(false);
       return statuses;
     } catch (error) {
