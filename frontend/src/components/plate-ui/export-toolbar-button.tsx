@@ -127,8 +127,13 @@ import { ToolbarButton } from './toolbar';
 // const lowlight = createLowlight(all);
 
 import { useContractSelected } from '../../store';
+import { useState } from 'react';
+import Loader from '../Loader';
 
 export function ExportToolbarButton(props: DropdownMenuProps) {
+  const [isLoadingPdf, setIsLoadingPdf] = useState(false)
+  const [isLoadingImage, setIsLoadingImage] = useState(false)
+  const [isLoadingMarkdown, setIsLoadingMarkdown] = useState(false)
   const editor = useEditorRef();
   const openState = useOpenState();
   const { name, version } = useContractSelected();
@@ -167,6 +172,7 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToPdf = async () => {
+    setIsLoadingPdf(true)
     const canvas = await getCanvas(); // Get the canvas representation of the HTML
     const imgData = canvas.toDataURL('image/png'); // Convert canvas to image data
 
@@ -186,11 +192,14 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
     const pdfBase64 = await pdfDoc.saveAsBase64({ dataUri: true });
 
     await downloadFile(pdfBase64, `${name}-${version}.pdf`);
+    setIsLoadingPdf(false)
   };
 
   const exportToImage = async () => {
+    setIsLoadingImage(true)
     const canvas = await getCanvas();
     await downloadFile(canvas.toDataURL('image/png'), `${name}-${version}.png`);
+    setIsLoadingImage(false)
   };
 
   // const getHtml = async () => {
@@ -288,9 +297,11 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   // };
 
   const exportToMarkdown = async () => {
+    setIsLoadingMarkdown(true)
     const md = editor.getApi(MarkdownPlugin).markdown.serialize();
     const url = `data:text/markdown;charset=utf-8,${encodeURIComponent(md)}`;
     await downloadFile(url, `${name}-${version}.md`);
+    setIsLoadingMarkdown(false)
   };
 
   return (
@@ -306,14 +317,14 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
           {/* <DropdownMenuItem onSelect={exportToHtml}>
             Export as HTML
           </DropdownMenuItem> */}
-          <DropdownMenuItem onSelect={exportToPdf}>
-            Export as PDF
+          <DropdownMenuItem onSelect={exportToPdf} disabled={isLoadingPdf} className='disabled:pointer-events-none'>
+            {isLoadingPdf ? <Loader /> : "Export as PDF"}
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={exportToImage}>
-            Export as Image
+          <DropdownMenuItem onSelect={exportToImage} disabled={isLoadingImage} className='disabled:pointer-events-none'>
+          {isLoadingImage ? <Loader /> : "Export as Image"}
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={exportToMarkdown}>
-            Export as Markdown
+          <DropdownMenuItem onSelect={exportToMarkdown} disabled={isLoadingMarkdown} className='disabled:pointer-events-none'>
+          {isLoadingMarkdown ? <Loader /> : "Export as Markdown"}
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

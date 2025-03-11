@@ -54,7 +54,7 @@ function ContractsPage() {
   }
 
   const notifySuccess = (event: any) => {
-    toast.success(`Scucess: ${event} document!`, {
+    toast.success(`Suscess: ${event} document!`, {
       position: "bottom-right",
       autoClose: 5000,
       hideProgressBar: false,
@@ -262,7 +262,7 @@ function ContractItem({ contractItem }: { contractItem: Contract }) {
   const [loadDelete, setLoadDelete] = useState(false);
 
   const notifyDelete = (event: any) => {
-    toast.success(`Scucess: ${event} document!`, {
+    toast.success(`Success: ${event} document!`, {
       position: "bottom-right",
       autoClose: 5000,
       hideProgressBar: false,
@@ -412,9 +412,11 @@ function ContractList({ contracts }: Contracts) {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {contracts.map((contract, index) => (
-            <ContractItem key={index} contractItem={contract} />
-          ))}
+          {contracts
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) // Sort from newest to oldest
+            .map((contract, index) => (
+              <ContractItem key={index} contractItem={contract} />
+            ))}
         </tbody>
       </table>
     </div>
