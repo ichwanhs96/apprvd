@@ -82,7 +82,6 @@ const EditorPage: React.FC = () => {
             useEditorContent.setState({editor_content: JSON.stringify(data.contents)})
             localStorage.setItem(EDITOR_CONTENT_KEY, JSON.stringify(data.contents)); // Store the response in local storage
             localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(data.comments)); // Store the response in local storage
-            console.log('comment3: ', localStorage.getItem(EDITOR_CONTENT_COMMENTS))
 
             return data || { contents: [{
                 id: "1",
@@ -274,11 +273,6 @@ const EditorPage: React.FC = () => {
       }
     
       const updateEditorContentAndComment = (newContents: any, newComments: any) => {
-        setEditorData((prevState: any) => ({
-          ...prevState,
-          contents: newContents,
-          comments: newComments
-        }));
         // set local storage content and comment with the new value
         useEditorContent.setState({editor_content: JSON.stringify(newContents)})
         localStorage.setItem(EDITOR_CONTENT_KEY, JSON.stringify(newContents));
@@ -288,7 +282,12 @@ const EditorPage: React.FC = () => {
           const updatedComments = existingComments && [...parsingExisting, ...newComments]
           useEditorComments.setState({editor_comments: JSON.stringify(updatedComments) })
           localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(updatedComments));
-          console.log('comment4: ', localStorage.getItem(EDITOR_CONTENT_COMMENTS))
+
+          setEditorData((prevState: any) => ({
+            ...prevState,
+            contents: newContents,
+            comments: updatedComments
+          }));
         }
         // const existingComments = editor_comments
       };

@@ -23,16 +23,8 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
     "My company does highly confidential data & innovation, this NDA has to be very strong and also compliant with EU law."
   ); // Added state for textarea
 
-  const contentwchild = localStorage.getItem("editor-content");
-  const filteredContents = contentwchild
-    ? JSON.parse(contentwchild).filter(
-        (item: any) => item.children.comment === true
-      )
-    : [];
-
   const comment = localStorage.getItem("editor-comments");
   const commentData = JSON.parse(comment ? comment : "");
-  console.log("coment: ", filteredContents);
 
   const handleGenerateSummary = async () => {
     setIsLoading(true);
@@ -101,7 +93,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
             
             Response only with valid JSON format as follows:
             [{
-               "target_text": referring to text in the document,
+               "target_text": referring to text in the document and remove the Markdown format such as bold (**) and italic (*),
                "suggestion": your own suggestion to improve the document
             }]
             `,
