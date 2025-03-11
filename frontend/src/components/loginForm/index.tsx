@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -15,6 +16,19 @@ const LoginForm: React.FC = () => {
       await signIn(email, password);
       navigate("/dashboard");
     } catch (err) {
+      const toastError = () => {
+        toast.error('Error: Something went wrong!', {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
+      }
+      toastError()
       alert('Failed to sign in');
       console.error(err);
     }

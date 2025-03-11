@@ -125,6 +125,19 @@ function ContractsPage() {
       });
       setIsLoading(false);
     } catch (error) {
+      const toastError = () => {
+        toast.error('Error: Something went wrong!', {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
+      }
+      toastError()
       console.error("Error:", error);
       notifyDuplicate()
       setIsLoading(false);
@@ -164,6 +177,19 @@ function ContractsPage() {
         }))
       ); // Assuming the response contains a 'contracts' array
     } catch (error) {
+      const toastError = () => {
+        toast.error('Error: Something went wrong!', {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
+      }
+      toastError()
       console.error("Error fetching contracts:", error);
     }
   };
@@ -301,6 +327,19 @@ function ContractItem({ contractItem }: { contractItem: Contract }) {
       setLoadDelete(false);
       return statuses;
     } catch (error) {
+      const toastError = () => {
+        toast.error('Error: Something went wrong!', {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
+      }
+      toastError()
       setLoadDelete(false);
       console.log("Error: ", error);
     }

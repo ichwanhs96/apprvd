@@ -6,6 +6,7 @@ import { useCurrentDocId, useEditorComments, useEditorContent, useSuggestions } 
 import { useNavigate } from "react-router-dom";
 import { TComment } from "@udecode/plate-comments";
 import { v4 as uuidv4 } from "uuid"; // To generate unique IDs
+import { toast } from "react-toastify";
 
 interface TextSegment {
   text?: string;
@@ -71,6 +72,19 @@ const EditorPage: React.FC = () => {
 
             return await response.json();
         } catch (error) {
+          const toastError = () => {
+            toast.error('Error: Something went wrong!', {
+              position: "bottom-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: false,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+              });
+          }
+          toastError()
             console.error("Failed to fetch document:", error);
         }
     };
@@ -89,6 +103,19 @@ const EditorPage: React.FC = () => {
                 children: [{ text: "Start typing here..." }],
             }], comments: [] };
         } catch (error) {
+          const toastError = () => {
+            toast.error('Error: Something went wrong!', {
+              position: "bottom-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: false,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+              });
+          }
+          toastError()
             const savedValue = localStorage.getItem(EDITOR_CONTENT_KEY);
             // const savedValue = editor_content
             if (savedValue) {
@@ -300,6 +327,19 @@ const EditorPage: React.FC = () => {
                 body: storedValue, // Send the whole documents
               });
             } catch (error) {
+              const toastError = () => {
+                toast.error('Error: Something went wrong!', {
+                  position: "bottom-right",
+                  autoClose: 5000,
+                  hideProgressBar: false,
+                  closeOnClick: false,
+                  pauseOnHover: true,
+                  draggable: true,
+                  progress: undefined,
+                  theme: "light",
+                  });
+              }
+              toastError()
               throw new Error('Error updating document');
             }
           }
@@ -318,6 +358,19 @@ const EditorPage: React.FC = () => {
             body: JSON.stringify(parsedComments), // Use parsedComments as payload
           });
         } catch (error) {
+          const toastError = () => {
+            toast.error('Error: Something went wrong!', {
+              position: "bottom-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: false,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+              });
+          }
+          toastError()
           console.error('Error updating comments:', error);
         }
       };

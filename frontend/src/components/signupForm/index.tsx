@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-toastify";
 
 const SignupForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -12,6 +13,19 @@ const SignupForm: React.FC = () => {
     try {
       await signUp(email, password);
     } catch (err) {
+      const toastError = () => {
+        toast.error('Error: Something went wrong!', {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
+      }
+      toastError()
       alert('Failed to create an account');
       console.error(err);
     }

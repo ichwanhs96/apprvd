@@ -123,6 +123,7 @@ import { useContracts, useCurrentDocId, useEditorComments } from "../../store"
 import { ListElement } from "../plate-ui/list-element";
 
 import { useEditorContent } from "../../store";
+import { toast } from "react-toastify";
 
 export default function PlateEditor({ editor }: { editor: any }) {
   const containerRef = useRef(null);
@@ -169,6 +170,19 @@ export default function PlateEditor({ editor }: { editor: any }) {
             body: JSON.stringify(value), // Send the whole document
           });
         } catch (error) {
+          const toastError = () => {
+            toast.error('Error: Something went wrong!', {
+              position: "bottom-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: false,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+              });
+          }
+          toastError()
           throw new Error('Error updating document');
         }
       }
@@ -468,6 +482,19 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any, doc_id: an
                   body: JSON.stringify(parsedComments), // Use parsedComments as payload
                 });
               } catch (error) {
+                const toastError = () => {
+                  toast.error('Error: Something went wrong!', {
+                    position: "bottom-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: false,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                    });
+                }
+                toastError()
                 console.error('Error updating comments:', error);
               }
             };
