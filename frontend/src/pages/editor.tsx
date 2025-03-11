@@ -82,6 +82,7 @@ const EditorPage: React.FC = () => {
             useEditorContent.setState({editor_content: JSON.stringify(data.contents)})
             localStorage.setItem(EDITOR_CONTENT_KEY, JSON.stringify(data.contents)); // Store the response in local storage
             localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(data.comments)); // Store the response in local storage
+            console.log('comment3: ', localStorage.getItem(EDITOR_CONTENT_COMMENTS))
 
             return data || { contents: [{
                 id: "1",
@@ -125,25 +126,25 @@ const EditorPage: React.FC = () => {
       arrayB: CommentBlock[],
       depth: number
     ) {
-      console.log("Entering recursiveSegmentCheck with depth:", depth);
+      // console.log("Entering recursiveSegmentCheck with depth:", depth);
 
       const segments: TextSegment[] = [];
       let childItemCounter: number = 0;
-      console.log('Child before processing:', JSON.stringify(child, null, 2));
-      console.log('Initial segments:', JSON.stringify(segments, null, 2));
+      // console.log('Child before processing:', JSON.stringify(child, null, 2));
+      // console.log('Initial segments:', JSON.stringify(segments, null, 2));
     
       if (child !== undefined && child.length > 0) {
-        console.log("Initialized segments:", segments);
+        // console.log("Initialized segments:", segments);
     
         child.forEach((childElement: any) => {
-          console.log("Processing item:", childItemCounter, " with childElement:", JSON.stringify(childElement, null, 2));
+          // console.log("Processing item:", childItemCounter, " with childElement:", JSON.stringify(childElement, null, 2));
     
           if (childElement.children) {
             const newChild = recursiveSegmentCheck(childElement.children, idMap, suggestionsArray, arrayB, depth + 1);
             const segmentItem = { ...deepCopy(childElement), children: newChild }
-            console.log("Segments before adding newChild at dept:", depth, " and item: ", childItemCounter, " segments:", JSON.stringify(segments, null, 2), " child:", JSON.stringify(newChild, null, 2), " segment item to be pushed:", JSON.stringify(segmentItem, null, 2));
+            // console.log("Segments before adding newChild at dept:", depth, " and item: ", childItemCounter, " segments:", JSON.stringify(segments, null, 2), " child:", JSON.stringify(newChild, null, 2), " segment item to be pushed:", JSON.stringify(segmentItem, null, 2));
             segments.push({ ...deepCopy(childElement), children: newChild }); // Use deep copy here
-            console.log("Segments after adding newChild at dept:", depth,  " and item: ", childItemCounter, " segments:", JSON.stringify(segments, null, 2));
+            // console.log("Segments after adding newChild at dept:", depth,  " and item: ", childItemCounter, " segments:", JSON.stringify(segments, null, 2));
             childItemCounter++
             return;
           }
@@ -160,7 +161,7 @@ const EditorPage: React.FC = () => {
               // Push text before match
               if (index > startIdx) {
                 segments.push({ text: text.substring(startIdx, index), ...deepCopy(childElement) }); // Use deep copy here
-                console.log("Segments after adding text before match at depth:", depth, " segments: ", JSON.stringify(segments, null, 2));
+                // console.log("Segments after adding text before match at depth:", depth, " segments: ", JSON.stringify(segments, null, 2));
               }
     
               // Push matched text with comment metadata
@@ -170,7 +171,7 @@ const EditorPage: React.FC = () => {
                 [`comment_${id}`]: true,
                 ...deepCopy(childElement) // Use deep copy here
               });
-              console.log("Segments after adding matched text at depth:", depth, " segments: ", JSON.stringify(segments, null, 2));
+              // console.log("Segments after adding matched text at depth:", depth, " segments: ", JSON.stringify(segments, null, 2));
     
               // Store suggestion in arrayB if not already added
               if (!arrayB.some((b) => b.id === id)) {
@@ -191,7 +192,7 @@ const EditorPage: React.FC = () => {
           // Push remaining text
           if (startIdx < text.length) {
             segments.push({ text: text.substring(startIdx), ...deepCopy(childElement) }); // Use deep copy here
-            console.log("Segments after adding remaining text at depth:", depth, " segments: ", JSON.stringify(segments, null, 2));
+            // console.log("Segments after adding remaining text at depth:", depth, " segments: ", JSON.stringify(segments, null, 2));
           }
 
           childItemCounter++
@@ -201,10 +202,10 @@ const EditorPage: React.FC = () => {
           segments.push({ text: "" });
         }
     
-        console.log("Final segments at depth", depth, ":", JSON.stringify(segments, null, 2));
+        // console.log("Final segments at depth", depth, ":", JSON.stringify(segments, null, 2));
         return segments;
       } else {
-        console.log("Returning empty segment for depth", depth);
+        // console.log("Returning empty segment for depth", depth);
         return [{ text: "" }];
       }
     }
@@ -282,10 +283,14 @@ const EditorPage: React.FC = () => {
         useEditorContent.setState({editor_content: JSON.stringify(newContents)})
         localStorage.setItem(EDITOR_CONTENT_KEY, JSON.stringify(newContents));
         const existingComments = localStorage.getItem(EDITOR_CONTENT_COMMENTS);
+        const parsingExisting = existingComments && JSON.parse(existingComments)
+        if(existingComments !== JSON.stringify(newComments)){
+          const updatedComments = existingComments && [...parsingExisting, ...newComments]
+          useEditorComments.setState({editor_comments: JSON.stringify(updatedComments) })
+          localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(updatedComments));
+          console.log('comment4: ', localStorage.getItem(EDITOR_CONTENT_COMMENTS))
+        }
         // const existingComments = editor_comments
-        const updatedComments = existingComments ? [...JSON.parse(existingComments), ...newComments] : newComments;
-        useEditorComments.setState({editor_comments: JSON.stringify(updatedComments) })
-        localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(updatedComments));
       };
 
       const updateContentOnBackend = async() => {

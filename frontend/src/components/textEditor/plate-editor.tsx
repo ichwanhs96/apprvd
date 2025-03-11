@@ -432,6 +432,7 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any, doc_id: an
                 : {};
             // reset comments every editor reload
             localStorage.setItem("editor-comments", JSON.stringify(comments));
+            console.log('comment1: ', localStorage.getItem('editor-comments'))
             useEditorComments.setState({editor_comments: JSON.stringify(comments)})
             return parsedComments;
           })() as Record<string, TComment>, // Immediately invoke the function and assert the type
@@ -455,6 +456,7 @@ export const InitiatePlateEditor = (initialValue: any, userInfo: any, doc_id: an
               "editor-comments",
               JSON.stringify(parsedComments) // Store the updated array
             );
+            console.log('comment2: ', localStorage.getItem('editor-comments'))
             useEditorComments.setState({editor_comments: JSON.stringify(parsedComments)})
 
             // New HTTP PATCH function to update comments on the backend
