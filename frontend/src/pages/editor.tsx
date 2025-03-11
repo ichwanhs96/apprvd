@@ -140,7 +140,6 @@ const EditorPage: React.FC = () => {
     
           if (childElement.children) {
             const newChild = recursiveSegmentCheck(childElement.children, idMap, suggestionsArray, arrayB, depth + 1);
-            const segmentItem = { ...deepCopy(childElement), children: newChild }
             // console.log("Segments before adding newChild at dept:", depth, " and item: ", childItemCounter, " segments:", JSON.stringify(segments, null, 2), " child:", JSON.stringify(newChild, null, 2), " segment item to be pushed:", JSON.stringify(segmentItem, null, 2));
             segments.push({ ...deepCopy(childElement), children: newChild }); // Use deep copy here
             // console.log("Segments after adding newChild at dept:", depth,  " and item: ", childItemCounter, " segments:", JSON.stringify(segments, null, 2));
