@@ -12,6 +12,7 @@ import {
   UserInfo
 } from 'firebase/auth';
 import { auth } from '../firebase/config';
+import { toast } from 'react-toastify';
 
 interface AuthContextType {
   user: User | null;
@@ -66,6 +67,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await signInWithPopup(auth, provider);
     } catch (error: any) {
+      const toastError = () => {
+        toast.error('Error: Something went wrong!', {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
+      }
+      toastError()
       // If popup is blocked, fallback to redirect
       if (error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
         await signInWithRedirect(auth, provider);

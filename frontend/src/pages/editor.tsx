@@ -6,6 +6,7 @@ import { useCurrentDocId, useEditorComments, useEditorContent, useSuggestions } 
 import { useNavigate } from "react-router-dom";
 import { TComment } from "@udecode/plate-comments";
 import { v4 as uuidv4 } from "uuid"; // To generate unique IDs
+import { toast } from "react-toastify";
 
 interface TextSegment {
   text?: string;
@@ -50,6 +51,18 @@ const EditorPage: React.FC = () => {
     // const { editor_content } = useEditorContent()
     // const { editor_comments } = useEditorComments()
     const navigate = useNavigate();
+    const toastError = () => {
+      toast.error('Error: Something went wrong!', {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        });
+    }
 
     const fetchDocument = async (doc_id: string) => {
         try {
@@ -71,6 +84,7 @@ const EditorPage: React.FC = () => {
 
             return await response.json();
         } catch (error) {
+          toastError()
             console.error("Failed to fetch document:", error);
         }
     };
@@ -89,6 +103,7 @@ const EditorPage: React.FC = () => {
                 children: [{ text: "Start typing here..." }],
             }], comments: [] };
         } catch (error) {
+          toastError()
             const savedValue = localStorage.getItem(EDITOR_CONTENT_KEY);
             // const savedValue = editor_content
             if (savedValue) {
@@ -303,6 +318,7 @@ const EditorPage: React.FC = () => {
                 body: storedValue, // Send the whole documents
               });
             } catch (error) {
+              toastError()
               throw new Error('Error updating document');
             }
           }
@@ -321,6 +337,7 @@ const EditorPage: React.FC = () => {
             body: JSON.stringify(parsedComments), // Use parsedComments as payload
           });
         } catch (error) {
+          toastError()
           console.error('Error updating comments:', error);
         }
       };

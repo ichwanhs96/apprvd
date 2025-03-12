@@ -10,6 +10,7 @@ import { useAuth } from "../context/AuthContext";
 import { htmlToSlate } from "@slate-serializers/html";
 import { useNavigate } from "react-router-dom";
 import Loader from "./Loader";
+import { toast } from "react-toastify";
 
 const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess }: any) => {
   const { userInfo } = useAuth();
@@ -193,6 +194,19 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess }: any) =
         }))
       ); // Assuming the response contains a 'contracts' array
     } catch (error) {
+      const toastError = () => {
+        toast.error('Error: Something went wrong!', {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
+      }
+      toastError()
       console.error("Error fetching contracts:", error);
     }
   };

@@ -5,6 +5,7 @@ import { TPlateEditor } from "@udecode/plate-common/react";
 import { useSuggestions } from "../../store";
 import Loader from "../Loader";
 import { MinusCircleIcon } from "lucide-react";
+import { toast } from "react-toastify";
 
 interface AISidebarProps {
   editor: TPlateEditor;
@@ -25,6 +26,18 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
 
   const comment = localStorage.getItem("editor-comments");
   const commentData = JSON.parse(comment ? comment : "");
+  const toastError = () => {
+    toast.error('Error: Something went wrong!', {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      });
+  }
 
   const handleGenerateSummary = async () => {
     setIsLoading(true);
@@ -62,6 +75,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
       setIsTyping(true);
       setIsLoading(false);
     } catch (error) {
+      toastError()
       console.error("Error fetching document summary:", error);
       setIsLoading(false);
     }
@@ -118,6 +132,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
           console.error("Parsed suggestions is not an array:", suggestions);
         }
       } catch (error) {
+        toastError()
         console.error("error parsing response ", error);
       } finally {
         const suggestionSummary = document.getElementById("SuggestionSummary");
@@ -127,6 +142,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
       }
       setIsLoadingReview(false);
     } catch (error) {
+      toastError()
       console.error("Error fetching review request:", error);
       setIsLoadingReview(false);
     }
