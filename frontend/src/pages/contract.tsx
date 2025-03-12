@@ -183,6 +183,12 @@ function ContractsPage() {
     }
   };
 
+  const deleteContract = (id: string) => {
+    setAllContract(
+      allContract.filter(contract => contract.id !== id)
+    );
+  }
+
   // Call fetchContracts on component mount
   useEffect(() => {
     fetchContracts();
@@ -209,7 +215,7 @@ function ContractsPage() {
                 /> */}
       </div>
       <div className="h-[calc(100vh-200px)] overflow-y-auto">
-        <ContractList contracts={allContract} />
+        <ContractList contracts={{ contracts: allContract }} deleteContractFn={deleteContract} />
       </div>
 
       {addOpen && (
@@ -272,7 +278,7 @@ function ContractsPage() {
 
 export default ContractsPage;
 
-function ContractItem({ contractItem }: { contractItem: Contract }) {
+function ContractItem({ contractItem, deleteContractFn }: { contractItem: Contract, deleteContractFn: Function }) {
   const { userInfo } = useAuth();
   const [loadDelete, setLoadDelete] = useState(false);
 
@@ -310,10 +316,10 @@ function ContractItem({ contractItem }: { contractItem: Contract }) {
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
-      const statuses = await response.json();
-      notifyDelete('Deleted')
+
+      notifyDelete('Deleted');
       setLoadDelete(false);
-      return statuses;
+      deleteContractFn(id);
     } catch (error) {
       const toastError = () => {
         toast.error('Error: Something went wrong!', {
@@ -404,13 +410,7 @@ function ContractItem({ contractItem }: { contractItem: Contract }) {
   );
 }
 
-function ContractList({ contracts }: Contracts) {
-  // const contracts: Contract[] = [
-  //     { name: 'Draft Service Agreement Apprvd', language: 'EN', version: 'First draft', created: '5 Aug, 10:02AM', updated: 'Today, 08:00AM', status: 'Uploading' },
-  //     { name: 'NDA John Doe', language: 'EN', version: 'Draft v1', created: '5 Aug, 10:02AM', updated: 'Today, 08:00AM', status: 'Drafting' },
-  //     { name: 'MSA Accounting Vendor Italy', language: 'IT', version: 'v2.2', created: '01 Aug, 08:59AM', updated: 'Aug 2, 11:01AM', status: 'Finalized' },
-  // ];
-
+function ContractList({ contracts, deleteContractFn }: { contracts: Contracts, deleteContractFn: Function } ) {
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
       <table className="min-w-full divide-y divide-gray-200">
@@ -440,10 +440,10 @@ function ContractList({ contracts }: Contracts) {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {contracts
-            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) // Sort from newest to oldest
-            .map((contract, index) => (
-              <ContractItem key={index} contractItem={contract} />
+          {contracts.contracts
+            .sort((a: Contract, b: Contract) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) // Sort from newest to oldest
+            .map((contract: Contract, index: number) => (
+              <ContractItem key={index} contractItem={contract} deleteContractFn={deleteContractFn} />
             ))}
         </tbody>
       </table>
