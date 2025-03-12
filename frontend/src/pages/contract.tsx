@@ -54,7 +54,7 @@ function ContractsPage() {
   }
 
   const notifySuccess = (event: any) => {
-    toast.success(`Suscess: ${event} document!`, {
+    toast.success(`Success: ${event} document!`, {
       position: "bottom-right",
       autoClose: 5000,
       hideProgressBar: false,
