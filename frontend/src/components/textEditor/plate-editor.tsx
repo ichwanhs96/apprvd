@@ -212,7 +212,7 @@ export default function PlateEditor({ editor }: { editor: any }) {
           </FixedToolbar>
 
           <Editor
-            className="px-[96px] py-16"
+            className="px-[96px] py-40"
             autoFocus
             focusRing={false}
             variant="ghost"
