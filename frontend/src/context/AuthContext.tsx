@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (user) {
         setUserInfo(user.providerData[0]); // Store UserInfo from the first provider
-        navigate("/editor");
+        navigate("/dashboard");
       }
     });
 

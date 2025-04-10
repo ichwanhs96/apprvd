@@ -1,13 +1,21 @@
 import { Editor } from '@tinymce/tinymce-react';
 import { useState } from 'react';
-// import tinymce from 'tinymce';
+import { Editor as TinyMCEEditor } from 'tinymce';
 
-export default function TinyEditor (){
+declare global {
+  interface Window {
+    tinymce: {
+      activeEditor: TinyMCEEditor;
+    };
+  }
+}
+
+export default function TinyEditor() {
   const [content, setContent] = useState('');
 
+  console.log(content)
 
-  console.log(content);
-  const handleEditorChange = (content: any) => {
+  const handleEditorChange = (content: string) => {
     setContent(content);
     console.log('Edited content:', content);
   };
@@ -17,15 +25,15 @@ export default function TinyEditor (){
       <Editor
         apiKey='0vco30s4ey7c3jdvmf8sl131uwqmic8ufbmattax46rmgw3k'
         init={{
-          width: 2000,
+          width: '100%',
           placeholder:"Write here...",
-          max_width: 1000,
+          height: 1000,
           menubar: true,
           plugins: [
             'advlist autolink lists link image charmap print preview anchor',
             'searchreplace visualblocks code fullscreen',
             'insertdatetime media table paste code help wordcount',
-            'image', 'table', 'link', 'lists'
+            'image', 'table', 'link', 'lists', 'importword', 'exportword', 'exportpdf'
           ],
           menu: {
             file: { title: 'File', items: 'newdocument restoredraft | preview | importword exportpdf exportword | print | deleteallconversations' },
@@ -45,37 +53,38 @@ export default function TinyEditor (){
           images_file_types: 'jpg,jpeg,svg,webp',
           image_title: true,
           automatic_uploads: true,
-          file_picker_types: 'image',
-          /* and here's our custom image picker*/
-          // file_picker_callback: (cb, value, meta) => {
-          //   const input = document.createElement('input');
-          //   input.setAttribute('type', 'file');
-          //   input.setAttribute('accept', 'image/*');
+          file_picker_types: 'file image media',
+          file_picker_callback: (cb: (value: string, meta?: Record<string, any>) => void, value: string, meta: Record<string, any>) => {
+            console.log(value, meta)
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
 
-          //   input.addEventListener('change', (e) => {
-          //     const target = e.target as HTMLInputElement;
-          //     if (target.files && target.files.length > 0) {
-          //       const file = target.files[0];
+            input.addEventListener('change', (e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.files && target.files.length > 0) {
+                const file = target.files[0];
 
-          //       const reader = new FileReader();
-          //       reader.addEventListener('load', () => {
-          //         const id = 'blobid' + (new Date()).getTime();
-          //         const blobCache = tinymce?.activeEditor.editorUpload.blobCache;
-          //         const base64 = reader.result as string;
-          //         const blobInfo = blobCache.create(id, file, base64.split(',')[1]);
-          //         blobCache.add(blobInfo);
+                const reader = new FileReader();
+                reader.addEventListener('load', () => {
+                  const id = 'blobid' + (new Date()).getTime();
+                  const editor = window.tinymce.activeEditor;
+                  const blobCache = editor.editorUpload.blobCache;
+                  const base64 = reader.result as string;
+                  const blobInfo = blobCache.create(id, file, base64.split(',')[1]);
+                  blobCache.add(blobInfo);
 
-          //         cb(blobInfo.blobUri(), { title: file.name });
-          //       });
-          //       reader.readAsDataURL(file);
-          //     }
-          //   });
+                  cb(blobInfo.blobUri(), { title: file.name });
+                });
+                reader.readAsDataURL(file);
+              }
+            });
 
-          //   input.click();
-          // },
+            input.click();
+          }
         }}
         onEditorChange={handleEditorChange}
       />
     </div>
   );
-};
+}
