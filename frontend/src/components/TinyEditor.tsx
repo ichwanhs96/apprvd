@@ -20,6 +20,9 @@ export default function TinyEditor() {
     console.log('Edited content:', content);
   };
 
+  const currentAuthor = 'Roe';
+  const userAllowedToResolve = 'Roe'
+
   return (
     <div>
       <Editor
@@ -33,7 +36,7 @@ export default function TinyEditor() {
             'advlist autolink lists link image charmap print preview anchor',
             'searchreplace visualblocks code fullscreen',
             'insertdatetime media table paste code help wordcount',
-            'image', 'table', 'link', 'lists', 'importword', 'exportword', 'exportpdf'
+            'image', 'table', 'link', 'lists', 'importword', 'exportword', 'exportpdf', 'tinycomments', 'quickbars'
           ],
           menu: {
             file: { title: 'File', items: 'newdocument restoredraft | preview | importword exportpdf exportword | print | deleteallconversations' },
@@ -42,12 +45,28 @@ export default function TinyEditor() {
             insert: { title: 'Insert', items: 'image link media addcomment pageembed codesample inserttable | math | charmap emoticons hr | pagebreak nonbreaking anchor tableofcontents | insertdatetime' },
             format: { title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | language | removeformat' },
             tools: { title: 'Tools', items: 'spellchecker spellcheckerlanguage | a11ycheck code wordcount' },
-            help: { title: 'Help', items: 'help' }
+            help: { title: 'Help', items: 'help' },
+            tc: {
+              title: 'Comments',
+              items: 'addcomment showcomments deleteallconversations'
+            }
           },
           toolbar:
-            'styles | bold italic underline strikethrough code | forecolor backcolor | align lineheight | bullist numlist outdent indent | removeformat | restoredraft help',
+            'styles | bold italic underline strikethrough code | forecolor backcolor | align lineheight | bullist numlist outdent indent | removeformat | restoredraft help addcomment showcomments',
           toolbar_groups: {
             align: { icon: 'align-left', items: 'alignleft aligncenter alignright alignjustify' },
+          },
+          quickbars_selection_toolbar: 'alignleft aligncenter alignright | addcomment showcomments',
+          tinycomments_mode: 'embedded',
+          sidebar_show: 'showcomments',
+          tinycomments_author: currentAuthor,
+          tinycomments_can_resolve: (req: { comments: { author: string }[] }, done: (result: { canResolve: boolean }) => void, fail: () => void) => {
+            console.log(fail)
+            const allowed = req.comments.length > 0 &&
+               req.comments[0].author === currentAuthor;
+            done({
+              canResolve: allowed || currentAuthor === userAllowedToResolve
+            });
           },
           toolbar_sticky: true,
           images_file_types: 'jpg,jpeg,svg,webp',
