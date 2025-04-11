@@ -1,6 +1,7 @@
 import { Editor } from '@tinymce/tinymce-react';
 import { useState } from 'react';
 import { Editor as TinyMCEEditor } from 'tinymce';
+import { useAuth } from '../context/AuthContext';
 
 declare global {
   interface Window {
@@ -12,6 +13,7 @@ declare global {
 
 export default function TinyEditor() {
   const [content, setContent] = useState('');
+  const { userInfo } = useAuth();
 
   console.log(content)
 
@@ -20,8 +22,8 @@ export default function TinyEditor() {
     console.log('Edited content:', content);
   };
 
-  const currentAuthor = 'Roe';
-  const userAllowedToResolve = 'Roe'
+  const currentAuthor = userInfo?.displayName;
+  const userAllowedToResolve = userInfo?.displayName;
 
   return (
     <div>
