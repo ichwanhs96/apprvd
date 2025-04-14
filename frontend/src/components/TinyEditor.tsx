@@ -54,7 +54,7 @@ export default function TinyEditor() {
             }
           },
           toolbar:
-            'styles | bold italic underline strikethrough code | forecolor backcolor | align lineheight | bullist numlist outdent indent | removeformat | restoredraft help addcomment showcomments',
+            'styles | bold italic underline strikethrough code | forecolor backcolor | align lineheight | bullist numlist outdent indent | removeformat | restoredraft help addcomment showcomments | annotate-alpha | ai-comment',
           toolbar_groups: {
             align: { icon: 'align-left', items: 'alignleft aligncenter alignright alignjustify' },
           },
@@ -102,6 +102,96 @@ export default function TinyEditor() {
             });
 
             input.click();
+          },
+          setup: (editor) => {
+            editor.ui.registry.addButton('ai-comment', {
+              text: 'AI Comment',
+              onAction: async () => {
+                const content = editor.getContent();
+                
+                try {
+                  // const response = await fetch('your-api-endpoint', {
+                  //   method: 'POST',
+                  //   headers: {
+                  //     'Content-Type': 'application/json',
+                  //   },
+                  //   body: JSON.stringify({ content }),
+                  // });
+                  
+                  // const data = await response.json();
+                  // // Expect API to return an array of { text: string, comment: string }
+                  // const annotations = data.annotations;
+
+                  const annotations = [{ text: 'test', comment: 'test' }];
+
+                  annotations.forEach(({ text, comment }) => {
+                    // Get content without formatting
+                    const contentWithoutTags = editor.getContent({ format: 'text' });
+                    const textIndex = contentWithoutTags.indexOf(text);
+                    
+                    if (textIndex !== -1) {
+                      const walker = document.createTreeWalker(
+                        editor.getBody(),
+                        NodeFilter.SHOW_TEXT,
+                        null
+                      );
+                      let node;
+                      let found = false;
+                      
+                      while ((node = walker.nextNode()) && !found) {
+                        if (node.textContent && node.textContent.includes(text)) {
+                          const startOffset = node.textContent.indexOf(text);
+                          const endOffset = startOffset + text.length;
+
+                          // Create a range for the specific text
+                          const range = editor.dom.createRng();
+                          range.setStart(node, startOffset);
+                          range.setEnd(node, endOffset);
+
+                          // Set the selection to our range
+                          editor.selection.setRng(range);
+                          found = true;
+                          
+                          // Add annotation to the selected text
+                          const uniqueId = 'api-' + (new Date()).getTime();
+                          editor.annotator.annotate('tinycomments', {
+                            uid: uniqueId,
+                            comments: [{
+                              content: comment,
+                              author: currentAuthor,
+                              uid: uniqueId,
+                              createdAt: new Date().toISOString(),
+                              modifiedAt: new Date().toISOString()
+                            }]
+                          });
+                        }
+                      }
+                    }
+                  });
+
+                  editor.focus();
+                } catch (error) {
+                  console.error('API comment error:', error);
+                  alert('Failed to process API comments');
+                }
+              }
+            });
+
+            editor.on('init', () => {
+              // editor.annotator.register('ai-comment', {
+              //   persistent: true,
+              //   decorate: (uid, data) => ({
+              //     attributes: {
+              //       'data-mce-comment': data.comment ? data.comment : '',
+              //       'data-mce-author': data.author ? data.author : 'anonymous'
+              //     }
+              //   })
+              // });
+
+              // editor.annotator.annotationChanged('tinycomments', (selected, annotatorName, context) => {
+              //   console.log(selected, annotatorName, context)
+              // });
+            });
           }
         }}
         onEditorChange={handleEditorChange}
