@@ -11,6 +11,30 @@ declare global {
   }
 }
 
+// Add this interface above the conversationDb declaration
+interface Conversation {
+  uid: string;
+  comments: {
+    uid: string;
+    author: string | null | undefined;
+    content: string;
+    createdAt: string;
+    modifiedAt: string;
+  }[];
+}
+
+// Add proper typing for the callback parameters
+interface TinyCommentsCallbackRequest {
+  conversationUid?: string;
+  commentUid?: string;
+  content?: string;
+  createdAt?: string;
+}
+
+interface TinyCommentsFetchRequest {
+  conversationUid: string;
+}
+
 export default function TinyEditor() {
   const [content, setContent] = useState('');
   const { userInfo } = useAuth();
@@ -25,6 +49,162 @@ export default function TinyEditor() {
   const currentAuthor = userInfo?.displayName;
   const userAllowedToResolve = userInfo?.displayName;
 
+  // Update the conversationDb declaration
+  const conversationDb: Record<string, Conversation> = {};
+  
+  const fakeDelay = 200;
+  const randomString = () => crypto.getRandomValues(new Uint32Array(1))[0].toString(36).substring(2, 14);
+  
+  const resolvedConversationDb = {};
+  
+  /********************************
+   *   Tiny Comments functions    *
+   * (must call "done" or "fail") *
+   ********************************/
+  
+  // Update the callback functions with proper typing
+  const tinycomments_create = (
+    req: TinyCommentsCallbackRequest, 
+    done: (response: { conversationUid: string }) => void,
+    fail: (error: Error) => void
+  ) => {
+    if (req.content === 'fail') {
+      fail(new Error('Something has gone wrong...'));
+    } else {
+      const uid = 'annotation-' + randomString();
+      conversationDb[uid] = {
+        uid,
+        comments: [{
+          uid,
+          author: currentAuthor,
+          content: req.content || '',
+          createdAt: new Date().toISOString(),
+          modifiedAt: new Date().toISOString()
+        }]
+      };
+      setTimeout(() => done({ conversationUid: uid }), fakeDelay);
+    }
+  };
+  
+  const tinycomments_reply = (req: any, done: any) => {
+    const replyUid = 'annotation-' + randomString();
+    conversationDb[req.conversationUid].comments.push({
+      uid: replyUid,
+      author: currentAuthor,
+      content: req.content,
+      createdAt: new Date().toISOString(),
+      modifiedAt: req.createdAt
+    });
+    setTimeout(() => done({ commentUid: replyUid }), fakeDelay);
+  };
+  
+  const tinycomments_delete = (req: any, done: any) => {
+    delete conversationDb[req.conversationUid];
+    setTimeout(() => done({ canDelete: true }), fakeDelay);
+  };
+  
+  const tinycomments_resolve = (req: any, done: any) => {
+    delete conversationDb[req.conversationUid];
+    setTimeout(() => done({ canResolve: true }), fakeDelay);
+  };
+  
+  const tinycomments_delete_comment = (req: any, done: any) => {
+    const oldcomments = conversationDb[req.conversationUid].comments;
+    let reason = 'Comment not found';
+  
+    const newcomments = oldcomments.filter((comment) => {
+      if (comment.uid === req.commentUid) { // Found the comment to delete
+        if (currentAuthor === comment.author) { // Replace with your own logic, e.g. check if user has admin privileges
+          return false; // Remove the comment
+        } else {
+          reason = 'Not authorised to delete this comment'; // Update reason
+        }
+      }
+      return true; // Keep the comment
+    });
+    if (newcomments.length === oldcomments.length) {
+      setTimeout(() => done({ canDelete: false, reason }), fakeDelay);
+    } else {
+      conversationDb[req.conversationUid].comments = newcomments;
+      setTimeout(() => done({ canDelete: true }), fakeDelay);
+    }
+  };
+  
+  const tinycomments_edit_comment = (req: any, done: any) => {
+    const oldcomments = conversationDb[req.conversationUid].comments;
+    let reason = 'Comment not found';
+    let canEdit = false;
+  
+    const newcomments = oldcomments.map((comment) => {
+      if (comment.uid === req.commentUid) { // Found the comment to delete
+        if (currentAuthor === comment.author) { // Replace with your own logic, e.g. check if user has admin privileges
+          canEdit = true; // User can edit the comment
+          return { ...comment, content: req.content, modifiedAt: new Date().toISOString() }; // Update the comment
+        } else {
+          reason = 'Not authorised to edit this comment'; // Update reason
+        }
+      }
+      return comment; // Keep the comment
+    });
+  
+    if (canEdit) {
+      conversationDb[req.conversationUid].comments = newcomments;
+      setTimeout(() => done({ canEdit }), fakeDelay);
+    } else {
+      setTimeout(() => done({ canEdit, reason }), fakeDelay);
+    }
+  };
+  
+  const tinycomments_delete_all = (req: any, done: any) => {
+    const conversation = conversationDb[req.conversationUid];
+    if (currentAuthor === conversation.comments[0].author) { // Replace wth your own logic, e.g. check if user has admin priveleges
+      delete conversationDb[req.conversationUid];
+      setTimeout(() => done({ canDelete: true }), fakeDelay);
+    } else {
+      setTimeout(() => done({ canDelete: false, reason: 'Must be conversation author' }), fakeDelay);
+    }
+  };
+  
+  // Update the callback functions with proper typing
+  const tinycomments_lookup = (
+    req: TinyCommentsFetchRequest, 
+    done: (response: { conversation: Conversation }) => void
+  ) => {
+    // Add error handling
+    if (!conversationDb[req.conversationUid]) {
+      done({ conversation: { uid: '', comments: [] } }); // or handle the error appropriately
+      return;
+    }
+    setTimeout(() => {
+      done({
+        conversation: {
+          uid: conversationDb[req.conversationUid].uid,
+          comments: [...conversationDb[req.conversationUid].comments]
+        }
+      });
+    }, fakeDelay);
+  };
+  
+  const tinycomments_fetch = (conversationUids: any, done: any) => {
+    const fetchedConversations: Record<string, Conversation> = {};
+    conversationUids.forEach((uid: any) => {
+      const conversation = conversationDb[uid];
+      if (conversation) {
+        fetchedConversations[uid] = {...conversation};
+      }
+    });
+    setTimeout(() => done({ conversations: fetchedConversations }), fakeDelay);
+  };
+  
+  // Read the above `getAuthorInfo` function to see how this could be implemented
+  const tinycomments_fetch_author_info = (done: any) => done({
+    author: currentAuthor,
+    authorName: currentAuthor,
+  });
+
+  // Add state management for conversations
+  const [conversations, setConversations] = useState<Record<string, Conversation>>(conversationDb);
+
   return (
     <div>
       <Editor
@@ -33,7 +213,7 @@ export default function TinyEditor() {
           width: '100%',
           placeholder:"Write here...",
           height: 1000,
-          menubar: true,
+          menubar: 'file edit view insert format tools tc help',
           plugins: [
             'advlist autolink lists link image charmap print preview anchor',
             'searchreplace visualblocks code fullscreen',
@@ -49,7 +229,7 @@ export default function TinyEditor() {
             tools: { title: 'Tools', items: 'spellchecker spellcheckerlanguage | a11ycheck code wordcount' },
             help: { title: 'Help', items: 'help' },
             tc: {
-              title: 'Comments',
+              title: 'Comment',
               items: 'addcomment showcomments deleteallconversations'
             }
           },
@@ -59,17 +239,19 @@ export default function TinyEditor() {
             align: { icon: 'align-left', items: 'alignleft aligncenter alignright alignjustify' },
           },
           quickbars_selection_toolbar: 'alignleft aligncenter alignright | addcomment showcomments',
-          tinycomments_mode: 'embedded',
-          sidebar_show: 'showcomments',
+          tinycomments_mode: 'callback',
+          tinycomments_create,
+          tinycomments_reply,
+          tinycomments_delete,
+          tinycomments_resolve,
+          tinycomments_delete_all,
+          tinycomments_lookup,
+          tinycomments_delete_comment,
+          tinycomments_edit_comment,
+          tinycomments_fetch,
+          tinycomments_fetch_author_info,
           tinycomments_author: currentAuthor,
-          tinycomments_can_resolve: (req: { comments: { author: string }[] }, done: (result: { canResolve: boolean }) => void, fail: () => void) => {
-            console.log(fail)
-            const allowed = req.comments.length > 0 &&
-               req.comments[0].author === currentAuthor;
-            done({
-              canResolve: allowed || currentAuthor === userAllowedToResolve
-            });
-          },
+          tinycomments_can_resolve: () => userAllowedToResolve !== null,
           toolbar_sticky: true,
           images_file_types: 'jpg,jpeg,svg,webp',
           image_title: true,
@@ -152,18 +334,32 @@ export default function TinyEditor() {
                           editor.selection.setRng(range);
                           found = true;
                           
-                          // Add annotation to the selected text
-                          const uniqueId = 'api-' + (new Date()).getTime();
-                          editor.annotator.annotate('tinycomments', {
-                            uid: uniqueId,
-                            comments: [{
-                              content: comment,
-                              author: currentAuthor,
-                              uid: uniqueId,
-                              createdAt: new Date().toISOString(),
-                              modifiedAt: new Date().toISOString()
-                            }]
-                          });
+                          // Simulate clicking the "Add Comment" button
+                          const addCommentButton = document.querySelector('[data-mce-name="addcomment"]');
+                          if (addCommentButton instanceof HTMLElement) {
+                            addCommentButton.click();
+                            
+                            // Wait for the comment dialog to appear
+                            setTimeout(() => {
+                              // Find the comment input field and submit button
+                              const commentDialog = document.querySelector('.tox-comment--selected');
+                              const commentInput = commentDialog?.querySelector('.tox-textarea');
+                              const submitButton = commentDialog?.querySelector('.tox-comment__edit button:nth-child(2)');
+                              
+                              if (commentInput instanceof HTMLTextAreaElement && 
+                                  submitButton instanceof HTMLElement) {
+                                // Set the comment text
+                                commentInput.value = comment;
+                                
+                                // Dispatch input event to ensure TinyMCE recognizes the change
+                                commentInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+                                setTimeout(() => {
+                                  submitButton.click();
+                                }, 100); 
+                              }
+                            }, 250); // Increased timeout to ensure DOM elements are ready
+                          }
                         }
                       }
                     }
@@ -176,23 +372,7 @@ export default function TinyEditor() {
                 }
               }
             });
-
-            editor.on('init', () => {
-              // editor.annotator.register('ai-comment', {
-              //   persistent: true,
-              //   decorate: (uid, data) => ({
-              //     attributes: {
-              //       'data-mce-comment': data.comment ? data.comment : '',
-              //       'data-mce-author': data.author ? data.author : 'anonymous'
-              //     }
-              //   })
-              // });
-
-              // editor.annotator.annotationChanged('tinycomments', (selected, annotatorName, context) => {
-              //   console.log(selected, annotatorName, context)
-              // });
-            });
-          }
+          },
         }}
         onEditorChange={handleEditorChange}
       />
