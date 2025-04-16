@@ -30,7 +30,7 @@ interface ContractItem {
   contract: Contract;
 }
 
-function ContractsPage() {
+function TemplatesPage() {
   const { userInfo } = useAuth();
   const [addOpen, setAddOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -196,16 +196,16 @@ function ContractsPage() {
 
   return (
     <div className="flex-1 p-8">
-      <h1 className="mb-8 text-4xl font-bold">Contracts</h1>
+      <h1 className="mb-8 text-4xl font-bold">Templates</h1>
       <div className="flex justify-between items-center mb-5">
         <div className="flex flex-row gap-x-2">
-          <button
+          {/* <button
             className="bg-green-500 text-white px-4 py-2 rounded-3xl mr-3"
             onClick={openModalAdd}
           >
             Create new
-          </button>
-          <DocxImporter setAllContract={setAllContract} notifyDuplicate={notifyDuplicate} notifySuccess={notifySuccess} type={'contract'} />
+          </button> */}
+          <DocxImporter setAllContract={setAllContract} notifyDuplicate={notifyDuplicate} notifySuccess={notifySuccess} type={'template'} />
         </div>
         {/* TODO: ENABLE SEARCH FUNCTION */}
         {/* <input
@@ -276,7 +276,7 @@ function ContractsPage() {
   );
 }
 
-export default ContractsPage;
+export default TemplatesPage;
 
 function ContractItem({ contractItem, deleteContractFn }: { contractItem: Contract, deleteContractFn: Function }) {
   const { userInfo } = useAuth();

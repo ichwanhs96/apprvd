@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import Loader from "./Loader";
 import { toast } from "react-toastify";
 
-const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess }: any) => {
+const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: any) => {
   const { userInfo } = useAuth();
   const { content } = useEditorStore();
   const setContent = useEditorStore((state) => state.setContent);
@@ -80,7 +80,8 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess }: any) =
       const plateContent = htmlToSlate(value);
 
       // Store in Zustand
-      await setContent(plateContent);
+      await setContent(value);
+      console.log('ini plue',value)
     };
     reader.readAsArrayBuffer(file);
 
@@ -225,9 +226,10 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess }: any) =
       {isOpen && (
         <div className="fixed inset-0 bg-slate-200 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm mx-auto">
-            <h2 className="text-xl font-bold mb-4">
-              Upload Your Document Here
+            <h2 className="text-xl font-bold mb-4 text-center">
+              {type === 'contract' ? 'Upload Your Document Here' : 'Upload existing template'}
             </h2>
+            {type === 'template' && <p className="text-neutral-400 text-center text-sm mb-4">Please make sure to only upload docx document format, specify the document language, and the version name below</p>}
 
             {/* Drop Area */}
             <div
