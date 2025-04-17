@@ -1,0 +1,10 @@
+FROM postgres:17
+
+# Copy initialization scripts if you have any
+# COPY ./init.sql /docker-entrypoint-initdb.d/
+
+# Expose the PostgreSQL port
+EXPOSE 5432
+
+# The default command will start PostgreSQL
+CMD ["postgres"]

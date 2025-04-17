@@ -98,7 +98,7 @@ function ContractsPage() {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/document`,
+        `http://localhost:5000/tinymce/documents`,
         {
           method: "POST",
           headers: {
@@ -110,13 +110,7 @@ function ContractsPage() {
             created_by: userInfo?.displayName,
             status: "DRAFT",
             version: baseData.version,
-            contents: [
-              {
-                id: "1",
-                type: "p",
-                children: [{ text: "Start typing here..." }],
-              },
-            ],
+            contents: "",
           }), // Send the form data as JSON
         }
       );
@@ -128,13 +122,13 @@ function ContractsPage() {
       notifySuccess('Creating')
       
       let result = await response.json();
-      useCurrentDocId.setState({ id: result?.document?.id });
+      useCurrentDocId.setState({ id: result?.id });
       useContentToShow.setState({ content: "editor" }); // Set content to show
       useContractSelected.setState({
-        created: new Date(result?.document?.created_at),
-        name: result?.document?.name,
-        status: result?.document?.status,
-        version: result?.document?.version,
+        created: new Date(result?.created_at),
+        name: result?.name,
+        status: result?.status,
+        version: result?.version,
       });
       setIsLoading(false);
     } catch (error) {
@@ -153,7 +147,7 @@ function ContractsPage() {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/document`,
+        `http://localhost:5000/tinymce/documents`,
         {
           method: "GET",
           headers: {
