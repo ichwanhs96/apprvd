@@ -21,14 +21,16 @@ const Dashboard: React.FC = () => {
         return EditorPage;
       case 'contracts':
         return ContractPage;
-      case 'templatesPage':
+      case 'templatespage':
         return TemplatesPage;
-      case 'editorTemplate':
+      case 'editortemplate':
         return EditorTemplate;
       default:
         return ContractPage;
     }
   }
+
+  console.log(content)
 
   return (
     <>

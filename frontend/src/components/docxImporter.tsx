@@ -4,10 +4,11 @@ import {
   useContractSelected,
   useCurrentDocId,
   useEditorStore,
+  useTemplateStore,
 } from "../store"; // Import Zustand store
 import * as mammoth from "mammoth";
 import { useAuth } from "../context/AuthContext";
-import { htmlToSlate } from "@slate-serializers/html";
+// import { htmlToSlate } from "@slate-serializers/html";
 import { useNavigate } from "react-router-dom";
 import Loader from "./Loader";
 import { toast } from "react-toastify";
@@ -77,11 +78,17 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
       const { value } = await mammoth.convertToHtml({ arrayBuffer });
 
       // Convert HTML to Plate.js format (Basic Example)
-      const plateContent = htmlToSlate(value);
+      // const plateContent = htmlToSlate(value);
+      const html = value.replace(/\$\{(.*?)\}/g, (match) => {
+        return `<span style="background-color: #ffffe0;">${match}</span>`;
+      });
 
+      console.log('asd',html)
       // Store in Zustand
-      await setContent(value);
-      console.log('ini plue',value)
+      await setContent(html);
+      await useTemplateStore.setState({ rawTemplate: html })
+
+      console.log('ini plue',)
     };
     reader.readAsArrayBuffer(file);
 
@@ -217,9 +224,9 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
       <div>
         {/* <input type="file" accept=".docx" onChange={handleFileUpload} /> */}
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-3xl"
+          className="bg-blue-500 text-white px-4 py-2 rounded-3xl flex flex-row gap-x-2"
           onClick={() => openModal()}
-        >
+        ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-upload-icon lucide-upload"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
           Upload existing
         </button>
       </div>

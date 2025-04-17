@@ -200,9 +200,10 @@ function ContractsPage() {
       <div className="flex justify-between items-center mb-5">
         <div className="flex flex-row gap-x-2">
           <button
-            className="bg-green-500 text-white px-4 py-2 rounded-3xl mr-3"
+            className="bg-green-500 text-white px-4 py-2 rounded-3xl mr-3 flex flex-row gap-x-2"
             onClick={openModalAdd}
           >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-square-plus-icon lucide-square-plus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
             Create new
           </button>
           <DocxImporter setAllContract={setAllContract} notifyDuplicate={notifyDuplicate} notifySuccess={notifySuccess} type={'contract'} />

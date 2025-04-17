@@ -1,7 +1,8 @@
 import { Editor } from '@tinymce/tinymce-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Editor as TinyMCEEditor } from 'tinymce';
 import { useAuth } from '../context/AuthContext';
+import { useContent, useTemplateStore } from '../store';
 
 declare global {
   interface Window {
@@ -36,14 +37,16 @@ interface TinyCommentsFetchRequest {
 }
 
 export default function TinyEditor() {
-  const [content, setContent] = useState('');
+  // const [content, setContent] = useState('');
   const { userInfo } = useAuth();
-
-  console.log(content)
+  const { content } = useContent()
+  const editorRef = useRef<any>(null);
+  const rawTemplate = useTemplateStore((s) => s.rawTemplate);
 
   const handleEditorChange = (content: string) => {
-    setContent(content);
-    console.log('Edited content:', content);
+    // setContent(content);
+    console.log(content)
+    // useContent.setState({content});
   };
 
   const currentAuthor = userInfo?.displayName;
@@ -205,10 +208,18 @@ export default function TinyEditor() {
   // Add state management for conversations
   const [conversations, setConversations] = useState<Record<string, Conversation>>(conversationDb);
 
+  useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.setContent(content);
+    }
+  }, [content])
+
   return (
     <div>
       <Editor
         apiKey='0vco30s4ey7c3jdvmf8sl131uwqmic8ufbmattax46rmgw3k'
+        onInit={(evt, editor) => (editorRef.current = editor)}
+        initialValue={rawTemplate}
         init={{
           width: '100%',
           placeholder:"Write here...",
@@ -374,7 +385,7 @@ export default function TinyEditor() {
             });
           },
         }}
-        onEditorChange={handleEditorChange}
+        // onEditorChange={handleEditorChange}
       />
     </div>
   );

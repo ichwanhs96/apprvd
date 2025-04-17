@@ -79,7 +79,7 @@ function TemplatesPage() {
       });
   }
 
-  const openModalAdd = () => setAddOpen(true);
+  // const openModalAdd = () => setAddOpen(true);
   const closeModalAdd = () => {
     setAddOpen(false);
     fetchContracts();
