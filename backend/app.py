@@ -47,7 +47,7 @@ LEGAL_EU_SYSTEM_PROMPT = """\
 • Provide concise replies that are polite and professional.
 • Answer questions truthfully based on official European Union regulations and directives. Tailor your responses considering the context provided below about key regulations such as GDPR, ePrivacy Directive, and other relevant laws.
 • Do not answer questions that are unrelated to European legal regulations and respond with "I can only help with questions related to European regulations."
-• If you do not know the answer to a question, respond by saying “I do not know the answer to your question. You may be able to find your answer at https://ec.europa.eu/info/law/law-topic/data-protection_en”
+• If you do not know the answer to a question, respond by saying "I do not know the answer to your question. You may be able to find your answer at https://ec.europa.eu/info/law/law-topic/data-protection_en"
 
 Core Topics Related to European Legal Regulations:
 • General Data Protection Regulation (GDPR): Outlines the key principles of data protection, data subject rights, and the obligations of data controllers and processors. Emphasizes transparency, data minimization, and the need for data breach notifications.
@@ -73,7 +73,7 @@ LEGAL_SYSTEM_PROMPT = """\
 • Provide concise replies that are polite and professional.
 • Answer questions truthfully based on official regulations and legal principles. Tailor your responses considering the context provided below about key regulations such as data protection laws, privacy laws, and other relevant legal topics.
 • Do not answer questions that are unrelated to legal regulations and respond with "I can only help with questions related to legal regulations."
-• If you do not know the answer to a question, respond by saying “I do not know the answer to your question. You may want to consult a legal professional for more detailed information.”
+• If you do not know the answer to a question, respond by saying "I do not know the answer to your question. You may want to consult a legal professional for more detailed information."
 
 Core Topics Related to Legal Regulations:
 • Data Protection Laws: Key principles of data protection, data subject rights, and the obligations of data controllers and processors. Emphasizes transparency, data minimization, and data breach notifications.
@@ -325,3 +325,197 @@ def delete_document(id):
 # def get_users():
 #     users = User.objects()
 #     return jsonify(users), 200
+
+from models.tinymce import Document, Comment, db
+import uuid
+from datetime import datetime, timezone
+
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('PGDB_URI')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+
+with app.app_context():
+    db.drop_all()
+    db.create_all()
+
+@app.route('/tinymce/documents', methods=['POST'])
+def create_tinymce_document():
+    data = request.json
+    business_id = request.headers.get("business-id") 
+    document = Document(
+        name=data.get('name', 'Untitled'),
+        content=data.get('content'),
+        business_id=business_id,
+        created_by=data.get('created_by'),
+        language=data.get('language'),
+        version=data.get('version'),
+        status=data.get('status')
+    )
+    db.session.add(document)
+    db.session.commit()
+    return jsonify({
+        'id': document.id,
+        'created_at': document.created_at.isoformat(),
+        'updated_at': document.updated_at.isoformat(),
+        'business_id': document.business_id,
+        'language': document.language,
+        'version': document.version,
+        'status': document.status
+    }), 201
+
+@app.route('/tinymce/documents', methods=['GET'])
+def get_tinymce_documents():
+    documents = Document.query.all()
+    return jsonify([{
+        'id': document.id,
+        'name': document.name,
+        'content': document.content,
+        'created_at': document.created_at.isoformat(),
+        'updated_at': document.updated_at.isoformat(),
+        'business_id': document.business_id,
+        'language': document.language,
+            'version': document.version,
+            'status': document.status
+        }
+        for document in documents
+    ]), 200
+
+@app.route('/tinymce/documents/<int:doc_id>', methods=['GET'])
+def get_tinymce_document(doc_id):
+    document = Document.query.get_or_404(doc_id)
+    return jsonify({
+        'id': document.id,
+        'name': document.name,
+        'content': document.content,
+        'created_at': document.created_at.isoformat(),
+        'updated_at': document.updated_at.isoformat(),
+        'business_id': document.business_id,
+        'language': document.language,
+        'version': document.version,
+        'status': document.status
+    })
+
+@app.route('/tinymce/documents/<int:doc_id>', methods=['PUT'])
+def update_tinymce_document(doc_id):
+    document = Document.query.get_or_404(doc_id)
+    data = request.json
+    document.content = data.get('content', document.content)
+    document.name = data.get('name', document.name)
+    document.updated_at = datetime.now(timezone.utc)
+    db.session.commit()
+    return jsonify({'message': 'Document updated successfully'})
+
+# Comment-related endpoints
+@app.route('/tinymce/documents/<int:doc_id>/comments', methods=['POST'])
+def create_tinymce_comment(doc_id):
+    data = request.json
+    comment = Comment(
+        conversation_uid=data['conversationUid'],
+        comment_uid=str(uuid.uuid4()),
+        content=data['content'],
+        author=data['author'],
+        document_id=doc_id
+    )
+    db.session.add(comment)
+    db.session.commit()
+    return jsonify({
+        'conversationUid': comment.conversation_uid,
+        'commentUid': comment.comment_uid
+    })
+
+@app.route('/tinymce/documents/<int:doc_id>/comments/<string:conversation_uid>', methods=['GET'])
+def get_tinymce_comment(doc_id, conversation_uid):
+    comments = Comment.query.filter(Comment.document_id == doc_id, Comment.conversation_uid == conversation_uid).all()
+    return jsonify({
+        'conversation_uid': conversation_uid,
+        'comments': [
+            {
+                'comment_uid': comment.comment_uid,
+                'content': comment.content,
+                'author': comment.author,
+                'created_at': comment.created_at.isoformat(),
+                'modified_at': comment.modified_at.isoformat()
+            }
+            for comment in comments
+        ]
+    })
+
+@app.route('/tinymce/documents/<int:doc_id>/comments/<string:conversation_uid>', methods=['PUT'])
+def update_tinymce_comment(doc_id, conversation_uid):
+    data = request.json
+    comment = Comment.query.filter_by(
+        conversation_uid=conversation_uid,
+        document_id=doc_id
+    ).first_or_404()
+    comment.content = data.get('content', comment.content)
+    comment.updated_at = datetime.now(timezone.utc)
+    db.session.commit()
+    return jsonify({'message': 'Comment updated successfully'})
+
+@app.route('/tinymce/documents/<int:doc_id>/comments/<string:conversation_uid>', methods=['POST'])
+def create_tinymce_comment_with_conversation_uid(doc_id, conversation_uid):
+    data = request.json
+    comment = Comment(
+        conversation_uid=conversation_uid,
+        comment_uid=str(uuid.uuid4()),
+        content=data['content'],
+        author=data['author'],
+        document_id=doc_id
+    )
+    db.session.add(comment)
+    db.session.commit()
+    return jsonify({
+        'conversationUid': comment.conversation_uid,
+        'commentUid': comment.comment_uid
+    })
+
+@app.route('/tinymce/documents/<int:doc_id>/comments/batch', methods=['GET'])
+def get_tinymce_conversations(doc_id):
+    # Get conversation_uids from query parameters as a comma-separated string
+    conversation_uids = request.args.get('conversation_uids', '').split(',')
+    
+    # Filter out empty strings
+    conversation_uids = [uid for uid in conversation_uids if uid]
+    
+    if not conversation_uids:
+        return jsonify([]), 200
+    
+    # Query all comments for the given conversation UIDs
+    comments = Comment.query.filter(
+        Comment.document_id == doc_id,
+        Comment.conversation_uid.in_(conversation_uids)
+    ).all()
+    
+    # Group comments by conversation_uid
+    conversations_map = {}
+    for comment in comments:
+        if comment.conversation_uid not in conversations_map:
+            conversations_map[comment.conversation_uid] = []
+        conversations_map[comment.conversation_uid].append({
+            'uid': comment.comment_uid,
+            'author': comment.author,
+            'content': comment.content,
+            'createdAt': comment.created_at.isoformat(),
+            'modifiedAt': comment.modified_at.isoformat()
+        })
+    
+    # Build response including empty conversations for requested UIDs
+    conversations = [
+        {
+            'conversation': {
+                'uid': uid,
+                'comments': conversations_map.get(uid, [])
+            }
+        }
+        for uid in conversation_uids
+    ]
+    
+    return jsonify(conversations), 200
+
+@app.route('/tinymce/documents/<int:doc_id>/comments/<string:conversation_uid>', methods=['DELETE'])
+def delete_tinymce_comment(doc_id, conversation_uid):
+    comment = Comment.query.filter_by(conversation_uid=conversation_uid, document_id=doc_id).first_or_404()
+    db.session.delete(comment)
+    db.session.commit()
+    return jsonify({'message': 'Comment deleted successfully'})

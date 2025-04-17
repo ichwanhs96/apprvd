@@ -120,15 +120,15 @@ const EditorPage: React.FC = () => {
         }
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            const initialValue = await loadInitialValue();
-            setEditorData(initialValue);
-            setLoadingLorem(false);
-        };
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         const initialValue = await loadInitialValue();
+    //         setEditorData(initialValue);
+    //         setLoadingLorem(false);
+    //     };
 
-        fetchData(); // Call fetchData on component mount
-    }, []);
+    //     fetchData(); // Call fetchData on component mount
+    // }, []);
 
     const deepCopy = (obj: any): any => {
       return JSON.parse(JSON.stringify(obj));
@@ -386,8 +386,8 @@ const EditorPage: React.FC = () => {
             <TinyEditor />
         </div>
         <div className="w-1/4">
-            { loadingLorem && <div>Loading...</div> }
-            { !loadingLorem &&  <AISidebar editor={editor} /> }
+            {/* { loadingLorem && <div>Loading...</div> } */}
+            { <AISidebar editor={editor} /> }
             {/* <button onClick={handleComment} className="bg-blue-500 hidden">Comment</button> */}
         </div> 
         </>
