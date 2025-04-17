@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import AISidebar from "../components/aiSidebar";
-import PlateEditor, { InitiatePlateEditor } from "../components/textEditor/plate-editor";
+import { InitiatePlateEditor } from "../components/textEditor/plate-editor";
 import { useAuth } from "../context/AuthContext"; // Add this import
 import { useCurrentDocId, useEditorComments, useEditorContent, useSuggestions } from "../store";
 import { useNavigate } from "react-router-dom";
 import { TComment } from "@udecode/plate-comments";
 import { v4 as uuidv4 } from "uuid"; // To generate unique IDs
 import { toast } from "react-toastify";
+import TinyEditor from "../components/TinyEditor";
 
 interface TextSegment {
   text?: string;
@@ -361,7 +362,19 @@ const EditorPage: React.FC = () => {
     }, [suggestions]);
 
     // Initialize the editor only after data is loaded
-    const editor = editorData ? InitiatePlateEditor(editorData, userInfo, id) : null;
+    // const editor = editorData ? InitiatePlateEditor(editorData, userInfo, id) : null;
+    
+    const dummyContents = [
+        { type: 'paragraph', children: [{ text: 'This is a dummy content paragraph.' }] },
+        { type: 'paragraph', children: [{ text: 'Here is another dummy paragraph for testing.' }] }
+    ];
+    
+    const dummyComments = [
+        { createdAt: Date.now(), id: uuidv4(), userId: 'user1', value: [{ text: 'This is a dummy comment.', type: 'comment' }] },
+        { createdAt: Date.now(), id: uuidv4(), userId: 'user2', value: [{ text: 'Another dummy comment for testing.', type: 'comment' }] }
+    ];
+
+    const editor = editorData ? InitiatePlateEditor(editorData, userInfo, id) : InitiatePlateEditor({ contents: dummyContents, comments: dummyComments }, userInfo, id);
 
     // console.log("From zustand: ", editor_content, editor_comments)
 
@@ -369,7 +382,8 @@ const EditorPage: React.FC = () => {
         <>
         <div className="w-3/4">
             {/* <SlateEditor /> */}
-            <PlateEditor editor={editor}/>
+            {/* <PlateEditor editor={editor}/> */}
+            <TinyEditor />
         </div>
         <div className="w-1/4">
             { loadingLorem && <div>Loading...</div> }
