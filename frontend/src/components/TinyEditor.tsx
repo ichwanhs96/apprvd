@@ -51,7 +51,7 @@ export default function TinyEditor() {
 
   // useEffect(() => {
   //   const createDocument = async () => {
-  //     const response = await fetch(`http://localhost:5000/tinymce/documents`, {
+  //     const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents`, {
   //       method: 'POST',
   //       headers: {
   //         'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ export default function TinyEditor() {
     const fetchDocument = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`http://localhost:5000/tinymce/documents/${id}`);
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}`);
         const data = await response.json();
         setContent(data.content);
       } catch (error) {
@@ -89,7 +89,7 @@ export default function TinyEditor() {
     // update every 5 seconds
     if (id && content && lastDocumentUpdateDate && lastDocumentUpdateDate.getTime() < new Date().getTime() - 5000) {
       try {
-        await fetch(`http://localhost:5000/tinymce/documents/${id}`, {
+        await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -135,7 +135,7 @@ export default function TinyEditor() {
         const conversationUid = 'annotation-' + randomString();
         const commentUid = 'comment-' + randomString();
         
-        await fetch(`http://localhost:5000/tinymce/documents/${id}/comments`, {
+        await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -175,7 +175,7 @@ export default function TinyEditor() {
             return done({ conversations: {} });
         }
 
-        const response = await fetch(`http://localhost:5000/tinymce/documents/${id}/comments/batch?conversation_uids=${validUids.join(',')}`, {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/batch?conversation_uids=${validUids.join(',')}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -200,7 +200,7 @@ export default function TinyEditor() {
     console.log('tinycomments_reply - ', req);
     const { conversationUid, content, createdAt } = req;
 
-    fetch(`http://localhost:5000/tinymce/documents/${id}/comments/${conversationUid}`, {
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${conversationUid}`, {
       method: 'POST',
       body: JSON.stringify({ content: content, createdAt: createdAt, author: currentAuthor }),
       headers: {
@@ -230,7 +230,7 @@ export default function TinyEditor() {
   const tinycomments_delete = async (req: any, done: any) => {
     console.log('tinycomments_delete - ', req);
     try {
-      await fetch(`http://localhost:5000/tinymce/documents/${id}/comments/${req.conversationUid}`, {
+      await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -245,7 +245,7 @@ export default function TinyEditor() {
   const tinycomments_resolve = async (req: any, done: any) => {
     console.log('tinycomments_resolve - ', req);
     try {
-      await fetch(`http://localhost:5000/tinymce/documents/${id}/comments/${req.conversationUid}`, {
+      await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -260,7 +260,7 @@ export default function TinyEditor() {
   const tinycomments_delete_comment = async (req: any, done: any) => {
     console.log('tinycomments_delete_comment - ', req);
     try {
-      await fetch(`http://localhost:5000/tinymce/documents/${id}/comments/${req.conversationUid}`, {
+      await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -275,7 +275,7 @@ export default function TinyEditor() {
   const tinycomments_edit_comment = async (req: any, done: any) => {
     console.log('tinycomments_edit_comment - ', req);
     try {
-      await fetch(`http://localhost:5000/tinymce/documents/${id}/comments/${req.conversationUid}`, {
+      await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -306,7 +306,7 @@ export default function TinyEditor() {
     console.log('lookup - ', req);
     // Add error handling
     try {
-      const response = await fetch(`http://localhost:5000/tinymce/documents/${id}/comments/${req.conversationUid}`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -333,20 +333,84 @@ export default function TinyEditor() {
   });
 
   return (
-    <div>
+    <div style={{ 
+      backgroundColor: '#f0f0f0', 
+      minHeight: '100vh',
+      padding: '20px'
+    }}>
       {!isLoading && (
         <Editor
           apiKey='0vco30s4ey7c3jdvmf8sl131uwqmic8ufbmattax46rmgw3k'
           init={{
+            content_style: `
+              body {
+                background: #525659;
+                padding: 30px;
+                margin: 0;
+              }
+              .mce-content-body {
+                max-width: 21cm;
+                min-height: 29.7cm;
+                padding: 2cm;
+                margin: 0 auto 30px auto;
+                border: 1px solid #d3d3d3;
+                border-radius: 5px;
+                background: white;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+                box-sizing: border-box;
+              }
+              /* Style for both manual and automatic page breaks */
+              .mce-pagebreak {
+                border-top: 2px dashed #666;
+                border-color: #666;
+                height: 5px;
+                page-break-before: always;
+                margin: 30px 0;
+                cursor: default;
+                display: block;
+              }
+              /* Style specifically for automatic page breaks */
+              .mce-auto-pagebreak {
+                border-style: dotted;
+                border-color: #999;
+              }
+              @page {
+                size: A4;
+                margin: 1cm;
+              }
+              @media print {
+                body {
+                  background: none;
+                  padding: 0;
+                }
+                .mce-content-body {
+                  margin: 0;
+                  border: initial;
+                  border-radius: initial;
+                  width: initial;
+                  min-height: initial;
+                  box-shadow: initial;
+                  background: initial;
+                }
+                .mce-pagebreak {
+                  border: 0;
+                  margin: 0;
+                  page-break-after: always;
+                }
+              }
+            `,
             width: '100%',
+            height: '100vh',
+            body_class: 'mce-content-body',
+            content_css: 'document',
             placeholder:"Write here...",
-            height: 1000,
             menubar: 'file edit view insert format tools tc help',
             plugins: [
               'advlist autolink lists link image charmap print preview anchor',
               'searchreplace visualblocks code fullscreen',
               'insertdatetime media table paste code help wordcount',
-              'image', 'table', 'link', 'lists', 'importword', 'exportword', 'exportpdf', 'tinycomments', 'quickbars'
+              'image', 'table', 'link', 'lists', 'importword', 'exportword', 'exportpdf', 'tinycomments', 'quickbars',
+              'pagebreak'
             ],
             menu: {
               file: { title: 'File', items: 'newdocument restoredraft | preview | importword exportpdf exportword | print | deleteallconversations' },
@@ -362,7 +426,7 @@ export default function TinyEditor() {
               }
             },
             toolbar:
-              'styles | bold italic underline strikethrough code | forecolor backcolor | align lineheight | bullist numlist outdent indent | removeformat | restoredraft help addcomment showcomments | annotate-alpha | ai-comment',
+              'styles | bold italic underline strikethrough code | forecolor backcolor | align lineheight | bullist numlist outdent indent | removeformat | restoredraft help addcomment showcomments | annotate-alpha | ai-comment | pagebreak',
             toolbar_groups: {
               align: { icon: 'align-left', items: 'alignleft aligncenter alignright alignjustify' },
             },
@@ -414,24 +478,110 @@ export default function TinyEditor() {
               input.click();
             },
             setup: (editor) => {
+              editor.on('mceAiComment', async (e: any) => {
+                console.log('mceAiComment - ', e);
+                const content = editor.getContent();
+
+                const revealAdditionalToolbarButton = document.querySelector('[data-mce-name="overflow-button"]');
+                  
+                try {
+                  const suggestions = e.suggestions || [];
+
+                  // Process suggestions sequentially
+                  for (const { target_text, suggestion } of suggestions) {
+                    // Get content without formatting
+                    const contentWithoutTags = editor.getContent({ format: 'text' });
+                    const textIndex = contentWithoutTags.indexOf(target_text);
+                    
+                    if (textIndex !== -1) {
+                      const walker = document.createTreeWalker(
+                        editor.getBody(),
+                        NodeFilter.SHOW_TEXT,
+                        null
+                      );
+                      let node;
+                      let found = false;
+
+                      console.log("searching for " + target_text + " - " + suggestion);
+                      
+                      while ((node = walker.nextNode()) && !found) {
+                        if (node.textContent && node.textContent.includes(target_text)) {
+                          const startOffset = node.textContent.indexOf(target_text);
+                          const endOffset = startOffset + target_text.length;
+
+                          const range = editor.dom.createRng();
+                          range.setStart(node, startOffset);
+                          range.setEnd(node, endOffset);
+                          editor.selection.setRng(range);
+                          found = true;
+
+                          console.log("found, adding comment");
+
+                          // Wait for each comment to be fully processed
+                          await new Promise((resolve) => {
+                            console.log("adding comment...");
+                            let addCommentButton = document.querySelector('[data-mce-name="addcomment"]');
+                            console.log("addCommentButton - ", addCommentButton);
+                            if (addCommentButton == null) {
+                              if (revealAdditionalToolbarButton instanceof HTMLElement) {
+                                revealAdditionalToolbarButton.click();
+                                addCommentButton = document.querySelector('[data-mce-name="addcomment"]');
+                              }
+                            }
+
+                            if (addCommentButton instanceof HTMLElement) {
+                              console.log("adding comment " + target_text + " - " + suggestion);
+                              addCommentButton.click();
+                              
+                              setTimeout(() => {
+                                const commentDialog = document.querySelector('.tox-comment--selected');
+                                const commentInput = commentDialog?.querySelector('.tox-textarea');
+                                const submitButton = commentDialog?.querySelector('.tox-comment__edit button:nth-child(2)');
+                                
+                                if (commentInput instanceof HTMLTextAreaElement && 
+                                    submitButton instanceof HTMLElement) {
+                                  commentInput.value = suggestion;
+                                  commentInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+                                  setTimeout(() => {
+                                    submitButton.click();
+                                    // Wait a bit after submission before processing next comment
+                                    setTimeout(resolve, 1000);
+                                  }, 500);
+                                } else {
+                                  resolve(undefined); // Resolve even if we couldn't find the elements
+                                }
+                              }, 500);
+                            } else {
+                              resolve(undefined); // Resolve if we couldn't find the add comment button
+                            }
+                          });
+                        }
+                      }
+                    }
+                  }
+
+                  let addCommentButton = document.querySelector('[data-mce-name="addcomment"]');
+                  if (addCommentButton instanceof HTMLElement) {
+                    if (revealAdditionalToolbarButton instanceof HTMLElement) {
+                      // closing the additional toolbar
+                      revealAdditionalToolbarButton.click();
+                    }
+                  }
+
+                  editor.focus();
+                } catch (error) {
+                  console.error('API comment error:', error);
+                  alert('Failed to process API comments');
+                }
+              });
+
               editor.ui.registry.addButton('ai-comment', {
                 text: 'AI Comment',
                 onAction: async () => {
                   const content = editor.getContent();
                   
                   try {
-                    // const response = await fetch('your-api-endpoint', {
-                    //   method: 'POST',
-                    //   headers: {
-                    //     'Content-Type': 'application/json',
-                    //   },
-                    //   body: JSON.stringify({ content }),
-                    // });
-                    
-                    // const data = await response.json();
-                    // // Expect API to return an array of { text: string, comment: string }
-                    // const annotations = data.annotations;
-
                     const annotations = [{ text: 'test', comment: 'test' }];
 
                     annotations.forEach(({ text, comment }) => {
@@ -500,7 +650,52 @@ export default function TinyEditor() {
                   }
                 }
               });
+
+              // Add automatic page break handling
+              editor.on('NodeChange', () => {
+                const body = editor.getBody();
+                const pageHeight = 29.7 * 37.8; // A4 height in pixels (29.7cm * 37.8 pixels per cm)
+                const contentPadding = 2 * 37.8; // 2cm padding in pixels
+                const maxContentHeight = pageHeight - (2 * contentPadding); // Available content height per page
+
+                // Remove existing auto page breaks
+                const existingAutoBreaks = body.querySelectorAll('.mce-auto-pagebreak');
+                existingAutoBreaks.forEach((pageBreak: any) => {
+                  pageBreak.remove();
+                });
+
+                let currentHeight = 0;
+                let lastBreakElement = null;
+
+                // Iterate through all elements
+                Array.from(body.children).forEach((element) => {
+                  const elementHeight = (element as HTMLElement).offsetHeight;
+                  
+                  // Skip if it's a manual page break
+                  if (element.classList.contains('mce-pagebreak')) {
+                    currentHeight = 0;
+                    lastBreakElement = element;
+                    return;
+                  }
+
+                  currentHeight += elementHeight;
+
+                  // If content exceeds page height, insert a page break before this element
+                  if (currentHeight > maxContentHeight && !element.classList.contains('mce-auto-pagebreak')) {
+                    const pageBreak = editor.dom.create('div', {
+                      'class': 'mce-pagebreak mce-auto-pagebreak',
+                      'style': 'page-break-before: always; page-break-after: always;'
+                    }, '<span style="display: none;">&nbsp;</span>');
+                    
+                    element.parentNode?.insertBefore(pageBreak, element);
+                    currentHeight = elementHeight;
+                    lastBreakElement = pageBreak;
+                  }
+                });
+              });
             },
+            pagebreak_separator: '<div style="page-break-before: always; page-break-after: always;"><span style="display: none;">&nbsp;</span></div>',
+            pagebreak_split_block: true
           }}
           onEditorChange={handleEditorChange}
           initialValue={content}

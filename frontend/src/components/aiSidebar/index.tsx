@@ -11,7 +11,7 @@ interface AISidebarProps {
   editor: TPlateEditor;
 }
 
-const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
+const AISidebar: React.FC<AISidebarProps> = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [docSummary, setDocSummary] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -42,7 +42,8 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
   const handleGenerateSummary = async () => {
     setIsLoading(true);
     try {
-      const markdownContent = (editor.api as any).markdown.serialize();
+      const content = window.tinymce.activeEditor.getContent({ format: 'text' });
+      console.log(content);
 
       const response = await fetch(
         import.meta.env.VITE_BACKEND_URL + "/prompt",
@@ -53,13 +54,12 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
           },
           body: JSON.stringify({
             prompt: `
-            Use this document written in Markdown format as a context:
-            
-            \`\`\`markdown
-            "${markdownContent}".
+            Use this text as context:
+            \`\`\`text
+            ${content}
             \`\`\`
             
-            With markdown document attached as context, the user asked you to generate summary of the documents`,
+            With the document attached as context, user is asking you to generate a summary of the legal document.`,
           }),
         }
       );
@@ -84,7 +84,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
   const handleReviewRequest = async () => {
     setIsLoadingReview(true);
     try {
-      const markdownContent = (editor.api as any).markdown.serialize();
+      const content = window.tinymce.activeEditor.getContent();
 
       const response = await fetch(
         import.meta.env.VITE_BACKEND_URL + "/prompt",
@@ -95,19 +95,21 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
           },
           body: JSON.stringify({
             prompt: `
-            Use this document written in Markdown format as a context:
-            
-            \`\`\`markdown
-            "${markdownContent}".
+            Here is attached a legal document in form of HTML file. Use this document as context:
+            \`\`\`HTML
+            ${content}
             \`\`\`
             
-            With markdown document attached as context, generate contextual response based on this user question: "${reviewInput}".
+            With the document attached as context, here is user question:
+            \`\`\`question
+            ${reviewInput}
+            \`\`\`
             
             Your response must be in form of suggestions to the document.
             
             Response only with valid JSON format as follows:
             [{
-               "target_text": referring to text in the document and remove the Markdown format such as bold (**) and italic (*),
+               "target_text": referring to text in the document. only target the text inside the html element,
                "suggestion": your own suggestion to improve the document
             }]
             `,
@@ -128,6 +130,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ editor }) => {
             suggestion: s.suggestion || "",
           }));
           useSuggestions.setState(validSuggestions);
+          window.tinymce.activeEditor.fire('mceAiComment', { suggestions: validSuggestions });
         } else {
           console.error("Parsed suggestions is not an array:", suggestions);
         }

@@ -98,7 +98,7 @@ function ContractsPage() {
       }
 
       const response = await fetch(
-        `http://localhost:5000/tinymce/documents`,
+        `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents`,
         {
           method: "POST",
           headers: {
@@ -147,7 +147,7 @@ function ContractsPage() {
       }
 
       const response = await fetch(
-        `http://localhost:5000/tinymce/documents`,
+        `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents`,
         {
           method: "GET",
           headers: {
