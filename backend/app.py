@@ -338,7 +338,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 with app.app_context():
-    # db.drop_all()
+    db.drop_all()
     db.create_all()
 
 @app.route('/tinymce/documents', methods=['POST'])
@@ -363,7 +363,8 @@ def create_tinymce_document():
         'business_id': document.business_id,
         'language': document.language,
         'version': document.version,
-        'status': document.status
+        'status': document.status,
+        'is_template': document.is_template
     }), 201
 
 @app.route('/tinymce/documents', methods=['GET'])
@@ -377,11 +378,12 @@ def get_tinymce_documents():
         'updated_at': document.updated_at.isoformat(),
         'business_id': document.business_id,
         'language': document.language,
-            'version': document.version,
-            'status': document.status
-        }
-        for document in documents
-    ]), 200
+        'version': document.version,
+        'status': document.status,
+        'is_template': document.is_template
+    }
+    for document in documents
+]), 200
 
 @app.route('/tinymce/documents/<int:doc_id>', methods=['GET'])
 def get_tinymce_document(doc_id):
@@ -395,7 +397,8 @@ def get_tinymce_document(doc_id):
         'business_id': document.business_id,
         'language': document.language,
         'version': document.version,
-        'status': document.status
+        'status': document.status,
+        'is_template': document.is_template
     })
 
 @app.route('/tinymce/documents/<int:doc_id>', methods=['PUT'])

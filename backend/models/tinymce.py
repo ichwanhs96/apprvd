@@ -17,6 +17,7 @@ class Document(db.Model):
     language = db.Column(db.String(255), default="en")
     version = db.Column(db.String(255), default="1.0.0")
     status = db.Column(db.String(255), default="DRAFT")
+    is_template = db.Column(db.Boolean, default=False)
     
     # Relationship with comments
     comments = db.relationship('Comment', backref='document', lazy=True, cascade='all, delete-orphan')
