@@ -113,8 +113,6 @@ export default function TinyEditor() {
   const fakeDelay = 200;
   const randomString = () => crypto.getRandomValues(new Uint32Array(1))[0].toString(36).substring(2, 14);
   
-  const resolvedConversationDb = {};
-  
   /********************************
    *   Tiny Comments functions    *
    * (must call "done" or "fail") *
@@ -480,7 +478,6 @@ export default function TinyEditor() {
             setup: (editor) => {
               editor.on('mceAiComment', async (e: any) => {
                 console.log('mceAiComment - ', e);
-                const content = editor.getContent();
 
                 const revealAdditionalToolbarButton = document.querySelector('[data-mce-name="overflow-button"]');
                   
@@ -579,8 +576,6 @@ export default function TinyEditor() {
               editor.ui.registry.addButton('ai-comment', {
                 text: 'AI Comment',
                 onAction: async () => {
-                  const content = editor.getContent();
-                  
                   try {
                     const annotations = [{ text: 'test', comment: 'test' }];
 

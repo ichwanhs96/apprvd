@@ -43,7 +43,7 @@ interface EditorData {
 
 const EditorPage: React.FC = () => {
     const { userInfo } = useAuth();
-    const [loadingLorem, setLoadingLorem] = useState(true);
+    // const [loadingLorem, setLoadingLorem] = useState(true);
     const [editorData, setEditorData] = useState<EditorData | null>(null);
     const EDITOR_CONTENT_KEY = 'editor-content';
     const EDITOR_CONTENT_COMMENTS = "editor-comments";
@@ -65,60 +65,60 @@ const EditorPage: React.FC = () => {
         });
     }
 
-    const fetchDocument = async (doc_id: string) => {
-        try {
-            if (!userInfo?.email) {
-                alert("Please login!");
-                return navigate('/');
-            }
+    // const fetchDocument = async (doc_id: string) => {
+    //     try {
+    //         if (!userInfo?.email) {
+    //             alert("Please login!");
+    //             return navigate('/');
+    //         }
 
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${doc_id}`, {
-                method: 'GET',
-                headers: {
-                    'business-id': userInfo?.email,
-                },
-            });
+    //         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${doc_id}`, {
+    //             method: 'GET',
+    //             headers: {
+    //                 'business-id': userInfo?.email,
+    //             },
+    //         });
 
-            if (!response.ok) {
-                throw new Error("Unexpected error");
-            }
+    //         if (!response.ok) {
+    //             throw new Error("Unexpected error");
+    //         }
 
-            return await response.json();
-        } catch (error) {
-          toastError()
-            console.error("Failed to fetch document:", error);
-        }
-    };
+    //         return await response.json();
+    //     } catch (error) {
+    //       toastError()
+    //         console.error("Failed to fetch document:", error);
+    //     }
+    // };
 
-    const loadInitialValue = async () => {
-        try {
-            const data = await fetchDocument(id);
-            useEditorComments.setState({editor_comments: JSON.stringify(data.comments)})
-            useEditorContent.setState({editor_content: JSON.stringify(data.contents)})
-            localStorage.setItem(EDITOR_CONTENT_KEY, JSON.stringify(data.contents)); // Store the response in local storage
-            localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(data.comments)); // Store the response in local storage
+    // const loadInitialValue = async () => {
+    //     try {
+    //         const data = await fetchDocument(id);
+    //         useEditorComments.setState({editor_comments: JSON.stringify(data.comments)})
+    //         useEditorContent.setState({editor_content: JSON.stringify(data.contents)})
+    //         localStorage.setItem(EDITOR_CONTENT_KEY, JSON.stringify(data.contents)); // Store the response in local storage
+    //         localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(data.comments)); // Store the response in local storage
 
-            return data || { contents: [{
-                id: "1",
-                type: "p",
-                children: [{ text: "Start typing here..." }],
-            }], comments: [] };
-        } catch (error) {
-          toastError()
-            const savedValue = localStorage.getItem(EDITOR_CONTENT_KEY);
-            // const savedValue = editor_content
-            if (savedValue) {
-                return JSON.parse(savedValue);
-            }
+    //         return data || { contents: [{
+    //             id: "1",
+    //             type: "p",
+    //             children: [{ text: "Start typing here..." }],
+    //         }], comments: [] };
+    //     } catch (error) {
+    //       toastError()
+    //         const savedValue = localStorage.getItem(EDITOR_CONTENT_KEY);
+    //         // const savedValue = editor_content
+    //         if (savedValue) {
+    //             return JSON.parse(savedValue);
+    //         }
 
-            // Default content if nothing is saved
-            return { contents: [{
-                id: "1",
-                type: "p",
-                children: [{ text: "Start typing here..." }],
-            }], comments: [] };
-        }
-    };
+    //         // Default content if nothing is saved
+    //         return { contents: [{
+    //             id: "1",
+    //             type: "p",
+    //             children: [{ text: "Start typing here..." }],
+    //         }], comments: [] };
+    //     }
+    // };
 
     // useEffect(() => {
     //     const fetchData = async () => {
