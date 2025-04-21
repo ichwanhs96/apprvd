@@ -352,7 +352,9 @@ def create_tinymce_document():
         created_by=data.get('created_by'),
         language=data.get('language'),
         version=data.get('version'),
-        status=data.get('status')
+        status=data.get('status'),
+        is_template=data.get('is_template'),
+        shared_with=data.get('shared_with')
     )
     db.session.add(document)
     db.session.commit()
@@ -364,7 +366,8 @@ def create_tinymce_document():
         'language': document.language,
         'version': document.version,
         'status': document.status,
-        'is_template': document.is_template
+        'is_template': document.is_template,
+        'shared_with': document.shared_with
     }), 201
 
 @app.route('/tinymce/documents', methods=['GET'])
@@ -380,7 +383,8 @@ def get_tinymce_documents():
         'language': document.language,
         'version': document.version,
         'status': document.status,
-        'is_template': document.is_template
+        'is_template': document.is_template,
+        'shared_with': document.shared_with
     }
     for document in documents
 ]), 200
@@ -398,7 +402,8 @@ def get_tinymce_document(doc_id):
         'language': document.language,
         'version': document.version,
         'status': document.status,
-        'is_template': document.is_template
+        'is_template': document.is_template,
+        'shared_with': document.shared_with
     })
 
 @app.route('/tinymce/documents/<int:doc_id>', methods=['PUT'])
@@ -408,6 +413,7 @@ def update_tinymce_document(doc_id):
     document.content = data.get('content', document.content)
     document.name = data.get('name', document.name)
     document.updated_at = datetime.now(timezone.utc)
+    document.shared_with = data.get('shared_with', document.shared_with)
     db.session.commit()
     return jsonify({'message': 'Document updated successfully'})
 
