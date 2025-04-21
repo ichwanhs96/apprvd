@@ -660,7 +660,7 @@ export default function TinyEditor() {
                 });
 
                 let currentHeight = 0;
-                let lastBreakElement = null;
+                // let lastBreakElement = null;
 
                 // Iterate through all elements
                 Array.from(body.children).forEach((element) => {
@@ -669,7 +669,7 @@ export default function TinyEditor() {
                   // Skip if it's a manual page break
                   if (element.classList.contains('mce-pagebreak')) {
                     currentHeight = 0;
-                    lastBreakElement = element;
+                    // lastBreakElement = element;
                     return;
                   }
 
@@ -684,7 +684,7 @@ export default function TinyEditor() {
                     
                     element.parentNode?.insertBefore(pageBreak, element);
                     currentHeight = elementHeight;
-                    lastBreakElement = pageBreak;
+                    // lastBreakElement = pageBreak;
                   }
                 });
               });
