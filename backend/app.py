@@ -329,6 +329,7 @@ def delete_document(id):
 #     return jsonify(users), 200
 
 from models.tinymce import Document, Comment, db
+from sqlalchemy import or_
 import uuid
 from datetime import datetime, timezone
 
@@ -372,8 +373,16 @@ def create_tinymce_document():
 
 @app.route('/tinymce/documents', methods=['GET'])
 def get_tinymce_documents():
-    business_id = request.headers.get("business-id") 
-    documents = Document.query.filter(Document.business_id == business_id).all()
+    business_id = request.headers.get("business-id")
+
+    query = Document.query.filter(
+        or_(
+            Document.business_id == business_id,
+            Document.shared_with.contains(business_id)
+        )
+    )
+ 
+    documents = query.all()
     return jsonify([{
         'id': document.id,
         'name': document.name,
@@ -393,7 +402,13 @@ def get_tinymce_documents():
 @app.route('/tinymce/documents/<int:doc_id>', methods=['GET'])
 def get_tinymce_document(doc_id):
     business_id = request.headers.get("business-id") 
-    document = Document.query.filter(Document.business_id == business_id, Document.id == doc_id).first_or_404()
+    document = Document.query.filter(
+        or_(
+            Document.business_id == business_id,
+            Document.shared_with.contains(business_id)
+        ),
+        Document.id == doc_id
+    ).first_or_404()
     return jsonify({
         'id': document.id,
         'name': document.name,
