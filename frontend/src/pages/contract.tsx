@@ -6,7 +6,7 @@ import {
 } from "../store";
 // import DocxImporter from "../components/docxImporter";
 import { useAuth } from "../context/AuthContext";
-import DocxImporter from "../components/docxImporter";
+// import DocxImporter from "../components/docxImporter";
 import { useNavigate } from "react-router-dom";
 import Loader from "../components/Loader";
 import { Trash2 } from "lucide-react";

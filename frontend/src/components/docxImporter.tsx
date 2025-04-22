@@ -4,7 +4,6 @@ import {
   useContractSelected,
   useCurrentDocId,
   useEditorStore,
-  useTemplateStore,
 } from "../store"; // Import Zustand store
 import * as mammoth from "mammoth";
 import { useAuth } from "../context/AuthContext";

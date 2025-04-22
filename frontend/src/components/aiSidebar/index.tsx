@@ -4,7 +4,7 @@ import { TPlateEditor } from "@udecode/plate-common/react";
 // import ExportToDoxc from "../exportButton";
 import { useSuggestions } from "../../store";
 import Loader from "../Loader";
-import { MinusCircleIcon } from "lucide-react";
+// import { MinusCircleIcon } from "lucide-react";
 import { toast } from "react-toastify";
 
 interface AISidebarProps {
@@ -16,7 +16,7 @@ const AISidebar: React.FC<AISidebarProps> = () => {
   const [docSummary, setDocSummary] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingReview, setIsLoadingReview] = useState(false);
-  const [commentOpen, setCommentOpen] = useState(false);
+  // const [commentOpen, setCommentOpen] = useState(false);
   // const [suggestionSummary, setSuggestionSummary] = useState<string>("");
   // const [isOpen, setIsOpen] = useState(false);
   // const [contentModal, setContentModal] = useState("");
@@ -24,8 +24,8 @@ const AISidebar: React.FC<AISidebarProps> = () => {
     "My company does highly confidential data & innovation, this NDA has to be very strong and also compliant with EU law."
   ); // Added state for textarea
 
-  const comment = localStorage.getItem("editor-comments");
-  const commentData = JSON.parse(comment ? comment : "");
+  // const comment = localStorage.getItem("editor-comments");
+  // const commentData = JSON.parse(comment ? comment : "");
   const toastError = () => {
     toast.error('Error: Something went wrong!', {
       position: "bottom-right",
