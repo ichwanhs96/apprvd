@@ -195,7 +195,7 @@ function TemplatesPage() {
   }, []); // Empty dependency array to run only on mount
 
   return (
-    <div className="flex-1 p-8">
+    <div className="flex-1 p-8 pb-40">
       <h1 className="mb-8 text-4xl font-bold">Templates</h1>
       <div className="flex justify-between items-center mb-5">
         <div className="flex flex-row gap-x-2">

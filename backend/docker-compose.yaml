@@ -9,6 +9,7 @@ services:
       - "8000:8000"
     depends_on:
       - db
+      - pgdb
 
   db:
     build:
@@ -24,5 +25,21 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
 
+  pgdb:
+    build:
+      context: .
+      dockerfile: Dockerfile.pgdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdb_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${PGDB_NAME}
+      POSTGRES_USER: ${PGDB_USER}
+      POSTGRES_PASSWORD: ${PGDB_PASSWORD}
+
 volumes:
   db_data:
+  pgdb_data:

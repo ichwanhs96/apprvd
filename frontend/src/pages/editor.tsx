@@ -122,15 +122,15 @@ const EditorPage: React.FC = () => {
         }
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            const initialValue = await loadInitialValue();
-            setEditorData(initialValue);
-            setLoadingLorem(false);
-        };
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         const initialValue = await loadInitialValue();
+    //         setEditorData(initialValue);
+    //         setLoadingLorem(false);
+    //     };
 
-        fetchData(); // Call fetchData on component mount
-    }, []);
+    //     fetchData(); // Call fetchData on component mount
+    // }, []);
 
     const deepCopy = (obj: any): any => {
       return JSON.parse(JSON.stringify(obj));
@@ -407,8 +407,8 @@ const EditorPage: React.FC = () => {
     
       useContent.setState({ content });
       console.log('ini content', content)
-      console.log('ini raw', rawTemplate)
     };
+    console.log('ini raw', rawTemplate)
     
   
     // return null;
@@ -423,11 +423,11 @@ const EditorPage: React.FC = () => {
             <TinyEditor />
         </div>
         <div className="w-1/4">
-            { loadingLorem && <div>Loading...</div> }
-            { !loadingLorem && contentPage === 'contracts' &&  <AISidebar editor={editor} /> }
-            {!loadingLorem && contentPage === 'template' &&<div className="mt-4">
+            {/* { loadingLorem && <div>Loading...</div> } */}
+            { <AISidebar editor={editor} /> }
+            <div className="mt-4">
               <TemplateSidebar onApply={applyVariables} />
-            </div>}
+            </div>
             {/* <button onClick={handleComment} className="bg-blue-500 hidden">Comment</button> */}
         </div> 
         </>

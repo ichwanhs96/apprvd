@@ -1,8 +1,9 @@
 import { Editor } from '@tinymce/tinymce-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Editor as TinyMCEEditor } from 'tinymce';
 import { useAuth } from '../context/AuthContext';
-import { useContent, useTemplateStore } from '../store';
+import { useContent, useCurrentDocId, useTemplateStore } from '../store';
+import { useContractSelected } from '../store';
 
 declare global {
   interface Window {
@@ -38,15 +39,72 @@ interface TinyCommentsFetchRequest {
 
 export default function TinyEditor() {
   // const [content, setContent] = useState('');
-  const { userInfo } = useAuth();
   const { content } = useContent()
   const editorRef = useRef<any>(null);
   const rawTemplate = useTemplateStore((s) => s.rawTemplate);
+  const [isLoading, setIsLoading] = useState(true);
+  const { userInfo } = useAuth();
+  const { id } = useCurrentDocId();
+  const { name } = useContractSelected();
+  const [lastDocumentUpdateDate, setLastDocumentUpdateDate] = useState<Date | null>(new Date());
 
-  const handleEditorChange = (content: string) => {
-    // setContent(content);
-    console.log(content)
-    // useContent.setState({content});
+  const handleEditorChange = async (content: string) => {
+    updateDocument(content);
+  };
+
+  // useEffect(() => {
+  //   const createDocument = async () => {
+  //     const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ content }),
+  //     });
+
+  //     const data = await response.json();
+  //     setDocumentId(data.id);
+  //   }
+
+  //   createDocument();
+  // }, []);
+
+  useEffect(() => {
+    const fetchDocument = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}`);
+        const data = await response.json();
+        useTemplateStore.setState({rawTemplate: data?.content});
+      } catch (error) {
+        console.error('Failed to fetch document:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (id) {
+      fetchDocument();
+    }
+  }, [id]);
+
+  const updateDocument = async (content: string) => {
+    // update every 5 seconds
+    if (id && content && lastDocumentUpdateDate && lastDocumentUpdateDate.getTime() < new Date().getTime() - 5000) {
+      try {
+        await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ content, name }),
+        });
+
+        setLastDocumentUpdateDate(new Date());
+      } catch (error) {
+        console.error('Failed to save document:', error);
+      }
+    }
   };
 
   const currentAuthor = userInfo?.displayName;
@@ -66,95 +124,170 @@ export default function TinyEditor() {
    ********************************/
   
   // Update the callback functions with proper typing
-  const tinycomments_create = (
+  const tinycomments_create = async (
     req: TinyCommentsCallbackRequest, 
-    done: (response: { conversationUid: string }) => void,
+    done: (response: any) => void,
     fail: (error: Error) => void
   ) => {
-    if (req.content === 'fail') {
-      fail(new Error('Something has gone wrong...'));
-    } else {
-      const uid = 'annotation-' + randomString();
-      conversationDb[uid] = {
-        uid,
-        comments: [{
-          uid,
+    console.log('Creating comment with request:', req);
+    if (!id) {
+        return fail(new Error('Create Comment - Document ID is not set'));
+    }
+
+    try {
+        const conversationUid = 'annotation-' + randomString();
+        const commentUid = 'comment-' + randomString();
+        
+        await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                content: req.content,
+                author: currentAuthor,
+                document_id: id,
+                conversationUid,
+                commentUid
+            }),
+        });
+        
+        // Important: TinyMCE expects just the conversationUid in a specific format
+        console.log('Sending to TinyMCE - conversationUid:', conversationUid);
+        done({ conversationUid: conversationUid });
+    } catch (error) {
+        console.error('Error creating comment:', error);
+        fail(new Error('Failed to create comment'));
+    }
+  };
+
+  const tinycomments_fetch = async(conversationUids: string[], done: any, fail: any) => {
+    console.log('Fetching conversations for UIDs:', conversationUids);
+    
+    if (!id) {
+        return fail(new Error('Fetch Comment - Document ID is not set'));
+    }
+
+    try {
+        // Filter out empty strings and check if we have any valid UIDs
+        const validUids = conversationUids.filter(uid => uid !== '' && uid.indexOf('tmp_') === -1);
+        console.log('Valid UIDs after filtering:', validUids);
+        
+        if (validUids.length === 0) {
+            console.log('No valid UIDs, returning empty conversations object');
+            return done({ conversations: {} });
+        }
+
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/batch?conversation_uids=${validUids.join(',')}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const data = await response.json();
+        const fetchedConversations = data.reduce((acc: Record<string, Conversation>, conv: { conversation: Conversation }) => {
+            acc[conv.conversation.uid] = conv.conversation;
+            return acc;
+        }, {});
+
+        console.log('fetchedConversations - ', fetchedConversations);
+        // Now use the fetched conversations directly instead of relying on state
+        done({ conversations: fetchedConversations });
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        fail(error);
+    }
+  };
+  
+  const tinycomments_reply = (req: any, done: any, fail: any) => {
+    console.log('tinycomments_reply - ', req);
+    const { conversationUid, content, createdAt } = req;
+
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${conversationUid}`, {
+      method: 'POST',
+      body: JSON.stringify({ content: content, createdAt: createdAt, author: currentAuthor }),
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to reply to comment');
+        }
+        return response.json();
+      })
+      .then((ref2) => {
+        let commentUid = ref2.commentUid;
+        done({
+          commentUid: commentUid,
           author: currentAuthor,
-          content: req.content || '',
-          createdAt: new Date().toISOString(),
-          modifiedAt: new Date().toISOString()
-        }]
-      };
-      setTimeout(() => done({ conversationUid: uid }), fakeDelay);
+          authorName: currentAuthor,
+        });
+      })
+      .catch((e) => {
+        fail(e);
+      });
+  };
+  
+  const tinycomments_delete = async (req: any, done: any) => {
+    console.log('tinycomments_delete - ', req);
+    try {
+      await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'DELETE',
+      });
+      done({ canDelete: true });
+    } catch (error) {
+      done({ canDelete: false, reason: 'Failed to delete comment' });
     }
   };
   
-  const tinycomments_reply = (req: any, done: any) => {
-    const replyUid = 'annotation-' + randomString();
-    conversationDb[req.conversationUid].comments.push({
-      uid: replyUid,
-      author: currentAuthor,
-      content: req.content,
-      createdAt: new Date().toISOString(),
-      modifiedAt: req.createdAt
-    });
-    setTimeout(() => done({ commentUid: replyUid }), fakeDelay);
-  };
-  
-  const tinycomments_delete = (req: any, done: any) => {
-    delete conversationDb[req.conversationUid];
-    setTimeout(() => done({ canDelete: true }), fakeDelay);
-  };
-  
-  const tinycomments_resolve = (req: any, done: any) => {
-    delete conversationDb[req.conversationUid];
-    setTimeout(() => done({ canResolve: true }), fakeDelay);
-  };
-  
-  const tinycomments_delete_comment = (req: any, done: any) => {
-    const oldcomments = conversationDb[req.conversationUid].comments;
-    let reason = 'Comment not found';
-  
-    const newcomments = oldcomments.filter((comment) => {
-      if (comment.uid === req.commentUid) { // Found the comment to delete
-        if (currentAuthor === comment.author) { // Replace with your own logic, e.g. check if user has admin privileges
-          return false; // Remove the comment
-        } else {
-          reason = 'Not authorised to delete this comment'; // Update reason
-        }
-      }
-      return true; // Keep the comment
-    });
-    if (newcomments.length === oldcomments.length) {
-      setTimeout(() => done({ canDelete: false, reason }), fakeDelay);
-    } else {
-      conversationDb[req.conversationUid].comments = newcomments;
-      setTimeout(() => done({ canDelete: true }), fakeDelay);
+  const tinycomments_resolve = async (req: any, done: any) => {
+    console.log('tinycomments_resolve - ', req);
+    try {
+      await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      done({ canResolve: true });
+    } catch (error) {
+      done({ canResolve: false, reason: 'Failed to resolve comment' });
     }
   };
   
-  const tinycomments_edit_comment = (req: any, done: any) => {
-    const oldcomments = conversationDb[req.conversationUid].comments;
-    let reason = 'Comment not found';
-    let canEdit = false;
+  const tinycomments_delete_comment = async (req: any, done: any) => {
+    console.log('tinycomments_delete_comment - ', req);
+    try {
+      await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      done({ canDelete: true });
+    } catch (error) {
+      done({ canDelete: false, reason: 'Failed to delete comment' });
+    }
+  };
   
-    const newcomments = oldcomments.map((comment) => {
-      if (comment.uid === req.commentUid) { // Found the comment to delete
-        if (currentAuthor === comment.author) { // Replace with your own logic, e.g. check if user has admin privileges
-          canEdit = true; // User can edit the comment
-          return { ...comment, content: req.content, modifiedAt: new Date().toISOString() }; // Update the comment
-        } else {
-          reason = 'Not authorised to edit this comment'; // Update reason
-        }
-      }
-      return comment; // Keep the comment
-    });
-  
-    if (canEdit) {
-      conversationDb[req.conversationUid].comments = newcomments;
-      setTimeout(() => done({ canEdit }), fakeDelay);
-    } else {
-      setTimeout(() => done({ canEdit, reason }), fakeDelay);
+  const tinycomments_edit_comment = async (req: any, done: any) => {
+    console.log('tinycomments_edit_comment - ', req);
+    try {
+      await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: req.content }),
+      });
+      done({ canEdit: true });
+    } catch (error) {
+      done({ canEdit: false, reason: 'Failed to edit comment' });
     }
   };
   
@@ -169,34 +302,31 @@ export default function TinyEditor() {
   };
   
   // Update the callback functions with proper typing
-  const tinycomments_lookup = (
+  const tinycomments_lookup = async (
     req: TinyCommentsFetchRequest, 
     done: (response: { conversation: Conversation }) => void
   ) => {
+    console.log('lookup - ', req);
     // Add error handling
-    if (!conversationDb[req.conversationUid]) {
-      done({ conversation: { uid: '', comments: [] } }); // or handle the error appropriately
-      return;
-    }
-    setTimeout(() => {
-      done({
-        conversation: {
-          uid: conversationDb[req.conversationUid].uid,
-          comments: [...conversationDb[req.conversationUid].comments]
-        }
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
-    }, fakeDelay);
-  };
-  
-  const tinycomments_fetch = (conversationUids: any, done: any) => {
-    const fetchedConversations: Record<string, Conversation> = {};
-    conversationUids.forEach((uid: any) => {
-      const conversation = conversationDb[uid];
-      if (conversation) {
-        fetchedConversations[uid] = {...conversation};
-      }
-    });
-    setTimeout(() => done({ conversations: fetchedConversations }), fakeDelay);
+
+      const data = await response.json();
+      const conversation: any = { conversation: {
+        uid: data.conversation_uid,
+        comments: data.comments
+      }};
+      console.log('lookupconversation - ', conversation);
+      done(conversation);
+    } catch (error) {
+      console.error('Error fetching comment:', error);
+      done({ conversation: { uid: '', comments: [] } });
+    }
   };
   
   // Read the above `getAuthorInfo` function to see how this could be implemented
@@ -204,10 +334,7 @@ export default function TinyEditor() {
     author: currentAuthor,
     authorName: currentAuthor,
   });
-
-  // Add state management for conversations
-  const [conversations, setConversations] = useState<Record<string, Conversation>>(conversationDb);
-
+  
   useEffect(() => {
     if (editorRef.current) {
       editorRef.current.setContent(content);
@@ -215,112 +342,167 @@ export default function TinyEditor() {
   }, [content])
 
   return (
-    <div>
-      <Editor
-        apiKey='0vco30s4ey7c3jdvmf8sl131uwqmic8ufbmattax46rmgw3k'
-        onInit={(evt, editor) => (editorRef.current = editor)}
-        initialValue={rawTemplate}
-        init={{
-          width: '100%',
-          placeholder:"Write here...",
-          height: 1000,
-          menubar: 'file edit view insert format tools tc help',
-          plugins: [
-            'advlist autolink lists link image charmap print preview anchor',
-            'searchreplace visualblocks code fullscreen',
-            'insertdatetime media table paste code help wordcount',
-            'image', 'table', 'link', 'lists', 'importword', 'exportword', 'exportpdf', 'tinycomments', 'quickbars'
-          ],
-          menu: {
-            file: { title: 'File', items: 'newdocument restoredraft | preview | importword exportpdf exportword | print | deleteallconversations' },
-            edit: { title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall | searchreplace' },
-            view: { title: 'View', items: 'code revisionhistory | visualaid visualchars visualblocks | spellchecker | preview fullscreen | showcomments' },
-            insert: { title: 'Insert', items: 'image link media addcomment pageembed codesample inserttable | math | charmap emoticons hr | pagebreak nonbreaking anchor tableofcontents | insertdatetime' },
-            format: { title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | language | removeformat' },
-            tools: { title: 'Tools', items: 'spellchecker spellcheckerlanguage | a11ycheck code wordcount' },
-            help: { title: 'Help', items: 'help' },
-            tc: {
-              title: 'Comment',
-              items: 'addcomment showcomments deleteallconversations'
-            }
-          },
-          toolbar:
-            'styles | bold italic underline strikethrough code | forecolor backcolor | align lineheight | bullist numlist outdent indent | removeformat | restoredraft help addcomment showcomments | annotate-alpha | ai-comment',
-          toolbar_groups: {
-            align: { icon: 'align-left', items: 'alignleft aligncenter alignright alignjustify' },
-          },
-          quickbars_selection_toolbar: 'alignleft aligncenter alignright | addcomment showcomments',
-          tinycomments_mode: 'callback',
-          tinycomments_create,
-          tinycomments_reply,
-          tinycomments_delete,
-          tinycomments_resolve,
-          tinycomments_delete_all,
-          tinycomments_lookup,
-          tinycomments_delete_comment,
-          tinycomments_edit_comment,
-          tinycomments_fetch,
-          tinycomments_fetch_author_info,
-          tinycomments_author: currentAuthor,
-          tinycomments_can_resolve: () => userAllowedToResolve !== null,
-          toolbar_sticky: true,
-          images_file_types: 'jpg,jpeg,svg,webp',
-          image_title: true,
-          automatic_uploads: true,
-          file_picker_types: 'file image media',
-          file_picker_callback: (cb: (value: string, meta?: Record<string, any>) => void, value: string, meta: Record<string, any>) => {
-            console.log(value, meta)
-            const input = document.createElement('input');
-            input.setAttribute('type', 'file');
-            input.setAttribute('accept', 'image/*');
-
-            input.addEventListener('change', (e) => {
-              const target = e.target as HTMLInputElement;
-              if (target.files && target.files.length > 0) {
-                const file = target.files[0];
-
-                const reader = new FileReader();
-                reader.addEventListener('load', () => {
-                  const id = 'blobid' + (new Date()).getTime();
-                  const editor = window.tinymce.activeEditor;
-                  const blobCache = editor.editorUpload.blobCache;
-                  const base64 = reader.result as string;
-                  const blobInfo = blobCache.create(id, file, base64.split(',')[1]);
-                  blobCache.add(blobInfo);
-
-                  cb(blobInfo.blobUri(), { title: file.name });
-                });
-                reader.readAsDataURL(file);
+    <div style={{ 
+      backgroundColor: '#f0f0f0', 
+      minHeight: '100vh',
+      padding: '20px'
+    }}>
+      {!isLoading && (
+        <Editor
+          apiKey='0vco30s4ey7c3jdvmf8sl131uwqmic8ufbmattax46rmgw3k'
+          onInit={(evt, editor) => (editorRef.current = editor)}
+          initialValue={rawTemplate}
+          init={{
+            content_style: `
+              body {
+                background: #525659;
+                padding: 30px;
+                margin: 0;
               }
-            });
+              .mce-content-body {
+                max-width: 21cm;
+                min-height: 29.7cm;
+                padding: 2cm;
+                margin: 0 auto 30px auto;
+                border: 1px solid #d3d3d3;
+                border-radius: 5px;
+                background: white;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+                box-sizing: border-box;
+              }
+              /* Style for both manual and automatic page breaks */
+              .mce-pagebreak {
+                border-top: 2px dashed #666;
+                border-color: #666;
+                height: 5px;
+                page-break-before: always;
+                margin: 30px 0;
+                cursor: default;
+                display: block;
+              }
+              /* Style specifically for automatic page breaks */
+              .mce-auto-pagebreak {
+                border-style: dotted;
+                border-color: #999;
+              }
+              @page {
+                size: A4;
+                margin: 1cm;
+              }
+              @media print {
+                body {
+                  background: none;
+                  padding: 0;
+                }
+                .mce-content-body {
+                  margin: 0;
+                  border: initial;
+                  border-radius: initial;
+                  width: initial;
+                  min-height: initial;
+                  box-shadow: initial;
+                  background: initial;
+                }
+                .mce-pagebreak {
+                  border: 0;
+                  margin: 0;
+                  page-break-after: always;
+                }
+              }
+            `,
+            width: '100%',
+            height: '100vh',
+            body_class: 'mce-content-body',
+            content_css: 'document',
+            placeholder:"Write here...",
+            menubar: 'file edit view insert format tools tc help',
+            plugins: [
+              'advlist autolink lists link image charmap print preview anchor',
+              'searchreplace visualblocks code fullscreen',
+              'insertdatetime media table paste code help wordcount',
+              'image', 'table', 'link', 'lists', 'importword', 'exportword', 'exportpdf', 'tinycomments', 'quickbars',
+              'pagebreak'
+            ],
+            menu: {
+              file: { title: 'File', items: 'newdocument restoredraft | preview | importword exportpdf exportword | print | deleteallconversations' },
+              edit: { title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall | searchreplace' },
+              view: { title: 'View', items: 'code revisionhistory | visualaid visualchars visualblocks | spellchecker | preview fullscreen | showcomments' },
+              insert: { title: 'Insert', items: 'image link media addcomment pageembed codesample inserttable | math | charmap emoticons hr | pagebreak nonbreaking anchor tableofcontents | insertdatetime' },
+              format: { title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | language | removeformat' },
+              tools: { title: 'Tools', items: 'spellchecker spellcheckerlanguage | a11ycheck code wordcount' },
+              help: { title: 'Help', items: 'help' },
+              tc: {
+                title: 'Comment',
+                items: 'addcomment showcomments deleteallconversations'
+              }
+            },
+            toolbar:
+              'styles | bold italic underline strikethrough code | forecolor backcolor | align lineheight | bullist numlist outdent indent | removeformat | restoredraft help addcomment showcomments | annotate-alpha | ai-comment | pagebreak',
+            toolbar_groups: {
+              align: { icon: 'align-left', items: 'alignleft aligncenter alignright alignjustify' },
+            },
+            quickbars_selection_toolbar: 'alignleft aligncenter alignright | addcomment showcomments',
+            tinycomments_mode: 'callback',
+            tinycomments_create,
+            tinycomments_reply,
+            tinycomments_delete,
+            tinycomments_resolve,
+            tinycomments_delete_all,
+            tinycomments_lookup,
+            tinycomments_delete_comment,
+            tinycomments_edit_comment,
+            tinycomments_fetch,
+            tinycomments_fetch_author_info,
+            tinycomments_author: currentAuthor,
+            tinycomments_can_resolve: () => userAllowedToResolve !== null,
+            toolbar_sticky: true,
+            images_file_types: 'jpg,jpeg,svg,webp',
+            image_title: true,
+            automatic_uploads: true,
+            file_picker_types: 'file image media',
+            file_picker_callback: (cb: (value: string, meta?: Record<string, any>) => void, value: string, meta: Record<string, any>) => {
+              console.log(value, meta)
+              const input = document.createElement('input');
+              input.setAttribute('type', 'file');
+              input.setAttribute('accept', 'image/*');
 
-            input.click();
-          },
-          setup: (editor) => {
-            editor.ui.registry.addButton('ai-comment', {
-              text: 'AI Comment',
-              onAction: async () => {
+              input.addEventListener('change', (e) => {
+                const target = e.target as HTMLInputElement;
+                if (target.files && target.files.length > 0) {
+                  const file = target.files[0];
+
+                  const reader = new FileReader();
+                  reader.addEventListener('load', () => {
+                    const id = 'blobid' + (new Date()).getTime();
+                    const editor = window.tinymce.activeEditor;
+                    const blobCache = editor.editorUpload.blobCache;
+                    const base64 = reader.result as string;
+                    const blobInfo = blobCache.create(id, file, base64.split(',')[1]);
+                    blobCache.add(blobInfo);
+
+                    cb(blobInfo.blobUri(), { title: file.name });
+                  });
+                  reader.readAsDataURL(file);
+                }
+              });
+
+              input.click();
+            },
+            setup: (editor) => {
+              editor.on('mceAiComment', async (e: any) => {
+                console.log('mceAiComment - ', e);
                 const content = editor.getContent();
-                
-                try {
-                  // const response = await fetch('your-api-endpoint', {
-                  //   method: 'POST',
-                  //   headers: {
-                  //     'Content-Type': 'application/json',
-                  //   },
-                  //   body: JSON.stringify({ content }),
-                  // });
+
+                const revealAdditionalToolbarButton = document.querySelector('[data-mce-name="overflow-button"]');
                   
-                  // const data = await response.json();
-                  // // Expect API to return an array of { text: string, comment: string }
-                  // const annotations = data.annotations;
+                try {
+                  const suggestions = e.suggestions || [];
 
-                  const annotations = [{ text: 'test', comment: 'test' }];
-
-                  annotations.forEach(({ text, comment }) => {
+                  // Process suggestions sequentially
+                  for (const { target_text, suggestion } of suggestions) {
                     // Get content without formatting
                     const contentWithoutTags = editor.getContent({ format: 'text' });
-                    const textIndex = contentWithoutTags.indexOf(text);
+                    const textIndex = contentWithoutTags.indexOf(target_text);
                     
                     if (textIndex !== -1) {
                       const walker = document.createTreeWalker(
@@ -330,63 +512,206 @@ export default function TinyEditor() {
                       );
                       let node;
                       let found = false;
+
+                      console.log("searching for " + target_text + " - " + suggestion);
                       
                       while ((node = walker.nextNode()) && !found) {
-                        if (node.textContent && node.textContent.includes(text)) {
-                          const startOffset = node.textContent.indexOf(text);
-                          const endOffset = startOffset + text.length;
+                        if (node.textContent && node.textContent.includes(target_text)) {
+                          const startOffset = node.textContent.indexOf(target_text);
+                          const endOffset = startOffset + target_text.length;
 
-                          // Create a range for the specific text
                           const range = editor.dom.createRng();
                           range.setStart(node, startOffset);
                           range.setEnd(node, endOffset);
-
-                          // Set the selection to our range
                           editor.selection.setRng(range);
                           found = true;
-                          
-                          // Simulate clicking the "Add Comment" button
-                          const addCommentButton = document.querySelector('[data-mce-name="addcomment"]');
-                          if (addCommentButton instanceof HTMLElement) {
-                            addCommentButton.click();
-                            
-                            // Wait for the comment dialog to appear
-                            setTimeout(() => {
-                              // Find the comment input field and submit button
-                              const commentDialog = document.querySelector('.tox-comment--selected');
-                              const commentInput = commentDialog?.querySelector('.tox-textarea');
-                              const submitButton = commentDialog?.querySelector('.tox-comment__edit button:nth-child(2)');
-                              
-                              if (commentInput instanceof HTMLTextAreaElement && 
-                                  submitButton instanceof HTMLElement) {
-                                // Set the comment text
-                                commentInput.value = comment;
-                                
-                                // Dispatch input event to ensure TinyMCE recognizes the change
-                                commentInput.dispatchEvent(new Event('input', { bubbles: true }));
 
-                                setTimeout(() => {
-                                  submitButton.click();
-                                }, 100); 
+                          console.log("found, adding comment");
+
+                          // Wait for each comment to be fully processed
+                          await new Promise((resolve) => {
+                            console.log("adding comment...");
+                            let addCommentButton = document.querySelector('[data-mce-name="addcomment"]');
+                            console.log("addCommentButton - ", addCommentButton);
+                            if (addCommentButton == null) {
+                              if (revealAdditionalToolbarButton instanceof HTMLElement) {
+                                revealAdditionalToolbarButton.click();
+                                addCommentButton = document.querySelector('[data-mce-name="addcomment"]');
                               }
-                            }, 250); // Increased timeout to ensure DOM elements are ready
-                          }
+                            }
+
+                            if (addCommentButton instanceof HTMLElement) {
+                              console.log("adding comment " + target_text + " - " + suggestion);
+                              addCommentButton.click();
+                              
+                              setTimeout(() => {
+                                const commentDialog = document.querySelector('.tox-comment--selected');
+                                const commentInput = commentDialog?.querySelector('.tox-textarea');
+                                const submitButton = commentDialog?.querySelector('.tox-comment__edit button:nth-child(2)');
+                                
+                                if (commentInput instanceof HTMLTextAreaElement && 
+                                    submitButton instanceof HTMLElement) {
+                                  commentInput.value = suggestion;
+                                  commentInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+                                  setTimeout(() => {
+                                    submitButton.click();
+                                    // Wait a bit after submission before processing next comment
+                                    setTimeout(resolve, 1000);
+                                  }, 500);
+                                } else {
+                                  resolve(undefined); // Resolve even if we couldn't find the elements
+                                }
+                              }, 500);
+                            } else {
+                              resolve(undefined); // Resolve if we couldn't find the add comment button
+                            }
+                          });
                         }
                       }
                     }
-                  });
+                  }
+
+                  let addCommentButton = document.querySelector('[data-mce-name="addcomment"]');
+                  if (addCommentButton instanceof HTMLElement) {
+                    if (revealAdditionalToolbarButton instanceof HTMLElement) {
+                      // closing the additional toolbar
+                      revealAdditionalToolbarButton.click();
+                    }
+                  }
 
                   editor.focus();
                 } catch (error) {
                   console.error('API comment error:', error);
                   alert('Failed to process API comments');
                 }
-              }
-            });
-          },
-        }}
-        // onEditorChange={handleEditorChange}
-      />
+              });
+
+              editor.ui.registry.addButton('ai-comment', {
+                text: 'AI Comment',
+                onAction: async () => {
+                  const content = editor.getContent();
+                  
+                  try {
+                    const annotations = [{ text: 'test', comment: 'test' }];
+
+                    annotations.forEach(({ text, comment }) => {
+                      // Get content without formatting
+                      const contentWithoutTags = editor.getContent({ format: 'text' });
+                      const textIndex = contentWithoutTags.indexOf(text);
+                      
+                      if (textIndex !== -1) {
+                        const walker = document.createTreeWalker(
+                          editor.getBody(),
+                          NodeFilter.SHOW_TEXT,
+                          null
+                        );
+                        let node;
+                        let found = false;
+                        
+                        while ((node = walker.nextNode()) && !found) {
+                          if (node.textContent && node.textContent.includes(text)) {
+                            const startOffset = node.textContent.indexOf(text);
+                            const endOffset = startOffset + text.length;
+
+                            // Create a range for the specific text
+                            const range = editor.dom.createRng();
+                            range.setStart(node, startOffset);
+                            range.setEnd(node, endOffset);
+
+                            // Set the selection to our range
+                            editor.selection.setRng(range);
+                            found = true;
+                            
+                            // Simulate clicking the "Add Comment" button
+                            const addCommentButton = document.querySelector('[data-mce-name="addcomment"]');
+                            if (addCommentButton instanceof HTMLElement) {
+                              addCommentButton.click();
+                              
+                              // Wait for the comment dialog to appear
+                              setTimeout(() => {
+                                // Find the comment input field and submit button
+                                const commentDialog = document.querySelector('.tox-comment--selected');
+                                const commentInput = commentDialog?.querySelector('.tox-textarea');
+                                const submitButton = commentDialog?.querySelector('.tox-comment__edit button:nth-child(2)');
+                                
+                                if (commentInput instanceof HTMLTextAreaElement && 
+                                    submitButton instanceof HTMLElement) {
+                                  // Set the comment text
+                                  commentInput.value = comment;
+                                  
+                                  // Dispatch input event to ensure TinyMCE recognizes the change
+                                  commentInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+                                  setTimeout(() => {
+                                    submitButton.click();
+                                  }, 100); 
+                                }
+                              }, 250); // Increased timeout to ensure DOM elements are ready
+                            }
+                          }
+                        }
+                      }
+                    });
+
+                    editor.focus();
+                  } catch (error) {
+                    console.error('API comment error:', error);
+                    alert('Failed to process API comments');
+                  }
+                }
+              });
+
+              // Add automatic page break handling
+              editor.on('NodeChange', () => {
+                const body = editor.getBody();
+                const pageHeight = 29.7 * 37.8; // A4 height in pixels (29.7cm * 37.8 pixels per cm)
+                const contentPadding = 2 * 37.8; // 2cm padding in pixels
+                const maxContentHeight = pageHeight - (2 * contentPadding); // Available content height per page
+
+                // Remove existing auto page breaks
+                const existingAutoBreaks = body.querySelectorAll('.mce-auto-pagebreak');
+                existingAutoBreaks.forEach((pageBreak: any) => {
+                  pageBreak.remove();
+                });
+
+                let currentHeight = 0;
+                let lastBreakElement = null;
+
+                // Iterate through all elements
+                Array.from(body.children).forEach((element) => {
+                  const elementHeight = (element as HTMLElement).offsetHeight;
+                  
+                  // Skip if it's a manual page break
+                  if (element.classList.contains('mce-pagebreak')) {
+                    currentHeight = 0;
+                    lastBreakElement = element;
+                    return;
+                  }
+
+                  currentHeight += elementHeight;
+
+                  // If content exceeds page height, insert a page break before this element
+                  if (currentHeight > maxContentHeight && !element.classList.contains('mce-auto-pagebreak')) {
+                    const pageBreak = editor.dom.create('div', {
+                      'class': 'mce-pagebreak mce-auto-pagebreak',
+                      'style': 'page-break-before: always; page-break-after: always;'
+                    }, '<span style="display: none;">&nbsp;</span>');
+                    
+                    element.parentNode?.insertBefore(pageBreak, element);
+                    currentHeight = elementHeight;
+                    lastBreakElement = pageBreak;
+                  }
+                });
+              });
+            },
+            pagebreak_separator: '<div style="page-break-before: always; page-break-after: always;"><span style="display: none;">&nbsp;</span></div>',
+            pagebreak_split_block: true
+          }}
+          onEditorChange={handleEditorChange}
+        />
+      )}
+      {isLoading && <div>Loading document...</div>}
     </div>
   );
 }

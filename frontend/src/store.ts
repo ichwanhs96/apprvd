@@ -121,7 +121,7 @@ interface TemplateState {
 }
 
 export const useTemplateStore = create<TemplateState>((set, get) => ({
-  rawTemplate: '<p>Nama: ${name}</p><p>Alamat: ${alamat}</p><p>Umur: ${age}</p><p>No Telp: ${telp}</p><p>Benar ${name} yang ber alamat di ${alamat} dan berumur ${age} merupakan anggota dari kesatuan pemuda pancaindra selama 2 tahun dan dengan adanya surat ini maka diberitahukan bahwa anggota sudah tidak menjadi bagian dari kelompok kami</p>',
+  rawTemplate: '',
   variables: {},
   setVariables: (vars) => set({ variables: vars }),
   updateVariable: (key, value) =>

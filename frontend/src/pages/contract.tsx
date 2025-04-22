@@ -98,7 +98,7 @@ function ContractsPage() {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/document`,
+        `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents`,
         {
           method: "POST",
           headers: {
@@ -110,13 +110,8 @@ function ContractsPage() {
             created_by: userInfo?.displayName,
             status: "DRAFT",
             version: baseData.version,
-            contents: [
-              {
-                id: "1",
-                type: "p",
-                children: [{ text: "Start typing here..." }],
-              },
-            ],
+            is_templlate: false,
+            content: "",
           }), // Send the form data as JSON
         }
       );
@@ -128,13 +123,13 @@ function ContractsPage() {
       notifySuccess('Creating')
       
       let result = await response.json();
-      useCurrentDocId.setState({ id: result?.document?.id });
+      useCurrentDocId.setState({ id: result?.id });
       useContentToShow.setState({ content: "editor" }); // Set content to show
       useContractSelected.setState({
-        created: new Date(result?.document?.created_at),
-        name: result?.document?.name,
-        status: result?.document?.status,
-        version: result?.document?.version,
+        created: new Date(result?.created_at),
+        name: result?.name,
+        status: result?.status,
+        version: result?.version,
       });
       setIsLoading(false);
     } catch (error) {
@@ -153,7 +148,7 @@ function ContractsPage() {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/document`,
+        `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents`,
         {
           method: "GET",
           headers: {
@@ -195,7 +190,7 @@ function ContractsPage() {
   }, []); // Empty dependency array to run only on mount
 
   return (
-    <div className="flex-1 p-8">
+    <div className="flex-1 p-8 pb-40">
       <h1 className="mb-8 text-4xl font-bold">Contracts</h1>
       <div className="flex justify-between items-center mb-5">
         <div className="flex flex-row gap-x-2">
