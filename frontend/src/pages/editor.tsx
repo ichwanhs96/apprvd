@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AISidebar from "../components/aiSidebar";
 import { InitiatePlateEditor } from "../components/textEditor/plate-editor";
 import { useAuth } from "../context/AuthContext"; // Add this import
-import { useCurrentDocId, useEditorComments, useEditorContent, useSuggestions } from "../store";
+import { useContentPage, useCurrentDocId, useEditorComments, useEditorContent, useSuggestions } from "../store";
 import { useNavigate } from "react-router-dom";
 import { TComment } from "@udecode/plate-comments";
 import { v4 as uuidv4 } from "uuid"; // To generate unique IDs
@@ -50,7 +50,7 @@ const EditorPage: React.FC = () => {
     const EDITOR_CONTENT_COMMENTS = "editor-comments";
     const { id } = useCurrentDocId();
     const suggestions = useSuggestions();
-    // const { contentPage } = useContentPage()
+    const { contentPage } = useContentPage()
     // const { editor_content } = useEditorContent()
     // const { editor_comments } = useEditorComments()
     const navigate = useNavigate();
@@ -423,7 +423,7 @@ const EditorPage: React.FC = () => {
         </div>
         <div className="w-1/4">
             {/* { loadingLorem && <div>Loading...</div> } */}
-            { <AISidebar editor={editor} /> }
+            {contentPage === 'contracts' && <AISidebar editor={editor} /> }
             <div className="mt-4">
               <TemplateSidebar />
             </div>

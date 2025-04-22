@@ -467,10 +467,11 @@ export default function TinyEditor() {
               }
             },
             toolbar:
-              'styles | bold italic underline strikethrough code | forecolor backcolor | align lineheight | bullist numlist outdent indent | removeformat | restoredraft help addcomment showcomments | annotate-alpha | ai-comment | pagebreak',
+              'styles | bold italic underline strikethrough code | forecolor backcolor | align lineheight | bullist numlist outdent indent | removeformat | restoredraft help addcomment showcomments addtemplate | annotate-alpha | ai-comment | pagebreak',
             toolbar_groups: {
               align: { icon: 'align-left', items: 'alignleft aligncenter alignright alignjustify' },
             },
+            custom_elements: '~span[data-mce-id]',
             quickbars_selection_toolbar: 'alignleft aligncenter alignright | addcomment showcomments',
             tinycomments_mode: 'callback',
             tinycomments_create,
@@ -616,6 +617,70 @@ export default function TinyEditor() {
                 }
               });
 
+              editor.ui.registry.addButton('addtemplate', {
+                icon: 'template', // You can use an existing icon or create your own
+                tooltip: 'Add Template',
+                onAction: function() {
+                  // Open a dialog to get user input
+                  openTemplateDialog(editor);
+                }
+              });
+              
+              // Function to open dialog and handle template insertion
+              function openTemplateDialog(editor: any) {
+                editor.windowManager.open({
+                  title: 'Insert Template',
+                  body: {
+                    type: 'panel',
+                    items: [
+                      {
+                        type: 'input',
+                        name: 'template',
+                      }
+                    ]
+                  },
+                  buttons: [
+                    {
+                      type: 'cancel',
+                      text: 'Cancel'
+                    },
+                    {
+                      type: 'submit',
+                      text: 'Insert',
+                      primary: true
+                    }
+                  ],
+                  onSubmit: function(api: any) {
+                    // Get the template value from the dialog
+                    const data = api.getData();
+                    const templateValue = data.template;
+                    // Insert the template at cursor position
+                    editor.insertContent('<span style="background-color: #ffffe0;" data-mce-id="template-feature">${' + templateValue + '}</span>');
+                    
+                    // Update template variables
+                    const content = editor.getContent();
+                    const matches = [...content.matchAll(/\$\{(\w+)\}/g)];
+                    const vars: Record<string, string> = {};
+                    matches.forEach((match) => {
+                      vars[match[1]] = match[0]; // keep original like ${name}
+                    });
+                    setTemplateVariables(vars);
+                    
+                    // Close the dialog
+                    api.close();
+                  }
+                });
+              }
+              
+              // Add a menu item
+              editor.ui.registry.addMenuItem('addtemplate', {
+                text: 'Add Template',
+                icon: 'comment',
+                onAction: function() {
+                  openTemplateDialog(editor);
+                }
+              });
+
               editor.ui.registry.addButton('ai-comment', {
                 text: 'AI Comment',
                 onAction: async () => {
@@ -695,6 +760,15 @@ export default function TinyEditor() {
                 const pageHeight = 29.7 * 37.8; // A4 height in pixels (29.7cm * 37.8 pixels per cm)
                 const contentPadding = 2 * 37.8; // 2cm padding in pixels
                 const maxContentHeight = pageHeight - (2 * contentPadding); // Available content height per page
+
+                // Update template variables whenever content changes
+                const content = editor.getContent();
+                const matches = [...content.matchAll(/\$\{(\w+)\}/g)];
+                const vars: Record<string, string> = {};
+                matches.forEach((match) => {
+                  vars[match[1]] = match[0]; // keep original like ${name}
+                });
+                setTemplateVariables(vars);
 
                 // Remove existing auto page breaks
                 const existingAutoBreaks = body.querySelectorAll('.mce-auto-pagebreak');

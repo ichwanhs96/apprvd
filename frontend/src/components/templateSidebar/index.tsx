@@ -1,6 +1,7 @@
-import { useTemplateStore, useContent } from "../../store";
+import { useTemplateStore, useContent, useContentPage } from "../../store";
 
 export default function TemplateSidebar() {
+  const { contentPage } = useContentPage()
   const variables = useTemplateStore((s) => s.variables);
   const updateVariable = useTemplateStore((s) => s.updateVariable);
   const resetVariables = useTemplateStore((s) => s.resetVariables);
@@ -30,7 +31,7 @@ export default function TemplateSidebar() {
         <div className="mb-4">
           <h2 className="font-semibold text-xl">Custom fields</h2>
         </div>
-        {Object.entries(variables).length >= 0 && <div className="mb-6 flex flex-col">
+        {contentPage === 'contracts' ? Object.entries(variables).length >= 0 && <div className="mb-6 flex flex-col">
           <div className="space-y-4">
             {Object.entries(variables).map(([key, {/*value*/}]) => (
               <div key={key} className="flex gap-2 items-center flex-row justify-between">
@@ -61,6 +62,14 @@ export default function TemplateSidebar() {
                 Reset
               </button>
             </div>
+        </div> : Object.entries(variables).length >= 0 && <div className="mb-6 flex flex-col">
+          <div className="space-y-4">
+            {Object.entries(variables).map(([key, {/*value*/}], index: number) => (
+              <div key={key} className="flex gap-2 items-center flex-row justify-between">
+                <label>{index+1}. {key.charAt(0).toUpperCase() + key.slice(1)}</label>
+              </div>
+            ))}
+          </div>
         </div>}
       </div>
     </div>

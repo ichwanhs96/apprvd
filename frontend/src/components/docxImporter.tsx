@@ -118,7 +118,7 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
             created_by: userInfo?.email,
             status: "DRAFT",
             version: "1",
-            contents: content,
+            content: content,
             is_template: true
           }), // Send the form data as JSON
         }
