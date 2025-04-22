@@ -2,13 +2,12 @@ import React, { useEffect, useState } from "react";
 import AISidebar from "../components/aiSidebar";
 import { InitiatePlateEditor } from "../components/textEditor/plate-editor";
 import { useAuth } from "../context/AuthContext"; // Add this import
-import { useContent, useContentPage, useCurrentDocId, useEditorComments, useEditorContent, useSuggestions, useTemplateStore } from "../store";
+import { useCurrentDocId, useEditorComments, useEditorContent, useSuggestions } from "../store";
 import { useNavigate } from "react-router-dom";
 import { TComment } from "@udecode/plate-comments";
 import { v4 as uuidv4 } from "uuid"; // To generate unique IDs
 import { toast } from "react-toastify";
 import TinyEditor from "../components/TinyEditor";
-import TemplateSidebar from "../components/templateSidebar";
 
 interface TextSegment {
   text?: string;
@@ -42,15 +41,14 @@ interface EditorData {
   comments: CommentBlock[];
 }
 
-const EditorPage: React.FC = () => {
+const EditorTemplate: React.FC = () => {
     const { userInfo } = useAuth();
-    // const [loadingLorem, setLoadingLorem] = useState(true);
+    const [loadingLorem, setLoadingLorem] = useState(true);
     const [editorData, setEditorData] = useState<EditorData | null>(null);
     const EDITOR_CONTENT_KEY = 'editor-content';
     const EDITOR_CONTENT_COMMENTS = "editor-comments";
     const { id } = useCurrentDocId();
     const suggestions = useSuggestions();
-    const { contentPage } = useContentPage()
     // const { editor_content } = useEditorContent()
     // const { editor_comments } = useEditorComments()
     const navigate = useNavigate();
@@ -67,70 +65,70 @@ const EditorPage: React.FC = () => {
         });
     }
 
-    // const fetchDocument = async (doc_id: string) => {
-    //     try {
-    //         if (!userInfo?.email) {
-    //             alert("Please login!");
-    //             return navigate('/');
-    //         }
+    const fetchDocument = async (doc_id: string) => {
+        try {
+            if (!userInfo?.email) {
+                alert("Please login!");
+                return navigate('/');
+            }
 
-    //         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${doc_id}`, {
-    //             method: 'GET',
-    //             headers: {
-    //                 'business-id': userInfo?.email,
-    //             },
-    //         });
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${doc_id}`, {
+                method: 'GET',
+                headers: {
+                    'business-id': userInfo?.email,
+                },
+            });
 
-    //         if (!response.ok) {
-    //             throw new Error("Unexpected error");
-    //         }
+            if (!response.ok) {
+                throw new Error("Unexpected error");
+            }
 
-    //         return await response.json();
-    //     } catch (error) {
-    //       toastError()
-    //         console.error("Failed to fetch document:", error);
-    //     }
-    // };
+            return await response.json();
+        } catch (error) {
+          toastError()
+            console.error("Failed to fetch document:", error);
+        }
+    };
 
-    // const loadInitialValue = async () => {
-    //     try {
-    //         const data = await fetchDocument(id);
-    //         useEditorComments.setState({editor_comments: JSON.stringify(data.comments)})
-    //         useEditorContent.setState({editor_content: JSON.stringify(data.contents)})
-    //         localStorage.setItem(EDITOR_CONTENT_KEY, JSON.stringify(data.contents)); // Store the response in local storage
-    //         localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(data.comments)); // Store the response in local storage
+    const loadInitialValue = async () => {
+        try {
+            const data = await fetchDocument(id);
+            useEditorComments.setState({editor_comments: JSON.stringify(data.comments)})
+            useEditorContent.setState({editor_content: JSON.stringify(data.contents)})
+            localStorage.setItem(EDITOR_CONTENT_KEY, JSON.stringify(data.contents)); // Store the response in local storage
+            localStorage.setItem(EDITOR_CONTENT_COMMENTS, JSON.stringify(data.comments)); // Store the response in local storage
 
-    //         return data || { contents: [{
-    //             id: "1",
-    //             type: "p",
-    //             children: [{ text: "Start typing here..." }],
-    //         }], comments: [] };
-    //     } catch (error) {
-    //       toastError()
-    //         const savedValue = localStorage.getItem(EDITOR_CONTENT_KEY);
-    //         // const savedValue = editor_content
-    //         if (savedValue) {
-    //             return JSON.parse(savedValue);
-    //         }
+            return data || { contents: [{
+                id: "1",
+                type: "p",
+                children: [{ text: "Start typing here..." }],
+            }], comments: [] };
+        } catch (error) {
+          toastError()
+            const savedValue = localStorage.getItem(EDITOR_CONTENT_KEY);
+            // const savedValue = editor_content
+            if (savedValue) {
+                return JSON.parse(savedValue);
+            }
 
-    //         // Default content if nothing is saved
-    //         return { contents: [{
-    //             id: "1",
-    //             type: "p",
-    //             children: [{ text: "Start typing here..." }],
-    //         }], comments: [] };
-    //     }
-    // };
+            // Default content if nothing is saved
+            return { contents: [{
+                id: "1",
+                type: "p",
+                children: [{ text: "Start typing here..." }],
+            }], comments: [] };
+        }
+    };
 
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         const initialValue = await loadInitialValue();
-    //         setEditorData(initialValue);
-    //         setLoadingLorem(false);
-    //     };
+    useEffect(() => {
+        const fetchData = async () => {
+            const initialValue = await loadInitialValue();
+            setEditorData(initialValue);
+            setLoadingLorem(false);
+        };
 
-    //     fetchData(); // Call fetchData on component mount
-    // }, []);
+        fetchData(); // Call fetchData on component mount
+    }, []);
 
     const deepCopy = (obj: any): any => {
       return JSON.parse(JSON.stringify(obj));
@@ -380,41 +378,6 @@ const EditorPage: React.FC = () => {
 
     // console.log("From zustand: ", editor_content, editor_comments)
 
-    const rawTemplate = useTemplateStore((s) => s.rawTemplate);
-    const variables = useTemplateStore((s) => s.variables);
-    const setVariables = useTemplateStore((s) => s.setVariables);
-  
-    useEffect(() => {
-      const matches = [...rawTemplate.matchAll(/\$\{(\w+)\}/g)];
-      const vars: Record<string, string> = {};
-      matches.forEach((match) => {
-        vars[match[1]] = match[0]; // keep original like ${name}
-      });
-      setVariables(vars);
-    }, [rawTemplate]);
-
-    const applyVariables = () => {
-      let content = rawTemplate;
-    
-      // Step 1: Remove any <span> tags wrapping ${...}
-      content = content.replace(/<span style="background-color: #ffffe0;">\s*(\$\{.*?\})\s*<\/span>/g, '$1');
-    
-      // Step 2: Replace ${key} with actual values
-      Object.entries(variables).forEach(([key, value]) => {
-        const regex = new RegExp(`\\$\\{${key}\\}`, 'g');
-        content = content.replace(regex, value);
-      });
-    
-      useContent.setState({ content });
-      console.log('ini content', content)
-    };
-    console.log('ini raw', rawTemplate)
-    
-  
-    // return null;
-
-  
-
     return (
         <>
         <div className="w-3/4">
@@ -423,15 +386,12 @@ const EditorPage: React.FC = () => {
             <TinyEditor />
         </div>
         <div className="w-1/4">
-            {/* { loadingLorem && <div>Loading...</div> } */}
-            { <AISidebar editor={editor} /> }
-            <div className="mt-4">
-              <TemplateSidebar onApply={applyVariables} />
-            </div>
+            { loadingLorem && <div>Loading...</div> }
+            { !loadingLorem &&  <AISidebar editor={editor} /> }
             {/* <button onClick={handleComment} className="bg-blue-500 hidden">Comment</button> */}
         </div> 
         </>
     );
 };
 
-export default EditorPage;
+export default EditorTemplate;

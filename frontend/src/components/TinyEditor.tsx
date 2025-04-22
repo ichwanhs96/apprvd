@@ -1,8 +1,8 @@
 import { Editor } from '@tinymce/tinymce-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Editor as TinyMCEEditor } from 'tinymce';
 import { useAuth } from '../context/AuthContext';
-import { useCurrentDocId } from '../store';
+import { useContent, useCurrentDocId, useTemplateStore } from '../store';
 import { useContractSelected } from '../store';
 
 declare global {
@@ -38,7 +38,10 @@ interface TinyCommentsFetchRequest {
 }
 
 export default function TinyEditor() {
-  const [content, setContent] = useState('');
+  // const [content, setContent] = useState('');
+  const { content } = useContent()
+  const editorRef = useRef<any>(null);
+  const rawTemplate = useTemplateStore((s) => s.rawTemplate);
   const [isLoading, setIsLoading] = useState(true);
   const { userInfo } = useAuth();
   const { id } = useCurrentDocId();
@@ -72,7 +75,7 @@ export default function TinyEditor() {
       try {
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}`);
         const data = await response.json();
-        setContent(data.content);
+        useTemplateStore.setState({rawTemplate: data?.content});
       } catch (error) {
         console.error('Failed to fetch document:', error);
       } finally {
@@ -329,6 +332,12 @@ export default function TinyEditor() {
     author: currentAuthor,
     authorName: currentAuthor,
   });
+  
+  useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.setContent(content);
+    }
+  }, [content])
 
   return (
     <div style={{ 
@@ -339,6 +348,8 @@ export default function TinyEditor() {
       {!isLoading && (
         <Editor
           apiKey='0vco30s4ey7c3jdvmf8sl131uwqmic8ufbmattax46rmgw3k'
+          onInit={(evt, editor) => (editorRef.current = editor)}
+          initialValue={rawTemplate}
           init={{
             content_style: `
               body {
@@ -693,7 +704,6 @@ export default function TinyEditor() {
             pagebreak_split_block: true
           }}
           onEditorChange={handleEditorChange}
-          initialValue={content}
         />
       )}
       {isLoading && <div>Loading document...</div>}

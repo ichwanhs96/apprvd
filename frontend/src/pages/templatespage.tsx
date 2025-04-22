@@ -30,7 +30,7 @@ interface ContractItem {
   contract: Contract;
 }
 
-function ContractsPage() {
+function TemplatesPage() {
   const { userInfo } = useAuth();
   const [addOpen, setAddOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -79,7 +79,7 @@ function ContractsPage() {
       });
   }
 
-  const openModalAdd = () => setAddOpen(true);
+  // const openModalAdd = () => setAddOpen(true);
   const closeModalAdd = () => {
     setAddOpen(false);
     fetchContracts();
@@ -98,7 +98,7 @@ function ContractsPage() {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents`,
+        `${import.meta.env.VITE_BACKEND_URL}/document`,
         {
           method: "POST",
           headers: {
@@ -110,8 +110,13 @@ function ContractsPage() {
             created_by: userInfo?.displayName,
             status: "DRAFT",
             version: baseData.version,
-            is_templlate: false,
-            content: "",
+            contents: [
+              {
+                id: "1",
+                type: "p",
+                children: [{ text: "Start typing here..." }],
+              },
+            ],
           }), // Send the form data as JSON
         }
       );
@@ -123,13 +128,13 @@ function ContractsPage() {
       notifySuccess('Creating')
       
       let result = await response.json();
-      useCurrentDocId.setState({ id: result?.id });
+      useCurrentDocId.setState({ id: result?.document?.id });
       useContentToShow.setState({ content: "editor" }); // Set content to show
       useContractSelected.setState({
-        created: new Date(result?.created_at),
-        name: result?.name,
-        status: result?.status,
-        version: result?.version,
+        created: new Date(result?.document?.created_at),
+        name: result?.document?.name,
+        status: result?.document?.status,
+        version: result?.document?.version,
       });
       setIsLoading(false);
     } catch (error) {
@@ -148,7 +153,7 @@ function ContractsPage() {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents`,
+        `${import.meta.env.VITE_BACKEND_URL}/document`,
         {
           method: "GET",
           headers: {
@@ -191,17 +196,16 @@ function ContractsPage() {
 
   return (
     <div className="flex-1 p-8 pb-40">
-      <h1 className="mb-8 text-4xl font-bold">Contracts</h1>
+      <h1 className="mb-8 text-4xl font-bold">Templates</h1>
       <div className="flex justify-between items-center mb-5">
         <div className="flex flex-row gap-x-2">
-          <button
-            className="bg-green-500 text-white px-4 py-2 rounded-3xl mr-3 flex flex-row gap-x-2"
+          {/* <button
+            className="bg-green-500 text-white px-4 py-2 rounded-3xl mr-3"
             onClick={openModalAdd}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-square-plus-icon lucide-square-plus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
             Create new
-          </button>
-          <DocxImporter setAllContract={setAllContract} notifyDuplicate={notifyDuplicate} notifySuccess={notifySuccess} type={'contract'} />
+          </button> */}
+          <DocxImporter setAllContract={setAllContract} notifyDuplicate={notifyDuplicate} notifySuccess={notifySuccess} type={'template'} />
         </div>
         {/* TODO: ENABLE SEARCH FUNCTION */}
         {/* <input
@@ -272,7 +276,7 @@ function ContractsPage() {
   );
 }
 
-export default ContractsPage;
+export default TemplatesPage;
 
 function ContractItem({ contractItem, deleteContractFn }: { contractItem: Contract, deleteContractFn: Function }) {
   const { userInfo } = useAuth();
