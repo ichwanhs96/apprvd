@@ -372,7 +372,8 @@ def create_tinymce_document():
 
 @app.route('/tinymce/documents', methods=['GET'])
 def get_tinymce_documents():
-    documents = Document.query.all()
+    business_id = request.headers.get("business-id") 
+    documents = Document.query.filter(Document.business_id == business_id).all()
     return jsonify([{
         'id': document.id,
         'name': document.name,
@@ -391,7 +392,8 @@ def get_tinymce_documents():
 
 @app.route('/tinymce/documents/<int:doc_id>', methods=['GET'])
 def get_tinymce_document(doc_id):
-    document = Document.query.get_or_404(doc_id)
+    business_id = request.headers.get("business-id") 
+    document = Document.query.filter(Document.business_id == business_id, Document.id == doc_id).first_or_404()
     return jsonify({
         'id': document.id,
         'name': document.name,
@@ -406,9 +408,18 @@ def get_tinymce_document(doc_id):
         'shared_with': document.shared_with
     })
 
+@app.route('/tinymce/documents/<int:doc_id>', methods=['DELETE'])
+def delete_tinymce_document(doc_id):
+    business_id = request.headers.get("business-id") 
+    document = Document.query.filter(Document.business_id == business_id, Document.id == doc_id).first_or_404()
+    db.session.delete(document)
+    db.session.commit()
+    return jsonify({'message': 'Document deleted successfully'})
+
 @app.route('/tinymce/documents/<int:doc_id>', methods=['PUT'])
 def update_tinymce_document(doc_id):
-    document = Document.query.get_or_404(doc_id)
+    business_id = request.headers.get("business-id") 
+    document = Document.query.filter(Document.business_id == business_id, Document.id == doc_id).first_or_404()
     data = request.json
     document.content = data.get('content', document.content)
     document.name = data.get('name', document.name)

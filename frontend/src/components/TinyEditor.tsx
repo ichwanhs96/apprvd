@@ -75,7 +75,16 @@ export default function TinyEditor() {
     const fetchDocument = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}`);
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'business-id': userInfo?.email || '',
+            },
+          }
+        );
         const data = await response.json();
         const matches = [...data.content.matchAll(/\$\{(\w+)\}/g)];
         const vars: Record<string, string> = {};
@@ -111,6 +120,7 @@ export default function TinyEditor() {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            'business-id': userInfo?.email || '',
           },
           body: JSON.stringify({ content, name }),
         });
@@ -155,6 +165,7 @@ export default function TinyEditor() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'business-id': userInfo?.email || '',
             },
             body: JSON.stringify({
                 content: req.content,
@@ -195,6 +206,7 @@ export default function TinyEditor() {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'business-id': userInfo?.email || '',
             },
         });
         const data = await response.json();
@@ -222,6 +234,7 @@ export default function TinyEditor() {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
+        'business-id': userInfo?.email || '',
       },
     })
       .then((response) => {
@@ -249,6 +262,7 @@ export default function TinyEditor() {
       await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
         headers: {
           'Content-Type': 'application/json',
+          'business-id': userInfo?.email || '',
         },
         method: 'DELETE',
       });
@@ -265,6 +279,7 @@ export default function TinyEditor() {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'business-id': userInfo?.email || '',
         },
       });
       done({ canResolve: true });
@@ -280,6 +295,7 @@ export default function TinyEditor() {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'business-id': userInfo?.email || '',
         },
       });
       done({ canDelete: true });
@@ -295,6 +311,7 @@ export default function TinyEditor() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'business-id': userInfo?.email || '',
         },
         body: JSON.stringify({ content: req.content }),
       });
@@ -326,6 +343,7 @@ export default function TinyEditor() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'business-id': userInfo?.email || '',
         },
       });
 
