@@ -63,10 +63,10 @@ export default function TemplateSidebar() {
               </button>
             </div>
         </div> : Object.entries(variables).length >= 0 && <div className="mb-6 flex flex-col">
-          <div className="space-y-4">
-            {Object.entries(variables).map(([key, {/*value*/}], index: number) => (
-              <div key={key} className="flex gap-2 items-center flex-row justify-between">
-                <label>{index+1}. {key.charAt(0).toUpperCase() + key.slice(1)}</label>
+          <div className="space-y-2">
+            {Object.entries(variables).map(([key, {/*value*/}]) => (
+              <div key={key} className="flex p-2 gap-2 items-center flex-row justify-between rounded-md bg-neutral-200/30">
+                <label>{key.charAt(0).toUpperCase() + key.slice(1)}</label>
               </div>
             ))}
           </div>
