@@ -75,6 +75,7 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
       const arrayBuffer = file?.target?.result as ArrayBuffer;
 
       // Convert DOCX to HTML
+      // TODO: move this import function to use TinyMCE API
       const { value } = await mammoth.convertToHtml({ arrayBuffer });
 
       // Convert HTML to Plate.js format (Basic Example)
@@ -83,12 +84,11 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
         return `<span style="background-color: #ffffe0;">${match}</span>`;
       });
 
-      console.log('asd',html)
       // Store in Zustand
       await setContent(html);
-      await useTemplateStore.setState({ rawTemplate: html })
+      // await useTemplateStore.setState({ rawTemplate: html })
 
-      console.log('ini plue',)
+      console.log('ini plue', html)
     };
     reader.readAsArrayBuffer(file);
 
@@ -107,7 +107,7 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
         return navigate("/");
       }
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/document`,
+        `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents`,
         {
           method: "POST",
           headers: {
@@ -120,6 +120,7 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
             status: "DRAFT",
             version: "1",
             contents: content,
+            is_template: true
           }), // Send the form data as JSON
         }
       );
@@ -129,13 +130,13 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
       }
 
       let result = await response.json();
-      useCurrentDocId.setState({ id: result?.document?.id });
+      useCurrentDocId.setState({ id: result?.id });
       useContentToShow.setState({ content: "editor" });
       useContractSelected.setState({
-        created: new Date(result?.document?.created_at),
-        name: result?.document?.name,
-        status: result?.document?.status,
-        version: result?.document?.version,
+        created: new Date(result?.created_at),
+        name: result?.name,
+        status: result?.status,
+        version: result?.version,
       });
       notifySuccess('Uploading')
       setIsLoading(false);
@@ -177,7 +178,7 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/document`,
+        `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents`,
         {
           method: "GET",
           headers: {
@@ -190,17 +191,25 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      setAllContract(
-        data.map((contract: any) => ({
-          id: contract.id,
-          name: contract.name,
-          language: contract.language || "EN",
-          version: contract.version,
-          created_at: contract.created_at,
-          updated_at: contract.updated_at,
-          status: contract.status,
-        }))
-      ); // Assuming the response contains a 'contracts' array
+      // TODO: make a new store for templates
+      const contracts = data.reduce((acc: any, contract: any) => {
+        if (contract.is_template == true) {
+          acc.push({
+            id: contract.id,
+            name: contract.name,
+            language: contract.language || "EN",
+            version: contract.version,
+            created_at: contract.created_at,
+            updated_at: contract.updated_at,
+            status: contract.status,
+          })
+        }
+
+        return acc;
+      }, []);
+
+      //TODO: make a new store for templates 
+      setAllContract(contracts); // Assuming the response contains a 'contracts' array
     } catch (error) {
       const toastError = () => {
         toast.error('Error: Something went wrong!', {
@@ -212,7 +221,7 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
           draggable: true,
           progress: undefined,
           theme: "light",
-          });
+        });
       }
       toastError()
       console.error("Error fetching contracts:", error);

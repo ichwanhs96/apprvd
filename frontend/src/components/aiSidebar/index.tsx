@@ -261,7 +261,7 @@ const AISidebar: React.FC<AISidebarProps> = () => {
                     </button>
                 </div> */}
       </div>
-      {!commentOpen && (
+      {/* {!commentOpen && (
         <div className="w-full flex items-center justify-center">
           <button
             className="bg-white border rounded-lg border-neutral-400 m-4 text-black"
@@ -320,7 +320,7 @@ const AISidebar: React.FC<AISidebarProps> = () => {
             })}
           </div>
         </div>
-      ) : commentOpen && commentData <= 0 &&  <div className="w-full flex text-center p-8 items-center justify-between">No comments found <MinusCircleIcon onClick={() => setCommentOpen(false)} /></div>}
+      ) : commentOpen && commentData <= 0 &&  <div className="w-full flex text-center p-8 items-center justify-between">No comments found <MinusCircleIcon onClick={() => setCommentOpen(false)} /></div>} */}
       {/* {isOpen && (
         <div className="fixed inset-0 flex items-center justify-center">
           <div className="bg-black bg-opacity-70 absolute inset-0 w-screen h-screen z-40"></div>

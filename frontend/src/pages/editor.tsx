@@ -380,39 +380,38 @@ const EditorPage: React.FC = () => {
 
     // console.log("From zustand: ", editor_content, editor_comments)
 
-    const rawTemplate = useTemplateStore((s) => s.rawTemplate);
-    const variables = useTemplateStore((s) => s.variables);
-    const setVariables = useTemplateStore((s) => s.setVariables);
+    // TODO: move this to TinyMCE editor file
+    // --------------------------------
+    // const rawTemplate = useTemplateStore((s) => s.rawTemplate);
+    // const variables = useTemplateStore((s) => s.variables);
+    // const setVariables = useTemplateStore((s) => s.setVariables);
   
-    useEffect(() => {
-      const matches = [...rawTemplate.matchAll(/\$\{(\w+)\}/g)];
-      const vars: Record<string, string> = {};
-      matches.forEach((match) => {
-        vars[match[1]] = match[0]; // keep original like ${name}
-      });
-      setVariables(vars);
-    }, [rawTemplate]);
+    // useEffect(() => {
+    //   const matches = [...rawTemplate.matchAll(/\$\{(\w+)\}/g)];
+    //   const vars: Record<string, string> = {};
+    //   matches.forEach((match) => {
+    //     vars[match[1]] = match[0]; // keep original like ${name}
+    //   });
+    //   setVariables(vars);
+    // }, [rawTemplate]);
 
-    const applyVariables = () => {
-      let content = rawTemplate;
+    // const applyVariables = () => {
+    //   let content = rawTemplate;
     
-      // Step 1: Remove any <span> tags wrapping ${...}
-      content = content.replace(/<span style="background-color: #ffffe0;">\s*(\$\{.*?\})\s*<\/span>/g, '$1');
+    //   // Step 1: Remove any <span> tags wrapping ${...}
+    //   content = content.replace(/<span style="background-color: #ffffe0;">\s*(\$\{.*?\})\s*<\/span>/g, '$1');
     
-      // Step 2: Replace ${key} with actual values
-      Object.entries(variables).forEach(([key, value]) => {
-        const regex = new RegExp(`\\$\\{${key}\\}`, 'g');
-        content = content.replace(regex, value);
-      });
+    //   // Step 2: Replace ${key} with actual values
+    //   Object.entries(variables).forEach(([key, value]) => {
+    //     const regex = new RegExp(`\\$\\{${key}\\}`, 'g');
+    //     content = content.replace(regex, value);
+    //   });
     
-      useContent.setState({ content });
-      console.log('ini content', content)
-    };
-    console.log('ini raw', rawTemplate)
-    
-  
-    // return null;
+    //   useContent.setState({ content });
+    //   console.log('ini content', content)
+    // };
 
+    // -------------------------------- to be moved to TinyMCE editor file
   
 
     return (
@@ -426,7 +425,7 @@ const EditorPage: React.FC = () => {
             {/* { loadingLorem && <div>Loading...</div> } */}
             { <AISidebar editor={editor} /> }
             <div className="mt-4">
-              <TemplateSidebar onApply={applyVariables} />
+              <TemplateSidebar />
             </div>
             {/* <button onClick={handleComment} className="bg-blue-500 hidden">Comment</button> */}
         </div> 

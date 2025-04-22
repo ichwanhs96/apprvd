@@ -98,7 +98,7 @@ function TemplatesPage() {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/document`,
+        `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents`,
         {
           method: "POST",
           headers: {
@@ -153,7 +153,7 @@ function TemplatesPage() {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/document`,
+        `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents`,
         {
           method: "GET",
           headers: {
@@ -166,17 +166,25 @@ function TemplatesPage() {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      setAllContract(
-        data.map((contract: any) => ({
-          id: contract.id,
-          name: contract.name,
-          language: contract.language || "EN",
-          version: contract.version,
-          created_at: contract.created_at,
-          updated_at: contract.updated_at,
-          status: contract.status,
-        }))
-      ); // Assuming the response contains a 'contracts' array
+
+      const contracts = data.reduce((acc: any, contract: any) => {
+        if (contract.is_template == true) {
+          acc.push({
+            id: contract.id,
+            name: contract.name,
+            language: contract.language || "EN",
+            version: contract.version,
+            created_at: contract.created_at,
+            updated_at: contract.updated_at,
+            status: contract.status,
+          })
+        }
+
+        return acc;
+      }, []);
+
+      //TODO: make a new store for templates 
+      setAllContract(contracts); // Assuming the response contains a 'contracts' array
     } catch (error) {
       toastError()
       console.error("Error fetching contracts:", error);
@@ -304,7 +312,7 @@ function ContractItem({ contractItem, deleteContractFn }: { contractItem: Contra
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/document/${id}`,
+        `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}`,
         {
           method: "DELETE",
           headers: {

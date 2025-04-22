@@ -1,9 +1,26 @@
-import { useTemplateStore } from "../../store";
+import { useTemplateStore, useContent } from "../../store";
 
-export default function TemplateSidebar({ onApply }: { onApply: () => void }) {
+export default function TemplateSidebar() {
   const variables = useTemplateStore((s) => s.variables);
   const updateVariable = useTemplateStore((s) => s.updateVariable);
   const resetVariables = useTemplateStore((s) => s.resetVariables);
+
+  const handleApply = () => {
+    const editor = window.tinymce.activeEditor;
+    let content = editor.getContent();
+    
+    // First, find and replace any existing template spans with their text content
+    content = content.replace(/<span style="background-color: #ffffe0;" data-mce-id="template-feature"[^>]*>(.*?)<\/span>/g, '$1');
+  
+    // // Then apply the new formatting to all variables
+    Object.entries(variables).forEach(([key, value]) => {
+      const regex = new RegExp(`\\$\\{${key}\\}`, 'g');
+      content = content.replace(regex, `<span data-mce-id="template-feature">${value}</span>`);
+    });
+  
+    useContent.setState({ content });
+  }
+
   return (
     <div className="text-sm pt-4">
       <div className="bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto">
@@ -32,7 +49,7 @@ export default function TemplateSidebar({ onApply }: { onApply: () => void }) {
           </div>
             <div className="flex gap-2 mt-4">
               <button
-                onClick={onApply}
+                onClick={handleApply}
                 className="bg-blue-500 text-white px-4 py-2 rounded"
               >
                 Apply

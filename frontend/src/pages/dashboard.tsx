@@ -8,7 +8,6 @@ import ContractPage from "./contract";
 import TemplatesPage from "./templatespage";
 import { useContentToShow } from "../store"
 import { Bounce, ToastContainer } from "react-toastify";
-import EditorTemplate from "./editortemplate";
 
 const Dashboard: React.FC = () => {
   const navItems: NavItem[] = [];
@@ -23,8 +22,6 @@ const Dashboard: React.FC = () => {
         return ContractPage;
       case 'templatespage':
         return TemplatesPage;
-      case 'editortemplate':
-        return EditorTemplate;
       default:
         return ContractPage;
     }

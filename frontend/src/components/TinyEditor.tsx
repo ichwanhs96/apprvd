@@ -38,10 +38,10 @@ interface TinyCommentsFetchRequest {
 }
 
 export default function TinyEditor() {
-  // const [content, setContent] = useState('');
+  const [localContent, setLocalContent] = useState('');
   const { content } = useContent()
   const editorRef = useRef<any>(null);
-  const rawTemplate = useTemplateStore((s) => s.rawTemplate);
+  // const rawTemplate = useTemplateStore((s) => s.rawTemplate);
   const [isLoading, setIsLoading] = useState(true);
   const { userInfo } = useAuth();
   const { id } = useCurrentDocId();
@@ -69,13 +69,28 @@ export default function TinyEditor() {
   //   createDocument();
   // }, []);
 
+  const setTemplateVariables = useTemplateStore((s) => s.setVariables);
+
   useEffect(() => {
     const fetchDocument = async () => {
       setIsLoading(true);
       try {
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}`);
         const data = await response.json();
-        useTemplateStore.setState({rawTemplate: data?.content});
+        const matches = [...data.content.matchAll(/\$\{(\w+)\}/g)];
+        const vars: Record<string, string> = {};
+        matches.forEach((match) => {
+          vars[match[1]] = match[0]; // keep original like ${name}
+        });
+
+        // highlighting variables
+        data.content = data.content.replace(/\$\{(.*?)\}/g, (match: string) => {
+          return `<span data-mce-id="template-feature" style="background-color: #ffffe0;">${match}</span>`;
+        });
+
+        setTemplateVariables(vars);
+        setLocalContent(data.content);
+        useContent.setState({ content: data.content });
       } catch (error) {
         console.error('Failed to fetch document:', error);
       } finally {
@@ -349,7 +364,7 @@ export default function TinyEditor() {
         <Editor
           apiKey='0vco30s4ey7c3jdvmf8sl131uwqmic8ufbmattax46rmgw3k'
           onInit={(evt, editor) => (editorRef.current = editor)}
-          initialValue={rawTemplate}
+          initialValue={localContent}
           init={{
             content_style: `
               body {
@@ -412,7 +427,6 @@ export default function TinyEditor() {
             height: '100vh',
             body_class: 'mce-content-body',
             content_css: 'document',
-            placeholder:"Write here...",
             menubar: 'file edit view insert format tools tc help',
             plugins: [
               'advlist autolink lists link image charmap print preview anchor',

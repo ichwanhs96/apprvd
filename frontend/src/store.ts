@@ -118,6 +118,7 @@ interface TemplateState {
   setVariables: (vars: Vars) => void;
   updateVariable: (key: string, value: string) => void;
   resetVariables: () => void;
+  replaceTemplateText: (oldText: string, newText: string) => void;
 }
 
 export const useTemplateStore = create<TemplateState>((set, get) => ({
@@ -131,28 +132,15 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
         [key]: value,
       },
     })),
-    resetVariables: () => {
-    const raw = get().rawTemplate;
-    
-    // Step 1: Create default variable placeholders
-    const matches = [...raw.matchAll(/\$\{(\w+)\}/g)];
-    const resetVars: Vars = {};
-    matches.forEach((match) => {
-      resetVars[match[1]] = `\${${match[1]}}`;
+  replaceTemplateText: (oldText: string, newText: string) => {
+    const content = useContent.getState().content;
+    const regex = new RegExp(`(<span data-mce-id="template-feature"[^>]*>)${oldText}(<\/span>)`, 'g');
+    const updatedContent = content.replace(regex, `${newText}`);
+    useContent.setState({ content: updatedContent });
+  },
+  resetVariables: () => {
+    Object.entries(get().variables).forEach(([key, value]) => {
+      get().replaceTemplateText(value, `<span style="background-color: #ffffe0;" data-mce-id="template-feature">\${${key}}</span>`);
     });
-    
-    // Step 2: Highlight all ${key} placeholders by wrapping in <span>
-    const highlightedContent = raw.replace(/\$\{(\w+)\}/g, (match) => {
-      return `<span style="background-color: #ffffe0;">${match}</span>`;
-    });
-  
-    // Step 3: Update state with reset variables and highlighted content
-    set({
-      variables: resetVars,
-      // rawTemplate: highlightedContent,
-    });
-    useContent.setState({ content: highlightedContent });
-    console.log('reset',resetVars, highlightedContent)
   }
-  
 }));

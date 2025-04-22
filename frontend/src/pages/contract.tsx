@@ -201,7 +201,7 @@ function ContractsPage() {
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-square-plus-icon lucide-square-plus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
             Create new
           </button>
-          <DocxImporter setAllContract={setAllContract} notifyDuplicate={notifyDuplicate} notifySuccess={notifySuccess} type={'contract'} />
+          {/* <DocxImporter setAllContract={setAllContract} notifyDuplicate={notifyDuplicate} notifySuccess={notifySuccess} type={'contract'} /> */}
         </div>
         {/* TODO: ENABLE SEARCH FUNCTION */}
         {/* <input
@@ -300,7 +300,7 @@ function ContractItem({ contractItem, deleteContractFn }: { contractItem: Contra
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/document/${id}`,
+        `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}`,
         {
           method: "DELETE",
           headers: {
