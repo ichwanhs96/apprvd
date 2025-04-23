@@ -28,6 +28,8 @@ from dotenv import load_dotenv
 
 from mongoengine import connect
 
+import resend
+
 load_dotenv()
 
 # Connect to MongoDB
@@ -332,16 +334,17 @@ from models.tinymce import Document, Comment, db
 from sqlalchemy import or_
 import uuid
 from datetime import datetime, timezone
-# import resend
 
-# resend.api_key = os.environ["RESEND_API_KEY"]
+# Uncomment and ensure this is set near the top of the file where other configurations are
+resend.api_key = os.environ["RESEND_API_KEY"]
+
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('PGDB_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
 with app.app_context():
-    # db.drop_all()
+    db.drop_all()
     db.create_all()
 
 @app.route('/tinymce/documents', methods=['POST'])
@@ -380,7 +383,7 @@ def create_tinymce_document_from_template(template_id):
     template = Document.query.filter(
         or_(
             Document.business_id == business_id,
-            Document.shared_with.contains(business_id)
+            Document.shared_with.any(business_id)
         ),
         Document.id == template_id
     ).first_or_404()
@@ -416,7 +419,7 @@ def get_tinymce_documents():
     query = Document.query.filter(
         or_(
             Document.business_id == business_id,
-            Document.shared_with.contains(business_id)
+            Document.shared_with.any(business_id)
         )
     )
  
@@ -443,7 +446,7 @@ def get_tinymce_document(doc_id):
     document = Document.query.filter(
         or_(
             Document.business_id == business_id,
-            Document.shared_with.contains(business_id)
+            Document.shared_with.any(business_id)
         ),
         Document.id == doc_id
     ).first_or_404()
@@ -479,7 +482,90 @@ def update_tinymce_document(doc_id):
     document.updated_at = datetime.now(timezone.utc)
     document.shared_with = data.get('shared_with', document.shared_with)
     db.session.commit()
-    return jsonify({'message': 'Document updated successfully'})
+    return jsonify({
+        'id': document.id,
+        'name': document.name,
+        'content': document.content,
+        'created_at': document.created_at.isoformat(),
+        'updated_at': document.updated_at.isoformat(),
+        'business_id': document.business_id,
+        'language': document.language,
+        'version': document.version,
+        'status': document.status,
+        'is_template': document.is_template,
+        'shared_with': document.shared_with
+    })
+
+@app.route('/tinymce/documents/<int:doc_id>/finalize', methods=['POST'])
+def finalize_tinymce_document(doc_id):
+    business_id = request.headers.get("business-id") 
+    document = Document.query.filter(Document.business_id == business_id, Document.id == doc_id).first_or_404()
+    document.status = 'FINAL'
+    document.updated_at = datetime.now(timezone.utc)
+    db.session.commit()
+    return jsonify({
+        'id': document.id,
+        'name': document.name,
+        'content': document.content,
+        'created_at': document.created_at.isoformat(),
+        'updated_at': document.updated_at.isoformat(),
+        'business_id': document.business_id,
+        'language': document.language,
+        'version': document.version,
+        'status': document.status,
+        'is_template': document.is_template,
+        'shared_with': document.shared_with
+    })
+
+@app.route('/tinymce/documents/<int:doc_id>/share', methods=['POST'])
+def share_tinymce_document(doc_id):
+    data = request.json
+    email = data.get('email')
+    business_id = request.headers.get("business-id") 
+    document = Document.query.filter(Document.business_id == business_id, Document.id == doc_id).first_or_404()
+    
+    if document.shared_with is None:
+        document.shared_with = [email]
+    
+
+    if email not in document.shared_with:
+        document.shared_with = document.shared_with + [email]
+    
+    document.updated_at = datetime.now(timezone.utc)
+    db.session.commit()
+
+    try:
+        params = {
+            "from": "Apprvd <notifications@apprvd.co>",
+            "to": email,
+            "subject": f"Document shared: {document.name}",
+            "html": f"""
+                <h2>A document has been shared with you</h2>
+                <p>You have been given access to the document "{document.name}".</p>
+                <p>You can access it by logging into your Apprvd account in <a href="https://app.apprvd.co">https://app.apprvd.co</a></p>
+                <br>
+                <p>Best regards,</p>
+                <p>The Apprvd Team</p>
+            """
+        }
+        email_response = resend.Emails.send(params)
+        
+    except Exception as e:
+        print(f"Failed to send email notification: {str(e)}")
+        
+    return jsonify({
+        'id': document.id,
+        'name': document.name,
+        'content': document.content,
+        'created_at': document.created_at.isoformat(),
+        'updated_at': document.updated_at.isoformat(),
+        'business_id': document.business_id,
+        'language': document.language,
+        'version': document.version,
+        'status': document.status,
+        'is_template': document.is_template,
+        'shared_with': document.shared_with
+    })
 
 # Comment-related endpoints
 @app.route('/tinymce/documents/<int:doc_id>/comments', methods=['POST'])
@@ -594,3 +680,32 @@ def delete_tinymce_comment(doc_id, conversation_uid):
     db.session.delete(comment)
     db.session.commit()
     return jsonify({'message': 'Comment deleted successfully'})
+
+@app.route('/notifications/mentions', methods=['POST'])
+def send_mention_notifications():
+    data = request.json
+    mentionedUsers = data.get('mentionedUsers')
+    for user in mentionedUsers:
+        try:
+            params = {
+                "from": "Apprvd <notifications@apprvd.co>",
+                "to": data.get('mentionedUsers'),
+                "subject": f"You have been mentioned in a comment",
+                "html": f"""
+                    <h2>You have been mentioned in a comment</h2>
+                    <p>You have been mentioned in a comment on the document "{data.get('documentName')}".</p>
+                    <p>The comment was made by {data.get('author')}</p>
+                    <p>The comment is: {data.get('commentContent')}</p>
+                    <br>
+                    <p>You can access the document by logging into your Apprvd account in <a href="https://app.apprvd.co">https://app.apprvd.co</a></p>
+                    <br>
+                    <p>Best regards,</p>
+                    <p>The Apprvd Team</p>
+                """
+            }
+            email_response = resend.Emails.send(params)
+            
+        except Exception as e:
+            print(f"Failed to send email notification: {str(e)}")
+
+    return jsonify({'message': 'Mention notifications sent successfully'})

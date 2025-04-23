@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext"; // Add this import
 import { useContentToShow, useContractSelected, useCurrentDocId } from "../../../store";
 import { useNavigate } from "react-router-dom";
@@ -17,13 +17,17 @@ interface DashboardNavbarProps {
 const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
   const [navBarOpen, setNavBarOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const { created, name, status, version } = useContractSelected();
+  const { created, name, status, version, shared_with } = useContractSelected();
   const { content } = useContentToShow();
   const { user, logout } = useAuth();
   const { id } = useCurrentDocId();
   const navigate = useNavigate();
   const { userInfo } = useAuth();
   const [isFinalized, setIsFinalized] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [sharedUsers, setSharedUsers] = useState<string[]>(shared_with);
+  const [isAddingUser, setIsAddingUser] = useState(false);
 
   const successFinalize = () => {
     toast.success('Success: Finalize Document!', {
@@ -72,7 +76,7 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
         return navigate('/');
       }
 
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/document/${id}/finalize`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/finalize`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -91,6 +95,44 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
       toastError()
       setIsFinalized(false)
       console.error("Error finalizing document:", error);
+    }
+  }
+
+  useEffect(() => {
+    console.log(shared_with);
+    setSharedUsers(shared_with);
+  }, [shared_with])
+
+  const handleShareDoc = () => {
+    setShowShareModal(true);
+  }
+
+  const handleAddUser = async () => {
+    if (!emailInput.trim() || !userInfo?.email) return;
+    setIsAddingUser(true);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/share`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'business-id': userInfo.email
+        },
+        body: JSON.stringify({ email: emailInput })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to share document');
+      }
+
+      setSharedUsers([...sharedUsers, emailInput]);
+      useContractSelected.setState({ shared_with: [...sharedUsers, emailInput] });
+      setEmailInput('');
+    } catch (error) {
+      toastError();
+      console.error("Error sharing document:", error);
+    } finally {
+      setIsAddingUser(false);
     }
   }
 
@@ -178,6 +220,9 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
               </a>
             ))}
           </div>
+          {content === 'editor' && <div className="mr-4">
+            <button className="bg-gray-100 text-green-700 disabled:pointer-events-none" onClick={handleShareDoc}>Share</button>
+          </div>}
           {content === 'editor' && status !== 'FINAL' && <div className="pr-4">
             <button className="bg-green-100 text-green-700 disabled:pointer-events-none" onClick={handleFinalizeDoc} disabled={isFinalized}>{isFinalized ? <Loader /> :  'Finalize doc'}</button>
           </div>}
@@ -209,6 +254,53 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
           </div>
         </div>
       </nav>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-gray-300 bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Share Document</h2>
+              <button 
+                onClick={() => setShowShareModal(false)}
+                className="text-gray-500 border-1 border-gray-500 bg-transparent hover:text-gray-700"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="flex gap-2 mb-4">
+              <input
+                type="email"
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                placeholder="Enter email address"
+                className="flex-1 p-2 border rounded bg-gray-100"
+              />
+              <button
+                onClick={handleAddUser}
+                disabled={isAddingUser}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-green-300"
+              >
+                {isAddingUser ? <Loader /> : 'Add'}
+              </button>
+            </div>
+
+            {sharedUsers.length > 0 && (
+              <div>
+                <h3 className="font-medium mb-2">Shared with:</h3>
+                <ul className="space-y-2">
+                  {sharedUsers.map((email, index) => (
+                    <li key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                      {email}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -20,6 +20,8 @@ interface Contract {
   created_at: string;
   updated_at: string;
   status: string;
+  shared_with: string[];
+  is_template: boolean;
 }
 
 interface Contracts {
@@ -131,10 +133,12 @@ function TemplatesPage() {
       useCurrentDocId.setState({ id: result?.document?.id });
       useContentToShow.setState({ content: "editor" }); // Set content to show
       useContractSelected.setState({
-        created: new Date(result?.document?.created_at),
-        name: result?.document?.name,
-        status: result?.document?.status,
-        version: result?.document?.version,
+        created: new Date(result?.created_at),
+        name: result?.name,
+        status: result?.status,
+        version: result?.version,
+        shared_with: result?.shared_with,
+        is_template: result?.is_template
       });
       setIsLoading(false);
     } catch (error) {
@@ -372,6 +376,8 @@ function ContractItem({ contractItem, deleteContractFn }: { contractItem: Contra
             version: contractItem.version,
             status: contractItem.status,
             created: new Date(contractItem.created_at),
+            shared_with: contractItem.shared_with,
+            is_template: contractItem.is_template
           });
         }}
       >

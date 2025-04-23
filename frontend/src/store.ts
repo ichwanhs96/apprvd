@@ -59,14 +59,17 @@ interface ContractSelected {
   version: string;
   status: string;
   created: Date;
+  is_template: boolean;
+  shared_with: string[];
 }
 
 export const useContractSelected = create<ContractSelected>(() => ({
   name: '',
   version: '',
   status: '',
-  created: new Date()
-
+  created: new Date(),
+  is_template: false,
+  shared_with: []
 }))
 
 interface Suggestion {

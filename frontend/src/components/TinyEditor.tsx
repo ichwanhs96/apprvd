@@ -45,7 +45,7 @@ export default function TinyEditor() {
   const [isLoading, setIsLoading] = useState(true);
   const { userInfo } = useAuth();
   const { id } = useCurrentDocId();
-  const { name } = useContractSelected();
+  const { name, shared_with } = useContractSelected();
   const [lastDocumentUpdateDate, setLastDocumentUpdateDate] = useState<Date | null>(new Date());
 
   const handleEditorChange = async (content: string) => {
@@ -175,6 +175,32 @@ export default function TinyEditor() {
                 commentUid
             }),
         });
+
+        // Updated regex to match @email.com pattern
+        const mentionRegex = /@([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/g;
+        const mentions = req.content?.match(mentionRegex) || [];
+        const mentionedUsers = mentions.map((mention: string) => mention.substring(1)); // Remove @ symbol
+
+        if (mentionedUsers.length > 0) {
+          // Send email notifications for mentions
+          fetch(`${import.meta.env.VITE_BACKEND_URL}/notifications/mentions`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'business-id': userInfo?.email || '',
+            },
+            body: JSON.stringify({
+              documentId: id,
+              documentName: name,
+              mentionedUsers: mentionedUsers,
+              commentContent: content,
+              author: currentAuthor,
+              conversationUid: conversationUid
+            })
+          }).catch(error => {
+            console.error('Failed to send mention notifications:', error);
+          });
+        }
         
         // Important: TinyMCE expects just the conversationUid in a specific format
         console.log('Sending to TinyMCE - conversationUid:', conversationUid);
@@ -228,9 +254,20 @@ export default function TinyEditor() {
     console.log('tinycomments_reply - ', req);
     const { conversationUid, content, createdAt } = req;
 
+    // Updated regex to match @email.com pattern
+    const mentionRegex = /@([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/g;
+    const mentions = content.match(mentionRegex) || [];
+    const mentionedUsers = mentions.map((mention: string) => mention.substring(1)); // Remove @ symbol
+
+    // Send comment to backend
     fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${conversationUid}`, {
       method: 'POST',
-      body: JSON.stringify({ content: content, createdAt: createdAt, author: currentAuthor }),
+      body: JSON.stringify({ 
+        content: content, 
+        createdAt: createdAt, 
+        author: currentAuthor,
+        mentionedUsers: mentionedUsers // Add mentioned users to the payload
+      }),
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
@@ -250,6 +287,28 @@ export default function TinyEditor() {
           author: currentAuthor,
           authorName: currentAuthor,
         });
+
+        // Handle mentions after successful comment creation
+        if (mentionedUsers.length > 0) {
+          // Send email notifications for mentions
+          fetch(`${import.meta.env.VITE_BACKEND_URL}/notifications/mentions`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'business-id': userInfo?.email || '',
+            },
+            body: JSON.stringify({
+              documentId: id,
+              documentName: name,
+              mentionedUsers: mentionedUsers,
+              commentContent: content,
+              author: currentAuthor,
+              conversationUid: conversationUid
+            })
+          }).catch(error => {
+            console.error('Failed to send mention notifications:', error);
+          });
+        }
       })
       .catch((e) => {
         fail(e);
@@ -368,16 +427,13 @@ export default function TinyEditor() {
 
   // This is a placeholder function - replace with your actual API call
   async function fetchUsers(query: any) {
-    // TODO: Implement your API call here
-    // Example structure:
-    // const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/users/search?q=${query}`);
-    // return await response.json();
-    return [
-      {
-        id: 'testing@email.com',
-        name: query.term
+    const fetchedUsers = shared_with.filter((user) => user.includes(query.term));
+    return fetchedUsers.map((user) => {
+      return {
+        id: user,
+        name: user
       }
-    ];
+    })
   }
   
   useEffect(() => {

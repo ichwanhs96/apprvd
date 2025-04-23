@@ -136,6 +136,8 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
         name: result?.name,
         status: result?.status,
         version: result?.version,
+        shared_with: result?.shared_with,
+        is_template: result?.is_template
       });
       notifySuccess('Uploading')
       setIsLoading(false);
@@ -201,6 +203,8 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
             created_at: contract.created_at,
             updated_at: contract.updated_at,
             status: contract.status,
+            shared_with: contract.shared_with,
+            is_template: contract.is_template
           })
         }
 

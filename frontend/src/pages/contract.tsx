@@ -21,7 +21,7 @@ interface Contract {
   updated_at: string;
   status: string;
   is_template: boolean;
-  shared_with: string;
+  shared_with: string[];
 }
 
 interface Contracts {
@@ -157,6 +157,8 @@ function ContractsPage() {
         name: result?.name,
         status: result?.status,
         version: result?.version,
+        shared_with: result?.shared_with,
+        is_template: result?.is_template
       });
       setIsLoading(false);
     } catch (error) {
@@ -407,6 +409,8 @@ function ContractItem({ contractItem, deleteContractFn }: { contractItem: Contra
             version: contractItem.version,
             status: contractItem.status,
             created: new Date(contractItem.created_at),
+            shared_with: contractItem.shared_with,
+            is_template: contractItem.is_template
           });
         }}
       >

@@ -27,6 +27,8 @@ const Sidebar: React.FC = () => {
       name: "",
       status: "",
       version: "",
+      shared_with: [],
+      is_template: false
     });
     localStorage.clear();
   };
