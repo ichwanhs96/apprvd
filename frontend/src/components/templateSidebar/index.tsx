@@ -10,10 +10,10 @@ export default function TemplateSidebar() {
     const editor = window.tinymce.activeEditor;
     let content = editor.getContent();
     
-    // First, find and replace any existing template spans with their text content
-    content = content.replace(/<span style="background-color: #ffffe0;" data-mce-id="template-feature"[^>]*>(.*?)<\/span>/g, '$1');
+    // First, find and replace template spans while preserving other attributes
+    content = content.replace(/<span[^>]*data-mce-id="template-feature"[^>]*>(.*?)<\/span>/g, '$1');
   
-    // // Then apply the new formatting to all variables
+    // Then apply the new formatting to all variables
     Object.entries(variables).forEach(([key, value]) => {
       const regex = new RegExp(`\\$\\{${key}\\}`, 'g');
       content = content.replace(regex, `<span data-mce-id="template-feature">${value}</span>`);

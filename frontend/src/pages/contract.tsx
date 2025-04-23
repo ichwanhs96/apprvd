@@ -20,6 +20,8 @@ interface Contract {
   created_at: string;
   updated_at: string;
   status: string;
+  is_template: boolean;
+  shared_with: string;
 }
 
 interface Contracts {
@@ -38,7 +40,9 @@ function ContractsPage() {
   const [baseData, setBaseData] = useState({
     name: "",
     version: "",
+    template: "",
   });
+  const [templateContracts, setTemplateContracts] = useState<Contract[]>([]);
 
   const notifyDuplicate = () => {
     toast.error('Error: Document already existed!', {
@@ -97,24 +101,47 @@ function ContractsPage() {
         return navigate("/");
       }
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "business-id": userInfo?.email,
-          },
-          body: JSON.stringify({
-            name: baseData.name,
-            created_by: userInfo?.displayName,
-            status: "DRAFT",
-            version: baseData.version,
-            is_templlate: false,
-            content: "",
-          }), // Send the form data as JSON
-        }
-      );
+      let response = null;
+
+      console.log(baseData.template)
+
+      if (baseData.template) {
+        response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/templates/${baseData.template}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "business-id": userInfo?.email,
+            },
+            body: JSON.stringify({
+              name: baseData.name,
+              created_by: userInfo?.displayName,
+              status: "DRAFT",
+              version: baseData.version,
+            }),
+          }
+        );
+      } else {
+        response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/tinymce/documents`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "business-id": userInfo?.email,
+            },
+            body: JSON.stringify({
+              name: baseData.name,
+              created_by: userInfo?.displayName,
+              status: "DRAFT",
+              version: baseData.version,
+              is_templlate: false,
+              content: "",
+            }), // Send the form data as JSON
+          }
+        );
+      }
 
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -161,17 +188,21 @@ function ContractsPage() {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      setAllContract(
-        data.map((contract: any) => ({
-          id: contract.id,
-          name: contract.name,
-          language: contract.language || "EN",
-          version: contract.version,
-          created_at: contract.created_at,
-          updated_at: contract.updated_at,
-          status: contract.status,
-        }))
-      ); // Assuming the response contains a 'contracts' array
+      const contracts = data.map((contract: any) => ({
+        id: contract.id,
+        name: contract.name,
+        language: contract.language || "EN",
+        version: contract.version,
+        created_at: contract.created_at,
+        updated_at: contract.updated_at,
+        status: contract.status,
+        is_template: contract.is_template,
+        shared_with: contract.shared_with,
+      }));
+      
+      setAllContract(contracts.filter((contract: Contract) => !contract.is_template));
+      // Filter and set template contracts
+      setTemplateContracts(contracts.filter((contract: Contract) => contract.is_template));
     } catch (error) {
       toastError()
       console.error("Error fetching contracts:", error);
@@ -233,7 +264,7 @@ function ContractsPage() {
                     setBaseData({ ...baseData, name: e.target.value })
                   }
                   required
-                  className="bg-white text text-black black text-right border rounded-lg p-2"
+                  className="bg-white text-black text-right border rounded-lg p-2 w-48"
                 />
               </div>
               <div className="flex w-full flex-row items-center justify-between gap-x-2">
@@ -246,8 +277,24 @@ function ContractsPage() {
                     setBaseData({ ...baseData, version: e.target.value })
                   }
                   required
-                  className="bg-white text-black text black text-right border rounded-lg p-2"
+                  className="bg-white text-black text-right border rounded-lg p-2 w-48"
                 />
+              </div>
+              <div className="flex w-full flex-row items-center justify-between gap-x-2">
+                <label>Choose a template:</label>
+                <select
+                  id="template"
+                  name="template"
+                  onChange={(e) => setBaseData({ ...baseData, template: e.target.value })}
+                  className="bg-white text-black text-right border rounded-lg p-2 w-48"
+                >
+                  <option value="">No template</option>
+                  {templateContracts.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.name} (v{template.version})
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="flex flex-row gap-x-2 mt-4 items-center justify-end">
                 <button

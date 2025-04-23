@@ -365,6 +365,20 @@ export default function TinyEditor() {
     author: currentAuthor,
     authorName: currentAuthor,
   });
+
+  // This is a placeholder function - replace with your actual API call
+  async function fetchUsers(query: any) {
+    // TODO: Implement your API call here
+    // Example structure:
+    // const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/users/search?q=${query}`);
+    // return await response.json();
+    return [
+      {
+        id: 'testing@email.com',
+        name: query.term
+      }
+    ];
+  }
   
   useEffect(() => {
     if (editorRef.current) {
@@ -380,7 +394,7 @@ export default function TinyEditor() {
     }}>
       {!isLoading && (
         <Editor
-          apiKey='0vco30s4ey7c3jdvmf8sl131uwqmic8ufbmattax46rmgw3k'
+          apiKey='k4y2ix28oqg99xygbhm1h5oq7wlmv8na1ot6aba5vz7mf5kh'
           onInit={(_, editor) => (editorRef.current = editor)}
           initialValue={localContent}
           init={{
@@ -440,6 +454,18 @@ export default function TinyEditor() {
                   page-break-after: always;
                 }
               }
+              .mention {
+                background-color: #e8f4ff;
+                padding: 2px 4px;
+                border-radius: 3px;
+                border: 1px solid #bce0ff;
+                font-weight: 500;
+                display: inline-block;
+                cursor: pointer;
+              }
+              .mention:hover {
+                background-color: #d8ecff;
+              }
             `,
             width: '100%',
             height: '100vh',
@@ -451,7 +477,7 @@ export default function TinyEditor() {
               'searchreplace visualblocks code fullscreen',
               'insertdatetime media table paste code help wordcount',
               'image', 'table', 'link', 'lists', 'importword', 'exportword', 'exportpdf', 'tinycomments', 'quickbars',
-              'pagebreak'
+              'pagebreak', 'mentions'
             ],
             menu: {
               file: { title: 'File', items: 'newdocument restoredraft | preview | importword exportpdf exportword | print | deleteallconversations' },
@@ -518,6 +544,31 @@ export default function TinyEditor() {
               });
 
               input.click();
+            },
+            // Add mentions configuration
+            mentions_selector: '.mention',
+            mentions_min_chars: 1,
+            mentions_fetch: async (query: string, success: Function) => {
+              try {
+                const users = await fetchUsers(query);
+
+                success(users);
+              } catch (error) {
+                console.error('Error fetching users for mentions:', error);
+                success([]);
+              }
+            },
+            mentions_menu_hover: (userInfo: any, success: Function) => {
+              const html = `
+                <div style="padding: 10px;">
+                  <div style="font-weight: bold;">${userInfo.name}</div>
+                </div>
+              `;
+              success(html);
+            },
+            mentions_select: (mention: any, success: Function) => {
+              const html = `<span class="mention" data-mention-id="${mention.id}">@${mention.name}</span>`;
+              success(html);
             },
             setup: (editor) => {
               editor.on('mceAiComment', async (e: any) => {
@@ -681,78 +732,78 @@ export default function TinyEditor() {
                 }
               });
 
-              editor.ui.registry.addButton('ai-comment', {
-                text: 'AI Comment',
-                onAction: async () => {
-                  try {
-                    const annotations = [{ text: 'test', comment: 'test' }];
+              // editor.ui.registry.addButton('ai-comment', {
+              //   text: 'AI Comment',
+              //   onAction: async () => {
+              //     try {
+              //       const annotations = [{ text: 'test', comment: 'test' }];
 
-                    annotations.forEach(({ text, comment }) => {
-                      // Get content without formatting
-                      const contentWithoutTags = editor.getContent({ format: 'text' });
-                      const textIndex = contentWithoutTags.indexOf(text);
+              //       annotations.forEach(({ text, comment }) => {
+              //         // Get content without formatting
+              //         const contentWithoutTags = editor.getContent({ format: 'text' });
+              //         const textIndex = contentWithoutTags.indexOf(text);
                       
-                      if (textIndex !== -1) {
-                        const walker = document.createTreeWalker(
-                          editor.getBody(),
-                          NodeFilter.SHOW_TEXT,
-                          null
-                        );
-                        let node;
-                        let found = false;
+              //         if (textIndex !== -1) {
+              //           const walker = document.createTreeWalker(
+              //             editor.getBody(),
+              //             NodeFilter.SHOW_TEXT,
+              //             null
+              //           );
+              //           let node;
+              //           let found = false;
                         
-                        while ((node = walker.nextNode()) && !found) {
-                          if (node.textContent && node.textContent.includes(text)) {
-                            const startOffset = node.textContent.indexOf(text);
-                            const endOffset = startOffset + text.length;
+              //           while ((node = walker.nextNode()) && !found) {
+              //             if (node.textContent && node.textContent.includes(text)) {
+              //               const startOffset = node.textContent.indexOf(text);
+              //               const endOffset = startOffset + text.length;
 
-                            // Create a range for the specific text
-                            const range = editor.dom.createRng();
-                            range.setStart(node, startOffset);
-                            range.setEnd(node, endOffset);
+              //               // Create a range for the specific text
+              //               const range = editor.dom.createRng();
+              //               range.setStart(node, startOffset);
+              //               range.setEnd(node, endOffset);
 
-                            // Set the selection to our range
-                            editor.selection.setRng(range);
-                            found = true;
+              //               // Set the selection to our range
+              //               editor.selection.setRng(range);
+              //               found = true;
                             
-                            // Simulate clicking the "Add Comment" button
-                            const addCommentButton = document.querySelector('[data-mce-name="addcomment"]');
-                            if (addCommentButton instanceof HTMLElement) {
-                              addCommentButton.click();
+              //               // Simulate clicking the "Add Comment" button
+              //               const addCommentButton = document.querySelector('[data-mce-name="addcomment"]');
+              //               if (addCommentButton instanceof HTMLElement) {
+              //                 addCommentButton.click();
                               
-                              // Wait for the comment dialog to appear
-                              setTimeout(() => {
-                                // Find the comment input field and submit button
-                                const commentDialog = document.querySelector('.tox-comment--selected');
-                                const commentInput = commentDialog?.querySelector('.tox-textarea');
-                                const submitButton = commentDialog?.querySelector('.tox-comment__edit button:nth-child(2)');
+              //                 // Wait for the comment dialog to appear
+              //                 setTimeout(() => {
+              //                   // Find the comment input field and submit button
+              //                   const commentDialog = document.querySelector('.tox-comment--selected');
+              //                   const commentInput = commentDialog?.querySelector('.tox-textarea');
+              //                   const submitButton = commentDialog?.querySelector('.tox-comment__edit button:nth-child(2)');
                                 
-                                if (commentInput instanceof HTMLTextAreaElement && 
-                                    submitButton instanceof HTMLElement) {
-                                  // Set the comment text
-                                  commentInput.value = comment;
+              //                   if (commentInput instanceof HTMLTextAreaElement && 
+              //                       submitButton instanceof HTMLElement) {
+              //                     // Set the comment text
+              //                     commentInput.value = comment;
                                   
-                                  // Dispatch input event to ensure TinyMCE recognizes the change
-                                  commentInput.dispatchEvent(new Event('input', { bubbles: true }));
+              //                     // Dispatch input event to ensure TinyMCE recognizes the change
+              //                     commentInput.dispatchEvent(new Event('input', { bubbles: true }));
 
-                                  setTimeout(() => {
-                                    submitButton.click();
-                                  }, 100); 
-                                }
-                              }, 250); // Increased timeout to ensure DOM elements are ready
-                            }
-                          }
-                        }
-                      }
-                    });
+              //                     setTimeout(() => {
+              //                       submitButton.click();
+              //                     }, 100); 
+              //                   }
+              //                 }, 250); // Increased timeout to ensure DOM elements are ready
+              //               }
+              //             }
+              //           }
+              //         }
+              //       });
 
-                    editor.focus();
-                  } catch (error) {
-                    console.error('API comment error:', error);
-                    alert('Failed to process API comments');
-                  }
-                }
-              });
+              //       editor.focus();
+              //     } catch (error) {
+              //       console.error('API comment error:', error);
+              //       alert('Failed to process API comments');
+              //     }
+              //   }
+              // });
 
               // Add automatic page break handling
               editor.on('NodeChange', () => {
