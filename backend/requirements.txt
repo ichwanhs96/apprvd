@@ -11,3 +11,4 @@ pymongo
 mongoengine
 flask-sqlalchemy
 psycopg2-binary
+resend

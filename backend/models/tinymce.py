@@ -11,13 +11,6 @@ db = SQLAlchemy()
 #     email = db.Column(db.String(255))
 #     name = db.Column(db.String(255))
 
-# class UserDocument(db.Model):
-#     __tablename__ = 'user_documents'
-
-#     id = db.Column(db.Integer, primary_key=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-#     document_id = db.Column(db.Integer, db.ForeignKey('documents.id'))
-
 class Document(db.Model):
     __tablename__ = 'documents'
 

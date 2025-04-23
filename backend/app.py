@@ -332,7 +332,9 @@ from models.tinymce import Document, Comment, db
 from sqlalchemy import or_
 import uuid
 from datetime import datetime, timezone
+# import resend
 
+# resend.api_key = os.environ["RESEND_API_KEY"]
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('PGDB_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -355,6 +357,42 @@ def create_tinymce_document():
         version=data.get('version'),
         status=data.get('status'),
         is_template=data.get('is_template'),
+        shared_with=data.get('shared_with')
+    )
+    db.session.add(document)
+    db.session.commit()
+    return jsonify({
+        'id': document.id,
+        'created_at': document.created_at.isoformat(),
+        'updated_at': document.updated_at.isoformat(),
+        'business_id': document.business_id,
+        'language': document.language,
+        'version': document.version,
+        'status': document.status,
+        'is_template': document.is_template,
+        'shared_with': document.shared_with
+    }), 201
+
+@app.route('/tinymce/documents/templates/<int:template_id>', methods=['POST'])
+def create_tinymce_document_from_template(template_id):
+    data = request.json
+    business_id = request.headers.get("business-id") 
+    template = Document.query.filter(
+        or_(
+            Document.business_id == business_id,
+            Document.shared_with.contains(business_id)
+        ),
+        Document.id == template_id
+    ).first_or_404()
+    document = Document(
+        name=data.get('name', template.name),
+        content=template.content,
+        business_id=business_id,
+        created_by=data.get('created_by'),
+        language=data.get('language'),
+        version=data.get('version'),
+        status=data.get('status'),
+        is_template=False,
         shared_with=data.get('shared_with')
     )
     db.session.add(document)
