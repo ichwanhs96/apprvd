@@ -194,6 +194,22 @@ export default function TinyEditor() {
    * (must call "done" or "fail") *
    ********************************/
   
+  const generateAvatarText = (name: string): string => {
+    if (!name) return '';
+    
+    const nameParts = name.split(' ');
+    if (nameParts.length >= 2) {
+      // If there are at least two parts, use first letter of first and last name
+      return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+    } else if (nameParts[0].length >= 2) {
+      // If only one part and it has at least 2 letters, use first two letters
+      return nameParts[0].substring(0, 2).toUpperCase();
+    } else {
+      // If name is too short, just use what we have
+      return nameParts[0].toUpperCase();
+    }
+  };
+
   // Update the callback functions with proper typing
   const tinycomments_create = async (
     req: TinyCommentsCallbackRequest, 
@@ -208,6 +224,7 @@ export default function TinyEditor() {
     try {
         const conversationUid = 'annotation-' + randomString();
         const commentUid = 'comment-' + randomString();
+        const authorName = currentAuthor || '';
         
         await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments`, {
             method: 'POST',
@@ -218,6 +235,8 @@ export default function TinyEditor() {
             body: JSON.stringify({
                 content: req.content,
                 author: currentAuthor,
+                authorName: authorName,
+                authorAvatar: generateAvatarText(authorName),
                 document_id: id,
                 conversationUid,
                 commentUid
@@ -241,7 +260,7 @@ export default function TinyEditor() {
               documentId: id,
               documentName: name,
               mentionedUsers: mentionedUsers,
-              commentContent: content,
+              commentContent: req.content,
               author: currentAuthor,
               conversationUid: conversationUid
             })
@@ -252,7 +271,15 @@ export default function TinyEditor() {
         
         // Important: TinyMCE expects just the conversationUid in a specific format
         console.log('Sending to TinyMCE - conversationUid:', conversationUid);
-        done({ conversationUid: conversationUid });
+        done({ 
+          conversationUid: conversationUid,
+          commentUid: commentUid,
+          author: currentAuthor,
+          authorName: authorName,
+          authorAvatar: generateAvatarText(authorName),
+          content: req.content,
+          createdAt: new Date().toISOString()
+        });
     } catch (error) {
         console.error('Error creating comment:', error);
         fail(new Error('Failed to create comment'));
@@ -283,14 +310,35 @@ export default function TinyEditor() {
                 'business-id': userInfo?.email || '',
             },
         });
+
         const data = await response.json();
-        const fetchedConversations = data.reduce((acc: Record<string, Conversation>, conv: { conversation: Conversation }) => {
-            acc[conv.conversation.uid] = conv.conversation;
+        console.log('Raw response data:', data);
+
+        // Ensure data is an array before processing
+        const conversationsArray = Array.isArray(data) ? data : [];
+        
+        const fetchedConversations = conversationsArray.reduce((acc: Record<string, Conversation>, item: any) => {
+            if (item && item.conversation && item.conversation.uid) {
+                acc[item.conversation.uid] = {
+                    uid: item.conversation.uid,
+                    comments: Array.isArray(item.conversation.comments) ? item.conversation.comments.map((comment: any) => {
+                        const authorName = comment.author || currentAuthor || '';
+                        return {
+                            uid: comment.uid || `comment-${Math.random().toString(36).substring(2, 15)}`,
+                            author: comment.author || currentAuthor || '',
+                            authorName: authorName,
+                            authorAvatar: generateAvatarText(authorName),
+                            content: comment.content || '',
+                            createdAt: comment.createdAt || new Date().toISOString(),
+                            modifiedAt: comment.modifiedAt || new Date().toISOString()
+                        };
+                    }) : []
+                };
+            }
             return acc;
         }, {});
 
-        console.log('fetchedConversations - ', fetchedConversations);
-        // Now use the fetched conversations directly instead of relying on state
+        console.log('Processed conversations:', fetchedConversations);
         done({ conversations: fetchedConversations });
     } catch (error) {
         console.error('Error fetching comments:', error);
@@ -301,6 +349,7 @@ export default function TinyEditor() {
   const tinycomments_reply = (req: any, done: any, fail: any) => {
     console.log('tinycomments_reply - ', req);
     const { conversationUid, content, createdAt } = req;
+    const authorName = currentAuthor || '';
 
     // Updated regex to match @email.com pattern
     const mentionRegex = /@([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/g;
@@ -314,7 +363,9 @@ export default function TinyEditor() {
         content: content, 
         createdAt: createdAt, 
         author: currentAuthor,
-        mentionedUsers: mentionedUsers // Add mentioned users to the payload
+        authorName: authorName,
+        authorAvatar: generateAvatarText(authorName),
+        mentionedUsers: mentionedUsers
       }),
       headers: {
         Accept: 'application/json',
@@ -333,7 +384,8 @@ export default function TinyEditor() {
         done({
           commentUid: commentUid,
           author: currentAuthor,
-          authorName: currentAuthor,
+          authorName: authorName,
+          authorAvatar: generateAvatarText(authorName)
         });
 
         // Handle mentions after successful comment creation
@@ -471,6 +523,7 @@ export default function TinyEditor() {
   const tinycomments_fetch_author_info = (done: any) => done({
     author: currentAuthor,
     authorName: currentAuthor,
+    authorAvatar: generateAvatarText(currentAuthor || '')
   });
 
   // This is a placeholder function - replace with your actual API call
