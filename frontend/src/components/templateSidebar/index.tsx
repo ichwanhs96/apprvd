@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { useTemplateStore, useContent, useContentPage, useTemplateVariables } from "../../store";
+import { useTemplateStore, useContentPage, useTemplateVariables } from "../../store";
 
 export default function TemplateSidebar() {
   const { contentPage } = useContentPage()
   const { variable, setVariable } = useTemplateVariables();
   const variables = useTemplateStore((s) => s.variables);
-  const updateVariable = useTemplateStore((s) => s.updateVariable);
   const resetVariables = useTemplateStore((s) => s.resetVariables);
   const [isLoading, setIsLoading] = useState(true);
   const [variableEntries, setVariableEntries] = useState<[string, string][]>([]);
@@ -23,7 +22,6 @@ export default function TemplateSidebar() {
 
     const editor = window.tinymce.activeEditor;
     const doc = editor.getDoc();
-    const span = doc.querySelector(`span#template-${key}`);
 
     // Update all spans with that ID
     const spans = doc.querySelectorAll(`span#template-${key}`);
@@ -49,22 +47,6 @@ export default function TemplateSidebar() {
 
     editor.setContent(doc.body.innerHTML);
   };
-
-  const handleApply = () => {
-    const editor = window.tinymce.activeEditor;
-    let content = editor.getContent();
-    
-    // First, find and replace template spans while preserving other attributes
-    content = content.replace(/<span[^>]*data-mce-id="template-feature"[^>]*>(.*?)<\/span>/g, '$1');
-  
-    // Then apply the new formatting to all variables
-    Object.entries(variables).forEach(([key, value]) => {
-      const regex = new RegExp(`\\$\\{${key}\\}`, 'g');
-      content = content.replace(regex, `<span data-mce-id="template-feature">${value}</span>`);
-    });
-  
-    useContent.setState({ content });
-  }
 
   return (
     <div className="text-sm pt-4">
