@@ -80,7 +80,7 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
       // Convert HTML to Plate.js format (Basic Example)
       // const plateContent = htmlToSlate(value);
       const html = value.replace(/\$\{(.*?)\}/g, (match) => {
-        return `<span style="background-color: #ffffe0;">${match}</span>`;
+        return `<span style="background-color: #ffffe0; id="template-${match.replace(/\${|\}/g, '')}">${match}</span>`;
       });
 
       // Store in Zustand
