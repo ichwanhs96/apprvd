@@ -3,6 +3,8 @@ import {
   useContentPage,
   useContentToShow,
   useContractSelected,
+  useTemplateStore,
+  useTemplateVariables,
 } from "../../store";
 
 // interface SidebarItem {
@@ -67,6 +69,8 @@ const Sidebar: React.FC = () => {
                   handleSideBarMenuOnClick("contracts");
                   useContentPage.setState({ contentPage: "contracts" });
                   resetNavbarDetail();
+                  useTemplateVariables.setState({ variable: {}})
+                  useTemplateStore.setState({ variables: {} })
                 }}
               >
                 <svg
@@ -102,6 +106,8 @@ const Sidebar: React.FC = () => {
                   handleSideBarMenuOnClick("templatesPage");
                   useContentPage.setState({ contentPage: "template" });
                   resetNavbarDetail();
+                  useTemplateVariables.setState({ variable: {}})
+                  useTemplateStore.setState({ variables: {} })
                 }}
               >
                 <svg

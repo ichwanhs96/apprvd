@@ -147,3 +147,29 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
     });
   }
 }));
+
+// store/useTemplateVariables.ts
+type VairableStore = {
+  variable: Record<string, string>;
+  setVariable: (key: string, value: string) => void;
+  setAll: (vars: Record<string, string>) => void;
+  reset: () => void;
+};
+
+export const useTemplateVariables = create<VairableStore>((set) => ({
+  variable: {},
+  setVariable: (key, value) =>
+    set((state) => ({
+      variable: { ...state.variable, [key]: value },
+    })),
+  setAll: (vars) => set({ variable: vars }),
+  reset: () =>
+    set((state) => {
+      const resetVars = Object.keys(state.variable).reduce((acc, key) => {
+        acc[key] = `template-${key}`;
+        return acc;
+      }, {} as Record<string, string>);
+      return { variable: resetVars };
+    }),  
+}));
+

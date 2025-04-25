@@ -2,7 +2,7 @@ import { Editor } from '@tinymce/tinymce-react';
 import { useState, useEffect, useRef } from 'react';
 import { Editor as TinyMCEEditor } from 'tinymce';
 import { useAuth } from '../context/AuthContext';
-import { useContent, useCurrentDocId, useTemplateStore } from '../store';
+import { useContent, useCurrentDocId, useTemplateStore, useTemplateVariables } from '../store';
 import { useContractSelected } from '../store';
 
 declare global {
@@ -48,6 +48,8 @@ export default function TinyEditor() {
   const { name, shared_with } = useContractSelected();
   const [lastDocumentUpdateDate, setLastDocumentUpdateDate] = useState<Date | null>(new Date());
 
+  console.log(content)
+
   const handleEditorChange = async (content: string) => {
     updateDocument(content);
   };
@@ -71,6 +73,29 @@ export default function TinyEditor() {
 
   const setTemplateVariables = useTemplateStore((s) => s.setVariables);
 
+  // const extractVariablesFromEditor = async() => {
+  //   const htmlContent = content
+  //   const parser = new DOMParser();
+  //   const doc = parser.parseFromString(htmlContent, "text/html");
+  //   const spans = doc.querySelectorAll("span[id^='template-']");
+  
+  //   const vars: Record<string, string> = {};
+  
+  //   spans.forEach((span) => {
+  //     const id = span.getAttribute("id");
+  //     const match = id?.match(/^template-(.+)$/);
+  //     const value = span.textContent ?? "";
+  
+  //     if (match && match[1]) {
+  //       const key = match[1];
+  //       vars[key] = value;
+  //     }
+  //   });
+  
+  //   // Save to Zustand
+  //   await useTemplateVariables.getState().setAll(vars);
+  // };
+
   useEffect(() => {
     const fetchDocument = async () => {
       setIsLoading(true);
@@ -85,6 +110,7 @@ export default function TinyEditor() {
             },
           }
         );
+        
         const data = await response.json();
         const matches = [...data.content.matchAll(/\$\{(\w+)\}/g)];
         const vars: Record<string, string> = {};
@@ -94,12 +120,34 @@ export default function TinyEditor() {
 
         // highlighting variables
         data.content = data.content.replace(/\$\{(.*?)\}/g, (match: string) => {
-          return `<span data-mce-id="template-feature" style="background-color: #ffffe0;">${match}</span>`;
+          return `<span id="template-${match.replace(/\${|\}/g, '')}" style="background-color: #ffffe0;">${match}</span>`;
         });
+
+        const htmlContent = data.content
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, "text/html");
+        const spans = doc.querySelectorAll("span[id^='template-']");
+      
+        const variable: Record<string, string> = {};
+      
+        spans.forEach((span) => {
+          const id = span.getAttribute("id");
+          const match = id?.match(/^template-(.+)$/);
+          const value = span.textContent ?? "";
+      
+          if (match && match[1]) {
+            const key = match[1];
+            variable[key] = value;
+          }
+        });
+      
+        // Save to Zustand
+        await useTemplateVariables.getState().setAll(variable);
 
         setTemplateVariables(vars);
         setLocalContent(data.content);
         useContent.setState({ content: data.content });
+        // extractVariablesFromEditor()
       } catch (error) {
         console.error('Failed to fetch document:', error);
       } finally {
