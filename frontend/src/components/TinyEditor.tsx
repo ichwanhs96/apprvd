@@ -2,7 +2,7 @@ import { Editor } from '@tinymce/tinymce-react';
 import { useState, useEffect, useRef } from 'react';
 import { Editor as TinyMCEEditor } from 'tinymce';
 import { useAuth } from '../context/AuthContext';
-import { useContent, useCurrentDocId, useTemplateStore, useTemplateVariables } from '../store';
+import { useContent, useCurrentDocId, useTemplateStore, useTemplateVariables, useAutoSave } from '../store';
 import { useContractSelected } from '../store';
 
 declare global {
@@ -47,11 +47,24 @@ export default function TinyEditor() {
   const { id } = useCurrentDocId();
   const { name, shared_with } = useContractSelected();
   const [lastDocumentUpdateDate, setLastDocumentUpdateDate] = useState<Date | null>(new Date());
+  const { setIsSave } = useAutoSave();
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
 
   console.log(content)
 
   const handleEditorChange = async (content: string) => {
-    updateDocument(content);
+    // Clear any existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set isSave to false immediately when typing starts
+    setIsSave(false);
+
+    // Set a new timeout to save after 1 second of no typing
+    saveTimeoutRef.current = setTimeout(() => {
+      updateDocument(content);
+    }, 1000);
   };
 
   // useEffect(() => {
@@ -161,7 +174,6 @@ export default function TinyEditor() {
   }, [id]);
 
   const updateDocument = async (content: string) => {
-    // update every 5 seconds
     if (id && content && lastDocumentUpdateDate && lastDocumentUpdateDate.getTime() < new Date().getTime() - 5000) {
       try {
         await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}`, {
@@ -174,11 +186,22 @@ export default function TinyEditor() {
         });
 
         setLastDocumentUpdateDate(new Date());
+        setIsSave(true); // Set to true when save completes successfully
       } catch (error) {
         console.error('Failed to save document:', error);
+        setIsSave(false); // Keep false if save fails
       }
     }
   };
+
+  // Cleanup timeout on component unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const currentAuthor = userInfo?.displayName;
   const userAllowedToResolve = userInfo?.displayName;
@@ -1024,3 +1047,4 @@ export default function TinyEditor() {
     </div>
   );
 }
+

@@ -173,3 +173,12 @@ export const useTemplateVariables = create<VairableStore>((set) => ({
     }),  
 }));
 
+interface autoSave {
+  isSave: boolean;
+  setIsSave: (isSave: boolean) => void;
+}
+
+export const useAutoSave = create<autoSave> ((set) => ({
+  isSave: false,
+  setIsSave: (isSave) => set({ isSave })
+}))
