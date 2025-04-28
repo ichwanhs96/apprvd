@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext"; // Add this import
-import { useContentToShow, useContractSelected, useCurrentDocId } from "../../../store";
+import { useContentToShow, useContractSelected, useCurrentDocId, useAutoSave } from "../../../store";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import Loader from "../../Loader";
@@ -21,6 +21,7 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
   const { content } = useContentToShow();
   const { user, logout } = useAuth();
   const { id } = useCurrentDocId();
+  const { isSave } = useAutoSave();
   const navigate = useNavigate();
   const { userInfo } = useAuth();
   const [isFinalized, setIsFinalized] = useState(false)
@@ -159,6 +160,7 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
             <div>{name ?? ''}</div>
             <div className="bg-slate-400 text-white text-xs px-2 py-1 rounded-md">{version ?? ''}</div>
             <div className={`px-3 py-1 rounded-3xl text-xs ${status.toLowerCase() === 'draft' ? 'bg-blue-100 text-blue-700' : status.toLowerCase() === 'review' ? 'bg-yellow-100 text-yellow-700' : status.toLowerCase() === 'final' ? 'bg-green-100 text-green-700' : ''}`}>{status ?? ''}</div>
+            <div>{!isSave ? <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-loader-icon lucide-loader"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>:<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-circle-check-icon lucide-circle-check"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>}</div>
           </div>
           <div className="flex flex-row gap-x-2">
             <div className="text-sm">
