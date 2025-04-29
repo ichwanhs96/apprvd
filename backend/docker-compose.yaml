@@ -8,22 +8,22 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      # - db
       - pgdb
 
-  db:
-    build:
-      context: .
-      dockerfile: Dockerfile.db
-    ports:
-      - "27015:27017"
-    volumes:
-      - db_data:/data/db
-    env_file:
-      - .env
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
+  # db:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.db
+  #   ports:
+  #     - "27015:27017"
+  #   volumes:
+  #     - db_data:/data/db
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+  #     MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
 
   pgdb:
     build:
