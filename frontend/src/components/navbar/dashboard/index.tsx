@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext"; // Add this import
-import { useContentToShow, useContractSelected, useCurrentDocId, useAutoSave } from "../../../store";
+import { useContentToShow, useContractSelected, useCurrentDocId, useAutoSave, useContentPage } from "../../../store";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import Loader from "../../Loader";
@@ -29,6 +29,7 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
   const [emailInput, setEmailInput] = useState('');
   const [sharedUsers, setSharedUsers] = useState<string[]>(shared_with);
   const [isAddingUser, setIsAddingUser] = useState(false);
+  const { contentPage } = useContentPage()
 
   const successFinalize = () => {
     toast.success('Success: Finalize Document!', {
@@ -222,8 +223,8 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
               </a>
             ))}
           </div>
-          {content === 'editor' && <div className="mr-4">
-            <button className="bg-gray-100 text-green-700 disabled:pointer-events-none" onClick={handleShareDoc}>Share</button>
+          {content === 'editor' && contentPage !== 'template' &&<div className="mr-4">
+            <button className='bg-gray-100 text-green-700 disabled:pointer-events-none' onClick={handleShareDoc}>Share</button>
           </div>}
           {content === 'editor' && status !== 'FINAL' && <div className="pr-4">
             <button className="bg-green-100 text-green-700 disabled:pointer-events-none" onClick={handleFinalizeDoc} disabled={isFinalized}>{isFinalized ? <Loader /> :  'Finalize doc'}</button>
