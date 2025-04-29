@@ -360,7 +360,9 @@ def create_tinymce_document():
         version=data.get('version'),
         status=data.get('status'),
         is_template=data.get('is_template'),
-        shared_with=data.get('shared_with')
+        shared_with=data.get('shared_with'),
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc)
     )
     db.session.add(document)
     db.session.commit()
