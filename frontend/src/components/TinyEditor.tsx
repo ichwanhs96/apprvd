@@ -677,6 +677,14 @@ export default function TinyEditor() {
             toolbar_groups: {
               align: { icon: 'align-left', items: 'alignleft aligncenter alignright alignjustify' },
             },
+            exportpdf_converter_options: {
+              format: 'A4',
+              margin_top: '1in',
+              margin_right: '1in',
+              margin_bottom: '1in',
+              margin_left: '1in'
+            },
+            exportpdf_converter_style: 'p { border: none !important; box-shadow: none !important; }',
             custom_elements: '~span[data-mce-id]',
             quickbars_selection_toolbar: 'alignleft aligncenter alignright | addcomment showcomments',
             tinycomments_mode: 'callback',
