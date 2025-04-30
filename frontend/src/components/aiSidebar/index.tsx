@@ -21,7 +21,7 @@ const AISidebar: React.FC<AISidebarProps> = () => {
   // const [isOpen, setIsOpen] = useState(false);
   // const [contentModal, setContentModal] = useState("");
   const [reviewInput, setReviewInput] = useState<string>(
-    "My company does highly confidential data & innovation, this NDA has to be very strong and also compliant with EU law."
+    ""
   ); // Added state for textarea
 
   // const comment = localStorage.getItem("editor-comments");
