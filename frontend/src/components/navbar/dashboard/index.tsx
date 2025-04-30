@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext"; // Add this import
-import { useContentToShow, useContractSelected, useCurrentDocId, useAutoSave, useContentPage } from "../../../store";
+import { useContentToShow, useContractSelected, useCurrentDocId,  useAutoSave, useContentPage } from "../../../store";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import Loader from "../../Loader";

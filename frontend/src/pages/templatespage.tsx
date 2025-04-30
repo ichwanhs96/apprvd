@@ -112,13 +112,7 @@ function TemplatesPage() {
             created_by: userInfo?.displayName,
             status: "DRAFT",
             version: baseData.version,
-            contents: [
-              {
-                id: "1",
-                type: "p",
-                children: [{ text: "Start typing here..." }],
-              },
-            ],
+            contents: "",
           }), // Send the form data as JSON
         }
       );

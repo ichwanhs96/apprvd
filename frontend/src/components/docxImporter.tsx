@@ -86,8 +86,6 @@ const DocxImporter = ({ setAllContract, notifyDuplicate, notifySuccess, type }: 
       // Store in Zustand
       await setContent(html);
       // await useTemplateStore.setState({ rawTemplate: html })
-
-      console.log('ini plue', html)
     };
     reader.readAsArrayBuffer(file);
 
