@@ -41,3 +41,4 @@ class Comment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     modified_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
     document_id = db.Column(db.Integer, db.ForeignKey('documents.id'))
+    author_avatar = db.Column(db.String(255))

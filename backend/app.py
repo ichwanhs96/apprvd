@@ -578,6 +578,7 @@ def create_tinymce_comment(doc_id):
         comment_uid=str(uuid.uuid4()),
         content=data['content'],
         author=data['author'],
+        author_avatar=data['authorAvatar'],
         document_id=doc_id
     )
     db.session.add(comment)
@@ -597,6 +598,7 @@ def get_tinymce_comment(doc_id, conversation_uid):
                 'comment_uid': comment.comment_uid,
                 'content': comment.content,
                 'author': comment.author,
+                'author_avatar': comment.author_avatar,
                 'created_at': comment.created_at.isoformat(),
                 'modified_at': comment.modified_at.isoformat()
             }
@@ -624,6 +626,7 @@ def create_tinymce_comment_with_conversation_uid(doc_id, conversation_uid):
         comment_uid=str(uuid.uuid4()),
         content=data['content'],
         author=data['author'],
+        author_avatar=data['authorAvatar'],
         document_id=doc_id
     )
     db.session.add(comment)
@@ -658,6 +661,7 @@ def get_tinymce_conversations(doc_id):
         conversations_map[comment.conversation_uid].append({
             'uid': comment.comment_uid,
             'author': comment.author,
+            'authorAvatar': comment.author_avatar,
             'content': comment.content,
             'createdAt': comment.created_at.isoformat(),
             'modifiedAt': comment.modified_at.isoformat()

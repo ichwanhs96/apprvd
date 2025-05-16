@@ -50,8 +50,6 @@ export default function TinyEditor() {
   const { setIsSave } = useAutoSave();
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
 
-  console.log(content)
-
   const handleEditorChange = async (content: string) => {
     // Clear any existing timeout
     if (saveTimeoutRef.current) {
@@ -204,6 +202,7 @@ export default function TinyEditor() {
   }, []);
 
   const currentAuthor = userInfo?.displayName;
+  const currentAuthorAvatar = userInfo?.photoURL;
   const userAllowedToResolve = userInfo?.displayName;
 
   // Update the conversationDb declaration
@@ -217,21 +216,21 @@ export default function TinyEditor() {
    * (must call "done" or "fail") *
    ********************************/
   
-  const generateAvatarText = (name: string): string => {
-    if (!name) return '';
+  // const generateAvatarText = (name: string): string => {
+  //   if (!name) return '';
     
-    const nameParts = name.split(' ');
-    if (nameParts.length >= 2) {
-      // If there are at least two parts, use first letter of first and last name
-      return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
-    } else if (nameParts[0].length >= 2) {
-      // If only one part and it has at least 2 letters, use first two letters
-      return nameParts[0].substring(0, 2).toUpperCase();
-    } else {
-      // If name is too short, just use what we have
-      return nameParts[0].toUpperCase();
-    }
-  };
+  //   const nameParts = name.split(' ');
+  //   if (nameParts.length >= 2) {
+  //     // If there are at least two parts, use first letter of first and last name
+  //     return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+  //   } else if (nameParts[0].length >= 2) {
+  //     // If only one part and it has at least 2 letters, use first two letters
+  //     return nameParts[0].substring(0, 2).toUpperCase();
+  //   } else {
+  //     // If name is too short, just use what we have
+  //     return nameParts[0].toUpperCase();
+  //   }
+  // };
 
   // Update the callback functions with proper typing
   const tinycomments_create = async (
@@ -259,7 +258,7 @@ export default function TinyEditor() {
                 content: req.content,
                 author: currentAuthor,
                 authorName: authorName,
-                authorAvatar: generateAvatarText(authorName),
+                author_avatar: currentAuthorAvatar,
                 document_id: id,
                 conversationUid,
                 commentUid
@@ -299,7 +298,7 @@ export default function TinyEditor() {
           commentUid: commentUid,
           author: currentAuthor,
           authorName: authorName,
-          authorAvatar: generateAvatarText(authorName),
+          authorAvatar: currentAuthorAvatar,
           content: req.content,
           createdAt: new Date().toISOString()
         });
@@ -345,12 +344,12 @@ export default function TinyEditor() {
                 acc[item.conversation.uid] = {
                     uid: item.conversation.uid,
                     comments: Array.isArray(item.conversation.comments) ? item.conversation.comments.map((comment: any) => {
-                        const authorName = comment.author || currentAuthor || '';
+                        const authorName = comment.author || '';
                         return {
                             uid: comment.uid || `comment-${Math.random().toString(36).substring(2, 15)}`,
-                            author: comment.author || currentAuthor || '',
+                            author: authorName,
                             authorName: authorName,
-                            authorAvatar: generateAvatarText(authorName),
+                            authorAvatar: comment.author_avatar || '',
                             content: comment.content || '',
                             createdAt: comment.createdAt || new Date().toISOString(),
                             modifiedAt: comment.modifiedAt || new Date().toISOString()
@@ -387,7 +386,7 @@ export default function TinyEditor() {
         createdAt: createdAt, 
         author: currentAuthor,
         authorName: authorName,
-        authorAvatar: generateAvatarText(authorName),
+        author_avatar: currentAuthorAvatar,
         mentionedUsers: mentionedUsers
       }),
       headers: {
@@ -408,7 +407,7 @@ export default function TinyEditor() {
           commentUid: commentUid,
           author: currentAuthor,
           authorName: authorName,
-          authorAvatar: generateAvatarText(authorName)
+          authorAvatar: currentAuthorAvatar
         });
 
         // Handle mentions after successful comment creation
@@ -546,7 +545,7 @@ export default function TinyEditor() {
   const tinycomments_fetch_author_info = (done: any) => done({
     author: currentAuthor,
     authorName: currentAuthor,
-    authorAvatar: generateAvatarText(currentAuthor || '')
+    authorAvatar: currentAuthorAvatar || ''
   });
 
   // This is a placeholder function - replace with your actual API call
