@@ -258,7 +258,7 @@ export default function TinyEditor() {
                 content: req.content,
                 author: currentAuthor,
                 authorName: authorName,
-                author_avatar: currentAuthorAvatar,
+                authorAvatar: currentAuthorAvatar,
                 document_id: id,
                 conversationUid,
                 commentUid
@@ -386,7 +386,7 @@ export default function TinyEditor() {
         createdAt: createdAt, 
         author: currentAuthor,
         authorName: authorName,
-        author_avatar: currentAuthorAvatar,
+        authorAvatar: currentAuthorAvatar,
         mentionedUsers: mentionedUsers
       }),
       headers: {
