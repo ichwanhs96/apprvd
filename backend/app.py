@@ -595,12 +595,12 @@ def get_tinymce_comment(doc_id, conversation_uid):
         'conversation_uid': conversation_uid,
         'comments': [
             {
-                'comment_uid': comment.comment_uid,
+                'uid': comment.comment_uid,
                 'content': comment.content,
                 'author': comment.author,
-                'author_avatar': comment.author_avatar,
-                'created_at': comment.created_at.isoformat(),
-                'modified_at': comment.modified_at.isoformat()
+                'authorAvatar': comment.author_avatar,
+                'createdAt': comment.created_at.isoformat(),
+                'modifiedAt': comment.modified_at.isoformat()
             }
             for comment in comments
         ]

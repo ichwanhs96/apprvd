@@ -349,7 +349,7 @@ export default function TinyEditor() {
                             uid: comment.uid || `comment-${Math.random().toString(36).substring(2, 15)}`,
                             author: authorName,
                             authorName: authorName,
-                            authorAvatar: comment.author_avatar || '',
+                            authorAvatar: comment.authorAvatar || '',
                             content: comment.content || '',
                             createdAt: comment.createdAt || new Date().toISOString(),
                             modifiedAt: comment.modifiedAt || new Date().toISOString()
