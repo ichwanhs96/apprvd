@@ -523,15 +523,23 @@ def finalize_tinymce_document(doc_id):
 def share_tinymce_document(doc_id):
     data = request.json
     email = data.get('email')
+    access = data.get('access', 'view')
     business_id = request.headers.get("business-id") 
     document = Document.query.filter(Document.business_id == business_id, Document.id == doc_id).first_or_404()
     
     if document.shared_with is None:
-        document.shared_with = [email]
-    
-
-    if email not in document.shared_with:
-        document.shared_with = document.shared_with + [email]
+        document.shared_with = [{'email': email, 'access': access}]
+    else:
+        # Check if user already exists
+        user_exists = any(share.get('email') == email for share in document.shared_with)
+        if not user_exists:
+            document.shared_with = document.shared_with + [{'email': email, 'access': access}]
+        else:
+            # Update existing user's access
+            document.shared_with = [
+                {'email': share['email'], 'access': access if share['email'] == email else share['access']}
+                for share in document.shared_with
+            ]
     
     document.updated_at = datetime.now(timezone.utc)
     db.session.commit()
@@ -543,7 +551,7 @@ def share_tinymce_document(doc_id):
             "subject": f"Document shared: {document.name}",
             "html": f"""
                 <h2>A document has been shared with you</h2>
-                <p>You have been given access to the document "{document.name}".</p>
+                <p>You have been given {access} access to the document "{document.name}".</p>
                 <p>You can access it by logging into your Apprvd account in <a href="https://app.apprvd.co">https://app.apprvd.co</a></p>
                 <br>
                 <p>Best regards,</p>

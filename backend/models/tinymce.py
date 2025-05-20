@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.dialects.postgresql import JSON, JSONB
 
 db = SQLAlchemy()
 
@@ -25,7 +25,7 @@ class Document(db.Model):
     version = db.Column(db.String(255), default="1.0.0")
     status = db.Column(db.String(255), default="DRAFT")
     is_template = db.Column(db.Boolean, default=False)
-    shared_with = db.Column(db.ARRAY(db.String(255)), default=[])
+    shared_with = db.Column(db.ARRAY(JSONB), default=[])
     
     # Relationship with comments
     comments = db.relationship('Comment', backref='document', lazy=True, cascade='all, delete-orphan')
