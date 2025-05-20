@@ -577,6 +577,7 @@ export default function TinyEditor() {
           onInit={(_, editor) => (editorRef.current = editor)}
           initialValue={localContent}
           init={{
+            onboarding: false,
             content_style: `
               body {
                 background: #525659;
