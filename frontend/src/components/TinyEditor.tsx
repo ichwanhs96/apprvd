@@ -49,6 +49,7 @@ export default function TinyEditor() {
   const [lastDocumentUpdateDate, setLastDocumentUpdateDate] = useState<Date | null>(new Date());
   const { setIsSave } = useAutoSave();
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const [isViewOnly, setIsViewOnly] = useState(false);
 
   const handleEditorChange = async (content: string) => {
     // Clear any existing timeout
@@ -194,6 +195,13 @@ export default function TinyEditor() {
 
   // Cleanup timeout on component unmount
   useEffect(() => {
+    if (shared_with.length > 0) {
+      const user = shared_with.find((user) => user.email === userInfo?.email);
+      if (user?.access === 'view') {
+        setIsViewOnly(true);
+      }
+    }
+
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
@@ -550,10 +558,10 @@ export default function TinyEditor() {
 
   // This is a placeholder function - replace with your actual API call
   async function fetchUsers(query: any) {
-    const fetchedUsers = shared_with.filter((user) => user.includes(query.term));
+    const fetchedUsers = shared_with.filter((user) => user.email.includes(query.term));
     return fetchedUsers.map((user) => {
       return {
-        id: user,
+        id: user.email,
         name: user
       }
     })
@@ -576,6 +584,7 @@ export default function TinyEditor() {
           apiKey='39c2l97rsordx88wbtmid53kkufqtfwz5feep0ksobb814ov'
           onInit={(_, editor) => (editorRef.current = editor)}
           initialValue={localContent}
+          disabled={isViewOnly}
           init={{
             onboarding: false,
             content_style: `

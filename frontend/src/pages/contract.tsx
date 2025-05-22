@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import Loader from "../components/Loader";
 import { Trash2 } from "lucide-react";
 import { toast } from 'react-toastify';
+import { DocumentUserAccess } from "../store";
 
 interface Contract {
   id: string;
@@ -21,7 +22,7 @@ interface Contract {
   updated_at: string;
   status: string;
   is_template: boolean;
-  shared_with: string[];
+  shared_with: DocumentUserAccess[];
 }
 
 interface Contracts {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext"; // Add this import
-import { useContentToShow, useContractSelected, useCurrentDocId,  useAutoSave, useContentPage } from "../../../store";
+import { useContentToShow, useContractSelected, useCurrentDocId,  useAutoSave, useContentPage, DocumentUserAccess } from "../../../store";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import Loader from "../../Loader";
@@ -27,8 +27,9 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
   const [isFinalized, setIsFinalized] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false);
   const [emailInput, setEmailInput] = useState('');
-  const [sharedUsers, setSharedUsers] = useState<string[]>(shared_with);
+  const [sharedUsers, setSharedUsers] = useState<DocumentUserAccess[]>(shared_with);
   const [isAddingUser, setIsAddingUser] = useState(false);
+  const [selectedAccess, setSelectedAccess] = useState('view');
   const { contentPage } = useContentPage()
 
   const successFinalize = () => {
@@ -101,7 +102,6 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
   }
 
   useEffect(() => {
-    console.log(shared_with);
     setSharedUsers(shared_with);
   }, [shared_with])
 
@@ -120,15 +120,15 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
           'Content-Type': 'application/json',
           'business-id': userInfo.email
         },
-        body: JSON.stringify({ email: emailInput })
+        body: JSON.stringify({ email: emailInput, access: selectedAccess })
       });
 
       if (!response.ok) {
         throw new Error('Failed to share document');
       }
 
-      setSharedUsers([...sharedUsers, emailInput]);
-      useContractSelected.setState({ shared_with: [...sharedUsers, emailInput] });
+      setSharedUsers([...sharedUsers, { email: emailInput, access: selectedAccess }]);
+      useContractSelected.setState({ shared_with: [...sharedUsers, { email: emailInput, access: selectedAccess }] });
       setEmailInput('');
     } catch (error) {
       toastError();
@@ -280,6 +280,14 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
                 placeholder="Enter email address"
                 className="flex-1 p-2 border rounded bg-gray-100"
               />
+              <select
+                value={selectedAccess}
+                onChange={(e) => setSelectedAccess(e.target.value)}
+                className="px-2 py-2 border rounded bg-white"
+              >
+                <option value="view">View</option>
+                <option value="edit">Edit</option>
+              </select>
               <button
                 onClick={handleAddUser}
                 disabled={isAddingUser}
@@ -293,9 +301,45 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
               <div>
                 <h3 className="font-medium mb-2">Shared with:</h3>
                 <ul className="space-y-2">
-                  {sharedUsers.map((email, index) => (
+                  {sharedUsers.map((documentUserAccess, index) => (
                     <li key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                      {email}
+                      <span>{documentUserAccess.email}</span>
+                      <select 
+                        className="ml-2 px-2 py-1 border rounded text-sm bg-white"
+                        value={documentUserAccess.access || 'view'}
+                        onChange={async (e) => {
+                          const newAccess = e.target.value;
+                          try {
+                            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/share`, {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'business-id': userInfo?.email || '',
+                              },
+                              body: JSON.stringify({ 
+                                email: documentUserAccess.email, 
+                                access: newAccess 
+                              })
+                            });
+
+                            if (!response.ok) {
+                              throw new Error('Failed to update access');
+                            }
+
+                            // Update local state
+                            const updatedUsers = [...sharedUsers];
+                            updatedUsers[index] = { ...documentUserAccess, access: newAccess };
+                            setSharedUsers(updatedUsers);
+                            useContractSelected.setState({ shared_with: updatedUsers });
+                          } catch (error) {
+                            console.error('Error updating access:', error);
+                            toast.error('Failed to update access level');
+                          }
+                        }}
+                      >
+                        <option value="view">View</option>
+                        <option value="edit">Edit</option>
+                      </select>
                     </li>
                   ))}
                 </ul>

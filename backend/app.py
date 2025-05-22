@@ -30,6 +30,13 @@ from mongoengine import connect
 
 import resend
 
+from models.tinymce import Document, Comment, db
+from sqlalchemy import or_, and_
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.sql import text
+import uuid
+from datetime import datetime, timezone
+
 load_dotenv()
 
 # Connect to MongoDB
@@ -330,11 +337,6 @@ def delete_document(id):
 #     users = User.objects()
 #     return jsonify(users), 200
 
-from models.tinymce import Document, Comment, db
-from sqlalchemy import or_
-import uuid
-from datetime import datetime, timezone
-
 # Uncomment and ensure this is set near the top of the file where other configurations are
 resend.api_key = os.environ["RESEND_API_KEY"]
 
@@ -385,10 +387,10 @@ def create_tinymce_document_from_template(template_id):
     template = Document.query.filter(
         or_(
             Document.business_id == business_id,
-            Document.shared_with.any(business_id)
+            text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id AND share->>'access' = 'edit')")
         ),
         Document.id == template_id
-    ).first_or_404()
+    ).params(business_id=business_id).first_or_404()
     document = Document(
         name=data.get('name', template.name),
         content=template.content,
@@ -421,9 +423,9 @@ def get_tinymce_documents():
     query = Document.query.filter(
         or_(
             Document.business_id == business_id,
-            Document.shared_with.any(business_id)
+            text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id)")
         )
-    )
+    ).params(business_id=business_id)
  
     documents = query.all()
     return jsonify([{
@@ -445,13 +447,13 @@ def get_tinymce_documents():
 @app.route('/tinymce/documents/<int:doc_id>', methods=['GET'])
 def get_tinymce_document(doc_id):
     business_id = request.headers.get("business-id") 
-    document = Document.query.filter(
+    query = Document.query.filter(
         or_(
             Document.business_id == business_id,
-            Document.shared_with.any(business_id)
-        ),
-        Document.id == doc_id
-    ).first_or_404()
+            text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id)")
+        )
+    ).params(business_id=business_id)
+    document = query.first_or_404()
     return jsonify({
         'id': document.id,
         'name': document.name,
@@ -469,7 +471,14 @@ def get_tinymce_document(doc_id):
 @app.route('/tinymce/documents/<int:doc_id>', methods=['DELETE'])
 def delete_tinymce_document(doc_id):
     business_id = request.headers.get("business-id") 
-    document = Document.query.filter(Document.business_id == business_id, Document.id == doc_id).first_or_404()
+    query = Document.query.filter(
+        or_(
+            Document.business_id == business_id,
+            Document.id == doc_id,
+            text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id) and share->>'access' = 'edit'")
+        )
+    ).params(business_id=business_id)
+    document = query.first_or_404()
     db.session.delete(document)
     db.session.commit()
     return jsonify({'message': 'Document deleted successfully'})
@@ -477,7 +486,13 @@ def delete_tinymce_document(doc_id):
 @app.route('/tinymce/documents/<int:doc_id>', methods=['PUT'])
 def update_tinymce_document(doc_id):
     business_id = request.headers.get("business-id") 
-    document = Document.query.filter(Document.business_id == business_id, Document.id == doc_id).first_or_404()
+    query = Document.query.filter(
+        or_(
+            Document.business_id == business_id,
+            text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id) and share->>'access' = 'edit'")
+        )
+    ).params(business_id=business_id)
+    document = query.first_or_404()
     data = request.json
     document.content = data.get('content', document.content)
     document.name = data.get('name', document.name)
@@ -525,8 +540,14 @@ def share_tinymce_document(doc_id):
     email = data.get('email')
     access = data.get('access', 'view')
     business_id = request.headers.get("business-id") 
-    document = Document.query.filter(Document.business_id == business_id, Document.id == doc_id).first_or_404()
-    
+    query = Document.query.filter(
+        or_(
+            Document.business_id == business_id,
+            Document.id == doc_id,
+            text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id) and share->>'access' = 'edit'")
+        )
+    ).params(business_id=business_id)
+    document = query.first_or_404()
     if document.shared_with is None:
         document.shared_with = [{'email': email, 'access': access}]
     else:

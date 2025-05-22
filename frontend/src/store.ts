@@ -50,6 +50,11 @@ interface EditContract {
   isOpen: boolean;
 }
 
+export interface DocumentUserAccess {
+  email: string;
+  access: string;
+}
+
 export const useEditContracts = create<EditContract>(() => ({
   isOpen: false
 }))
@@ -60,7 +65,7 @@ interface ContractSelected {
   status: string;
   created: Date;
   is_template: boolean;
-  shared_with: string[];
+  shared_with: DocumentUserAccess[];
 }
 
 export const useContractSelected = create<ContractSelected>(() => ({
