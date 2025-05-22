@@ -3,6 +3,7 @@ import {
   useCurrentDocId,
   useContentToShow,
   useContractSelected,
+  DocumentUserAccess
 } from "../store";
 // import DocxImporter from "../components/docxImporter";
 import { useAuth } from "../context/AuthContext";
@@ -20,7 +21,7 @@ interface Contract {
   created_at: string;
   updated_at: string;
   status: string;
-  shared_with: string[];
+  shared_with: DocumentUserAccess[];
   is_template: boolean;
 }
 
