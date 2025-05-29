@@ -701,6 +701,7 @@ export default function TinyEditor() {
             automatic_uploads: true,
             file_picker_types: 'file image media',
             file_picker_callback: (cb: (value: string, meta?: Record<string, any>) => void, value: string, meta: Record<string, any>) => {
+              console.log('file picker callback', value, meta);
               const input = document.createElement('input');
               input.setAttribute('type', 'file');
               input.setAttribute('accept', 'image/*');
