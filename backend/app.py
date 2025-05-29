@@ -488,6 +488,7 @@ def delete_tinymce_document(doc_id):
 def update_tinymce_document(doc_id):
     business_id = request.headers.get("business-id") 
     query = Document.query.filter(
+        Document.id == doc_id,
         or_(
             Document.business_id == business_id,
             text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id AND share->>'access' = 'edit')")
@@ -495,24 +496,29 @@ def update_tinymce_document(doc_id):
     ).params(business_id=business_id)
     document = query.first_or_404()
     data = request.json
-    document.content = data.get('content', document.content)
-    document.name = data.get('name', document.name)
-    document.updated_at = datetime.now(timezone.utc)
-    document.shared_with = data.get('shared_with', document.shared_with)
-    db.session.commit()
-    return jsonify({
-        'id': document.id,
-        'name': document.name,
-        'content': document.content,
-        'created_at': document.created_at.isoformat(),
-        'updated_at': document.updated_at.isoformat(),
-        'business_id': document.business_id,
-        'language': document.language,
-        'version': document.version,
-        'status': document.status,
-        'is_template': document.is_template,
-        'shared_with': document.shared_with
-    })
+    try:
+        document.content = data.get('content', document.content)
+        document.name = data.get('name', document.name)
+        document.updated_at = datetime.now(timezone.utc)
+        document.shared_with = data.get('shared_with', document.shared_with)
+        db.session.commit()
+        return jsonify({
+            'id': document.id,
+            'name': document.name,
+            'content': document.content,
+            'created_at': document.created_at.isoformat(),
+            'updated_at': document.updated_at.isoformat(),
+            'business_id': document.business_id,
+            'language': document.language,
+            'version': document.version,
+            'status': document.status,
+            'is_template': document.is_template,
+            'shared_with': document.shared_with
+        })
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error updating document {doc_id}: {str(e)}")
+        return jsonify({'error': 'Failed to update document'}), 500
 
 @app.route('/tinymce/documents/<int:doc_id>/finalize', methods=['POST'])
 def finalize_tinymce_document(doc_id):
