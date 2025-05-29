@@ -163,6 +163,13 @@ export default function TinyEditor() {
       } catch (error) {
         console.error('Failed to fetch document:', error);
       } finally {
+        if (shared_with.length > 0) {
+          const user = shared_with.find((user) => user.email === userInfo?.email);
+          if (user?.access === 'view') {
+            setIsViewOnly(true);
+          }
+        }
+    
         setIsLoading(false);
       }
     }
@@ -195,13 +202,6 @@ export default function TinyEditor() {
 
   // Cleanup timeout on component unmount
   useEffect(() => {
-    if (shared_with.length > 0) {
-      const user = shared_with.find((user) => user.email === userInfo?.email);
-      if (user?.access === 'view') {
-        setIsViewOnly(true);
-      }
-    }
-
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
@@ -246,7 +246,6 @@ export default function TinyEditor() {
     done: (response: any) => void,
     fail: (error: Error) => void
   ) => {
-    console.log('Creating comment with request:', req);
     if (!id) {
         return fail(new Error('Create Comment - Document ID is not set'));
     }
@@ -300,7 +299,6 @@ export default function TinyEditor() {
         }
         
         // Important: TinyMCE expects just the conversationUid in a specific format
-        console.log('Sending to TinyMCE - conversationUid:', conversationUid);
         done({ 
           conversationUid: conversationUid,
           commentUid: commentUid,
@@ -317,7 +315,6 @@ export default function TinyEditor() {
   };
 
   const tinycomments_fetch = async(conversationUids: string[], done: any, fail: any) => {
-    console.log('Fetching conversations for UIDs:', conversationUids);
     
     if (!id) {
         return fail(new Error('Fetch Comment - Document ID is not set'));
@@ -326,10 +323,8 @@ export default function TinyEditor() {
     try {
         // Filter out empty strings and check if we have any valid UIDs
         const validUids = conversationUids.filter(uid => uid !== '' && uid.indexOf('tmp_') === -1);
-        console.log('Valid UIDs after filtering:', validUids);
         
         if (validUids.length === 0) {
-            console.log('No valid UIDs, returning empty conversations object');
             return done({ conversations: {} });
         }
 
@@ -342,7 +337,6 @@ export default function TinyEditor() {
         });
 
         const data = await response.json();
-        console.log('Raw response data:', data);
 
         // Ensure data is an array before processing
         const conversationsArray = Array.isArray(data) ? data : [];
@@ -368,7 +362,6 @@ export default function TinyEditor() {
             return acc;
         }, {});
 
-        console.log('Processed conversations:', fetchedConversations);
         done({ conversations: fetchedConversations });
     } catch (error) {
         console.error('Error fetching comments:', error);
@@ -377,7 +370,6 @@ export default function TinyEditor() {
   };
   
   const tinycomments_reply = (req: any, done: any, fail: any) => {
-    console.log('tinycomments_reply - ', req);
     const { conversationUid, content, createdAt } = req;
     const authorName = currentAuthor || '';
 
@@ -446,7 +438,6 @@ export default function TinyEditor() {
   };
   
   const tinycomments_delete = async (req: any, done: any) => {
-    console.log('tinycomments_delete - ', req);
     try {
       await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
         headers: {
@@ -462,7 +453,6 @@ export default function TinyEditor() {
   };
   
   const tinycomments_resolve = async (req: any, done: any) => {
-    console.log('tinycomments_resolve - ', req);
     try {
       await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
         method: 'DELETE',
@@ -478,7 +468,6 @@ export default function TinyEditor() {
   };
   
   const tinycomments_delete_comment = async (req: any, done: any) => {
-    console.log('tinycomments_delete_comment - ', req);
     try {
       await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
         method: 'DELETE',
@@ -494,7 +483,6 @@ export default function TinyEditor() {
   };
   
   const tinycomments_edit_comment = async (req: any, done: any) => {
-    console.log('tinycomments_edit_comment - ', req);
     try {
       await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
         method: 'PUT',
@@ -525,7 +513,6 @@ export default function TinyEditor() {
     req: TinyCommentsFetchRequest, 
     done: (response: { conversation: Conversation }) => void
   ) => {
-    console.log('lookup - ', req);
     // Add error handling
     try {
       const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/comments/${req.conversationUid}`, {
@@ -541,7 +528,6 @@ export default function TinyEditor() {
         uid: data.conversation_uid,
         comments: data.comments
       }};
-      console.log('lookupconversation - ', conversation);
       done(conversation);
     } catch (error) {
       console.error('Error fetching comment:', error);
@@ -715,7 +701,6 @@ export default function TinyEditor() {
             automatic_uploads: true,
             file_picker_types: 'file image media',
             file_picker_callback: (cb: (value: string, meta?: Record<string, any>) => void, value: string, meta: Record<string, any>) => {
-              console.log(value, meta)
               const input = document.createElement('input');
               input.setAttribute('type', 'file');
               input.setAttribute('accept', 'image/*');
@@ -769,7 +754,6 @@ export default function TinyEditor() {
             },
             setup: (editor) => {
               editor.on('mceAiComment', async (e: any) => {
-                console.log('mceAiComment - ', e);
 
                 const revealAdditionalToolbarButton = document.querySelector('[data-mce-name="overflow-button"]');
                   
@@ -791,7 +775,6 @@ export default function TinyEditor() {
                       let node;
                       let found = false;
 
-                      console.log("searching for " + target_text + " - " + suggestion);
                       
                       while ((node = walker.nextNode()) && !found) {
                         if (node.textContent && node.textContent.includes(target_text)) {
@@ -804,13 +787,10 @@ export default function TinyEditor() {
                           editor.selection.setRng(range);
                           found = true;
 
-                          console.log("found, adding comment");
 
                           // Wait for each comment to be fully processed
                           await new Promise((resolve) => {
-                            console.log("adding comment...");
                             let addCommentButton = document.querySelector('[data-mce-name="addcomment"]');
-                            console.log("addCommentButton - ", addCommentButton);
                             if (addCommentButton == null) {
                               if (revealAdditionalToolbarButton instanceof HTMLElement) {
                                 revealAdditionalToolbarButton.click();
@@ -819,7 +799,6 @@ export default function TinyEditor() {
                             }
 
                             if (addCommentButton instanceof HTMLElement) {
-                              console.log("adding comment " + target_text + " - " + suggestion);
                               addCommentButton.click();
                               
                               setTimeout(() => {

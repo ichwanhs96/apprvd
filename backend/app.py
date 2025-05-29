@@ -448,6 +448,7 @@ def get_tinymce_documents():
 def get_tinymce_document(doc_id):
     business_id = request.headers.get("business-id") 
     query = Document.query.filter(
+        Document.id == doc_id,
         or_(
             Document.business_id == business_id,
             text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id)")
@@ -475,7 +476,7 @@ def delete_tinymce_document(doc_id):
         or_(
             Document.business_id == business_id,
             Document.id == doc_id,
-            text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id) and share->>'access' = 'edit'")
+            text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id AND share->>'access' = 'edit')")
         )
     ).params(business_id=business_id)
     document = query.first_or_404()
@@ -489,7 +490,7 @@ def update_tinymce_document(doc_id):
     query = Document.query.filter(
         or_(
             Document.business_id == business_id,
-            text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id) and share->>'access' = 'edit'")
+            text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id AND share->>'access' = 'edit')")
         )
     ).params(business_id=business_id)
     document = query.first_or_404()
@@ -544,7 +545,7 @@ def share_tinymce_document(doc_id):
         or_(
             Document.business_id == business_id,
             Document.id == doc_id,
-            text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id) and share->>'access' = 'edit'")
+            text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id AND share->>'access' = 'edit')")
         )
     ).params(business_id=business_id)
     document = query.first_or_404()

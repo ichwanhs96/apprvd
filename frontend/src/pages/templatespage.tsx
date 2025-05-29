@@ -176,6 +176,8 @@ function TemplatesPage() {
             created_at: contract.created_at,
             updated_at: contract.updated_at,
             status: contract.status,
+            shared_with: contract.shared_with,
+            is_template: contract.is_template
           })
         }
 
@@ -363,7 +365,7 @@ function ContractItem({ contractItem, deleteContractFn }: { contractItem: Contra
     <tr className="border-b">
       <td
         className="px-4 py-8 text-gray-700 hover:cursor-pointer"
-        onClick={() => {
+        onClick={() => {          
           useCurrentDocId.setState({ id: contractItem.id });
           useContentToShow.setState({ content: "editor" });
           useContractSelected.setState({
