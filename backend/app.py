@@ -473,9 +473,9 @@ def get_tinymce_document(doc_id):
 def delete_tinymce_document(doc_id):
     business_id = request.headers.get("business-id") 
     query = Document.query.filter(
+        Document.id == doc_id,
         or_(
             Document.business_id == business_id,
-            Document.id == doc_id,
             text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id AND share->>'access' = 'edit')")
         )
     ).params(business_id=business_id)
@@ -520,7 +520,7 @@ def update_tinymce_document(doc_id):
         print(f"Error updating document {doc_id}: {str(e)}")
         return jsonify({'error': 'Failed to update document'}), 500
 
-@app.route('/tinymce/documents/<int:doc_id>/finalize', methods=['PATCH'])
+@app.route('/tinymce/documents/<int:doc_id>/finalize', methods=['POST'])
 def finalize_tinymce_document(doc_id):
     business_id = request.headers.get("business-id") 
     document = Document.query.filter(
@@ -554,9 +554,9 @@ def share_tinymce_document(doc_id):
     access = data.get('access', 'view')
     business_id = request.headers.get("business-id") 
     query = Document.query.filter(
+        Document.id == doc_id,
         or_(
             Document.business_id == business_id,
-            Document.id == doc_id,
             text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id AND share->>'access' = 'edit')")
         )
     ).params(business_id=business_id)
