@@ -80,7 +80,7 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
       }
 
       const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/tinymce/documents/${id}/finalize`, {
-        method: 'PATCH',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'business-id': userInfo?.email
