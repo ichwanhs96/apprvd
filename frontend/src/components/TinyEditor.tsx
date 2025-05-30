@@ -567,7 +567,7 @@ export default function TinyEditor() {
     }}>
       {!isLoading && (
         <Editor
-          apiKey='39c2l97rsordx88wbtmid53kkufqtfwz5feep0ksobb814ov'
+          apiKey='6kmvpia4udf51dkqeohfqvjyvh6jkh88uz4y29rrq5yg1don'
           onInit={(_, editor) => (editorRef.current = editor)}
           initialValue={localContent}
           disabled={isViewOnly}
