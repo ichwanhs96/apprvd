@@ -520,10 +520,16 @@ def update_tinymce_document(doc_id):
         print(f"Error updating document {doc_id}: {str(e)}")
         return jsonify({'error': 'Failed to update document'}), 500
 
-@app.route('/tinymce/documents/<int:doc_id>/finalize', methods=['POST'])
+@app.route('/tinymce/documents/<int:doc_id>/finalize', methods=['PATCH'])
 def finalize_tinymce_document(doc_id):
     business_id = request.headers.get("business-id") 
-    document = Document.query.filter(Document.business_id == business_id, Document.id == doc_id).first_or_404()
+    document = Document.query.filter(
+        Document.id == doc_id,
+        or_(
+            Document.business_id == business_id,
+            text("EXISTS (SELECT 1 FROM unnest(shared_with) AS share WHERE share->>'email' = :business_id AND share->>'access' = 'edit')")
+        )
+    ).params(business_id=business_id).first_or_404()
     document.status = 'FINAL'
     document.updated_at = datetime.now(timezone.utc)
     db.session.commit()

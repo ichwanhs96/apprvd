@@ -23,6 +23,7 @@ interface Contract {
   status: string;
   is_template: boolean;
   shared_with: DocumentUserAccess[];
+  business_id: string;
 }
 
 interface Contracts {
@@ -159,7 +160,8 @@ function ContractsPage() {
         status: result?.status,
         version: result?.version,
         shared_with: result?.shared_with,
-        is_template: result?.is_template
+        is_template: result?.is_template,
+        business_id: result?.business_id
       });
       setIsLoading(false);
     } catch (error) {
@@ -201,6 +203,7 @@ function ContractsPage() {
         status: contract.status,
         is_template: contract.is_template,
         shared_with: contract.shared_with,
+        business_id: contract.business_id
       }));
       
       setAllContract(contracts.filter((contract: Contract) => !contract.is_template));
@@ -411,7 +414,8 @@ function ContractItem({ contractItem, deleteContractFn }: { contractItem: Contra
             status: contractItem.status,
             created: new Date(contractItem.created_at),
             shared_with: contractItem.shared_with,
-            is_template: contractItem.is_template
+            is_template: contractItem.is_template,
+            business_id: contractItem.business_id
           });
         }}
       >

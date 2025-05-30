@@ -66,6 +66,7 @@ interface ContractSelected {
   created: Date;
   is_template: boolean;
   shared_with: DocumentUserAccess[];
+  business_id: string;
 }
 
 export const useContractSelected = create<ContractSelected>(() => ({
@@ -74,7 +75,8 @@ export const useContractSelected = create<ContractSelected>(() => ({
   status: '',
   created: new Date(),
   is_template: false,
-  shared_with: []
+  shared_with: [],
+  business_id: '',
 }))
 
 interface Suggestion {

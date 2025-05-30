@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AISidebar from "../components/aiSidebar";
 import { InitiatePlateEditor } from "../components/textEditor/plate-editor";
 import { useAuth } from "../context/AuthContext"; // Add this import
-import { useContentPage, useCurrentDocId, useEditorComments, useEditorContent, useSuggestions } from "../store";
+import { useContentPage, useContractSelected, useCurrentDocId, useEditorComments, useEditorContent, useSuggestions } from "../store";
 import { useNavigate } from "react-router-dom";
 import { TComment } from "@udecode/plate-comments";
 import { v4 as uuidv4 } from "uuid"; // To generate unique IDs
@@ -49,6 +49,7 @@ const EditorPage: React.FC = () => {
     const EDITOR_CONTENT_KEY = 'editor-content';
     const EDITOR_CONTENT_COMMENTS = "editor-comments";
     const { id } = useCurrentDocId();
+    const { shared_with, business_id } = useContractSelected();
     const suggestions = useSuggestions();
     const { contentPage } = useContentPage()
     // const { editor_content } = useEditorContent()
@@ -421,14 +422,18 @@ const EditorPage: React.FC = () => {
             {/* <PlateEditor editor={editor}/> */}
             <TinyEditor />
         </div>
-        <div className="w-1/4">
-            {/* { loadingLorem && <div>Loading...</div> } */}
-            {contentPage === 'contracts' && <AISidebar editor={editor} /> }
-            <div className="mt-4">
-              <TemplateSidebar />
-            </div>
-            {/* <button onClick={handleComment} className="bg-blue-500 hidden">Comment</button> */}
-        </div> 
+        {
+          (business_id === userInfo?.email || (shared_with.length > 0 && shared_with.find((user) => user.email === userInfo?.email)?.access === 'edit')) && (
+            <div className="w-1/4">
+              {/* { loadingLorem && <div>Loading...</div> } */}
+                {contentPage === 'contracts' && <AISidebar editor={editor} /> }
+                <div className="mt-4">
+                  <TemplateSidebar />
+                </div>
+                {/* <button onClick={handleComment} className="bg-blue-500 hidden">Comment</button> */}
+            </div> 
+          )
+        }
         </>
     );
 };

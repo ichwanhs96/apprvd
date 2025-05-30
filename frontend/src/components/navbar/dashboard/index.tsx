@@ -17,7 +17,7 @@ interface DashboardNavbarProps {
 const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
   const [navBarOpen, setNavBarOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const { created, name, status, version, shared_with } = useContractSelected();
+  const { created, name, status, version, shared_with, business_id } = useContractSelected();
   const { content } = useContentToShow();
   const { user, logout } = useAuth();
   const { id } = useCurrentDocId();
@@ -223,12 +223,16 @@ const HomeNavbar: React.FC<DashboardNavbarProps> = ({ navItems }) => {
               </a>
             ))}
           </div>
-          {content === 'editor' && contentPage !== 'template' &&<div className="mr-4">
-            <button className='bg-gray-100 text-green-700 disabled:pointer-events-none' onClick={handleShareDoc}>Share</button>
-          </div>}
-          {content === 'editor' && status !== 'FINAL' && <div className="pr-4">
-            <button className="bg-green-100 text-green-700 disabled:pointer-events-none" onClick={handleFinalizeDoc} disabled={isFinalized}>{isFinalized ? <Loader /> :  'Finalize doc'}</button>
-          </div>}
+          { (business_id === userInfo?.email || (shared_with.length > 0 && shared_with.find((user) => user.email === userInfo?.email)?.access === 'edit')) && (
+            <>
+              {content === 'editor' && contentPage !== 'template' &&<div className="mr-4">
+                <button className='bg-gray-100 text-green-700 disabled:pointer-events-none' onClick={handleShareDoc}>Share</button>
+              </div>}
+              {content === 'editor' && status !== 'FINAL' && <div className="pr-4">
+                <button className="bg-green-100 text-green-700 disabled:pointer-events-none" onClick={handleFinalizeDoc} disabled={isFinalized}>{isFinalized ? <Loader /> :  'Finalize doc'}</button>
+              </div>}
+            </>
+          )}
           <div className="flex items-center">
             <div className="relative">
               <button

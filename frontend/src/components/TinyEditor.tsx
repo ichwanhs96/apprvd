@@ -45,7 +45,7 @@ export default function TinyEditor() {
   const [isLoading, setIsLoading] = useState(true);
   const { userInfo } = useAuth();
   const { id } = useCurrentDocId();
-  const { name, shared_with } = useContractSelected();
+  const { name, shared_with, status } = useContractSelected();
   const [lastDocumentUpdateDate, setLastDocumentUpdateDate] = useState<Date | null>(new Date());
   const { setIsSave } = useAutoSave();
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
@@ -178,6 +178,12 @@ export default function TinyEditor() {
       fetchDocument();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (status === 'FINAL') {
+      setIsViewOnly(true);
+    }
+  }, [status])
 
   const updateDocument = async (content: string) => {
     if (id && content && lastDocumentUpdateDate && lastDocumentUpdateDate.getTime() < new Date().getTime() - 5000) {
@@ -553,10 +559,7 @@ export default function TinyEditor() {
       });
     }
 
-    console.log('query', query)
-
     const fetchedUsers = shared_with.filter((user) => user.email.includes(query.term));
-    console.log('fetchedUsers', fetchedUsers)
     return fetchedUsers.map((user) => {
       return {
         id: user.email,
