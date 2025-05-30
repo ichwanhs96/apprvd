@@ -544,11 +544,23 @@ export default function TinyEditor() {
 
   // This is a placeholder function - replace with your actual API call
   async function fetchUsers(query: any) {
+    if (query.term === '') {
+      return shared_with.map((user) => {
+        return {
+          id: user.email,
+          name: user.email
+        }
+      });
+    }
+
+    console.log('query', query)
+
     const fetchedUsers = shared_with.filter((user) => user.email.includes(query.term));
+    console.log('fetchedUsers', fetchedUsers)
     return fetchedUsers.map((user) => {
       return {
         id: user.email,
-        name: user
+        name: user.email
       }
     })
   }
@@ -734,7 +746,7 @@ export default function TinyEditor() {
             mentions_fetch: async (query: string, success: Function) => {
               try {
                 const users = await fetchUsers(query);
-
+                
                 success(users);
               } catch (error) {
                 console.error('Error fetching users for mentions:', error);
